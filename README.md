@@ -14,3 +14,14 @@ To set up the project, follow these steps:
    ```bash
    python src/main.py
    ```
+
+## Workflow
+
+```mermaid
+graph TD
+    A[Data Ingestion] --> B[Data Cleaning]
+    B --> C[Exploratory Data Analysis - EDA]
+    C --> D[Feature Engineering]
+    D --> E[Modeling]
+    E --> F[Reporting & Insights]
+```
