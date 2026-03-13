@@ -25,3 +25,11 @@ graph TD
     D --> E[Modeling]
     E --> F[Reporting & Insights]
 ```
+
+### Workflow Description
+1. **Data Ingestion**: Importing raw product data from various sources.
+2. **Data Cleaning**: Handling missing values, outliers, and data inconsistencies.
+3. **Exploratory Data Analysis (EDA)**: Visualizing data distributions and identifying patterns.
+4. **Feature Engineering**: Creating new features to improve model performance.
+5. **Modeling**: Applying machine learning algorithms to make predictions or classifications.
+6. **Reporting & Insights**: Summarizing findings and providing actionable business insights.
