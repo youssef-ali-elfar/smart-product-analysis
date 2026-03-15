@@ -25,3 +25,12 @@ graph TD
     D --> E[Modeling]
     E --> F[Reporting & Insights]
 ```
+
+### Workflow Description
+The data analysis pipeline follows these stages for accessibility and clarity:
+1. **Data Ingestion**: Collecting raw data from various sources.
+2. **Data Cleaning**: Preprocessing and handling missing values.
+3. **Exploratory Data Analysis (EDA)**: Visualizing and understanding data distributions.
+4. **Feature Engineering**: Creating new variables to improve model performance.
+5. **Modeling**: Training and evaluating machine learning models.
+6. **Reporting & Insights**: Extracting and communicating final results.
