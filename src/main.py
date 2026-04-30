@@ -1,8 +1,15 @@
-import pandas as pd
-import numpy as np
 import argparse
 import sys
 import platform
+from datetime import datetime
+
+def get_lib_version(name):
+    """Safely retrieves the version of a library."""
+    try:
+        module = __import__(name)
+        return getattr(module, "__version__", "Unknown")
+    except ImportError:
+        return "Not Found"
 
 def main():
     version = "1.0.0"
@@ -19,6 +26,7 @@ def main():
     # ANSI colors
     BLUE = "\033[94m"
     GREEN = "\033[92m"
+    RED = "\033[91m"
     CYAN = "\033[96m"
     BOLD = "\033[1m"
     RESET = "\033[0m"
@@ -28,20 +36,37 @@ def main():
     print(f"{BLUE}└────────────────────────────────────────┘{RESET}")
 
     # System Status
-    print(f"\n{CYAN}{BOLD}System Status:{RESET}")
-    print(f"• Python: {platform.python_version()}")
-    print(f"• Pandas: {pd.__version__}")
-    print(f"• Status: {GREEN}Ready{RESET}")
+    session_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    libs = {
+        "Pandas": "pandas",
+        "NumPy": "numpy",
+        "Matplotlib": "matplotlib",
+        "Seaborn": "seaborn",
+        "Scikit-Learn": "sklearn",
+    }
 
-    print(f"\nWelcome! This tool is designed to help you extract insights from product data.")
+    print(f"\n{CYAN}{BOLD}System Status:{RESET}")
+    print(f"• {f'Session':<15}: {session_time}")
+    print(f"• {f'Python':<15}: {platform.python_version()}")
+
+    for label, name in libs.items():
+        lib_version = get_lib_version(name)
+        color = GREEN if lib_version != "Not Found" else RED
+        print(f"• {f'{label}':<15}: {color}{lib_version}{RESET}")
+
+    print(f"• {f'Status':<15}: {GREEN}Ready{RESET}")
+
+    print(
+        f"\nWelcome! This tool is designed to help you extract insights from product data."
+    )
 
     print(f"\n{GREEN}{BOLD}Analysis Roadmap:{RESET}")
-    print(f"1. {BOLD}Data Ingestion:{RESET} Collect raw data from various sources.")
-    print(f"2. {BOLD}Data Cleaning:{RESET} Preprocess and handle missing values.")
-    print(f"3. {BOLD}EDA:{RESET} Visualize and understand data distributions.")
-    print(f"4. {BOLD}Feature Engineering:{RESET} Create new variables for modeling.")
-    print(f"5. {BOLD}Modeling:{RESET} Train and evaluate machine learning models.")
-    print(f"6. {BOLD}Reporting:{RESET} Extract and communicate final results.")
+    print(f"1. 📥 {BOLD}Data Ingestion:{RESET} Collect raw data from various sources.")
+    print(f"2. 🧹 {BOLD}Data Cleaning:{RESET} Preprocess and handle missing values.")
+    print(f"3. 📊 {BOLD}EDA:{RESET} Visualize and understand data distributions.")
+    print(f"4. ⚙️ {BOLD}Feature Engineering:{RESET} Create new variables for modeling.")
+    print(f"5. 🤖 {BOLD}Modeling:{RESET} Train and evaluate machine learning models.")
+    print(f"6. 📈 {BOLD}Reporting:{RESET} Extract and communicate final results.")
 
     print(f"\n{CYAN}{BOLD}Tip:{RESET} Use {BOLD}--help{RESET} or refer to README.md for detailed documentation.")
     print(f"{BLUE}──────────────────────────────────────────{RESET}")
