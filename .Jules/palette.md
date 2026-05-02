@@ -9,3 +9,7 @@
 ## 2025-05-20 - CLI Roadmap and System Feedback
 **Learning:** In data science CLI tools, users benefit from immediate confirmation of their environment (library versions) and a clear roadmap of the entire analysis pipeline. This builds trust and sets expectations before they even begin.
 **Action:** Incorporate a "System Status" and a full "Roadmap" section in the tool's welcome message to orient users and confirm environment readiness.
+
+## 2025-05-25 - Resilient Dependency Reporting
+**Learning:** Hard-coded top-level imports of data science libraries cause CLI tools to crash immediately with a traceback if the environment is not set up. Using dynamic imports for version checking allows the tool to start and provide helpful guidance on missing dependencies.
+**Action:** Use a safe `get_lib_version` helper with `try...except ImportError` and defer heavy imports to ensure the CLI remains functional for status reporting.
