@@ -9,3 +9,7 @@
 ## 2025-05-20 - CLI Roadmap and System Feedback
 **Learning:** In data science CLI tools, users benefit from immediate confirmation of their environment (library versions) and a clear roadmap of the entire analysis pipeline. This builds trust and sets expectations before they even begin.
 **Action:** Incorporate a "System Status" and a full "Roadmap" section in the tool's welcome message to orient users and confirm environment readiness.
+
+## 2026-05-03 - CLI Scannability and Defensive Status
+**Learning:** In terminal-based tools, vertical alignment of information (e.g., aligning colons in a status list) significantly improves scannability and professional feel. Furthermore, providing defensive "Not Found" statuses for expected dependencies (with color cues) prevents crashes and helps users troubleshoot environment issues immediately.
+**Action:** Use a standardized label padding (15 chars) for all key-value pairs in CLI reports and implement `try...except` version checking for all external dependencies to ensure status reporting remains functional even in broken environments.
