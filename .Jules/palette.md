@@ -9,3 +9,7 @@
 ## 2025-05-20 - CLI Roadmap and System Feedback
 **Learning:** In data science CLI tools, users benefit from immediate confirmation of their environment (library versions) and a clear roadmap of the entire analysis pipeline. This builds trust and sets expectations before they even begin.
 **Action:** Incorporate a "System Status" and a full "Roadmap" section in the tool's welcome message to orient users and confirm environment readiness.
+
+## 2026-05-05 - Multi-Modal Status Indicators in CLI
+**Learning:** Relying solely on color (GREEN/RED) for status reporting in CLI tools is not accessible to colorblind users. Adding clear icons (✅/❌) provides an additional visual cue that ensures the status is understandable by everyone.
+**Action:** Always supplement color-coded status messages with descriptive icons or symbols to improve accessibility and scannability.
