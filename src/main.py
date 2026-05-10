@@ -32,7 +32,7 @@ def main():
     RESET = "\033[0m"
 
     print(f"{BLUE}┌────────────────────────────────────────┐{RESET}")
-    print(f"{BLUE}│ {BOLD}Smart Product Analysis{RESET} v{version:<11} {BLUE}│{RESET}")
+    print(f"{BLUE}│ {BOLD}Smart Product Analysis{RESET} v{version:<14} {BLUE}│{RESET}")
     print(f"{BLUE}└────────────────────────────────────────┘{RESET}")
 
     # System Status
@@ -46,20 +46,21 @@ def main():
         "NumPy": "numpy",
         "Matplotlib": "matplotlib",
         "Seaborn": "seaborn",
-        "Scikit-Learn": "sklearn"
+        "Scikit-Learn": "sklearn",
+        "Jupyter": "jupyter"
     }
 
     all_found = True
     for label, name in libs.items():
         lib_version = get_lib_version(name)
         if lib_version:
-            status = f"{GREEN}{lib_version}{RESET}"
+            status = f"✅ {GREEN}{lib_version}{RESET}"
         else:
-            status = f"{RED}Not Found{RESET}"
+            status = f"❌ {RED}Not Found{RESET}"
             all_found = False
         print(f"• {label:<15}: {status}")
 
-    status_msg = f"{GREEN}Ready{RESET}" if all_found else f"{RED}Incomplete - Please run: pip install -r requirements.txt{RESET}"
+    status_msg = f"✅ {GREEN}Ready{RESET}" if all_found else f"❌ {RED}Incomplete - Please run: pip install -r requirements.txt{RESET}"
     print(f"• {'Status':<15}: {status_msg}")
 
     print(f"\nWelcome! This tool is designed to help you extract insights from product data.")
