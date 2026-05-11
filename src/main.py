@@ -32,7 +32,7 @@ def main():
     RESET = "\033[0m"
 
     print(f"{BLUE}┌────────────────────────────────────────┐{RESET}")
-    print(f"{BLUE}│ {BOLD}Smart Product Analysis{RESET} v{version:<11} {BLUE}│{RESET}")
+    print(f"{BLUE}│ {BOLD}Smart Product Analysis{RESET} v{version:<14} {BLUE}│{RESET}")
     print(f"{BLUE}└────────────────────────────────────────┘{RESET}")
 
     # System Status
