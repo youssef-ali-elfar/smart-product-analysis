@@ -1,6 +1,7 @@
 import argparse
 import sys
 import platform
+import os
 from datetime import datetime
 
 def get_lib_version(name):
@@ -39,6 +40,7 @@ def main():
     print(f"\n{CYAN}{BOLD}System Status:{RESET}")
     now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     print(f"• {'Session Start':<15}: {now}")
+    print(f"• {'System':<15}: {platform.system()} ({platform.machine()})")
     print(f"• {'Python':<15}: {platform.python_version()}")
 
     libs = {
@@ -60,23 +62,29 @@ def main():
             all_found = False
         print(f"• {label:<15}: {status}")
 
+    data_found = os.path.isdir("data")
+    data_status = f"✅ {GREEN}Found{RESET}" if data_found else f"❌ {RED}Not Found{RESET}"
+    print(f"• {'Data Source':<15}: {data_status}")
+
     status_msg = f"✅ {GREEN}Ready{RESET}" if all_found else f"❌ {RED}Incomplete - Please run: {BOLD}pip install -r requirements.txt{RESET}"
     print(f"• {'Status':<15}: {status_msg}")
 
     print(f"\n🚀 Welcome! This tool is designed to help you extract insights from product data.")
 
     print(f"\n{GREEN}{BOLD}Analysis Roadmap:{RESET}")
-    print(f"1. 📥 {BOLD}{'Data Ingestion':<20}:{RESET} Collect raw data from various sources.")
-    print(f"2. 🧹 {BOLD}{'Data Cleaning':<20}:{RESET} Preprocess and handle missing values.")
-    print(f"3. 📊 {BOLD}{'EDA':<20}:{RESET} Visualize and understand data distributions.")
-    print(f"4. ⚙️ {BOLD}{'Feature Engineering':<20}:{RESET} Create new variables for modeling.")
-    print(f"5. 🤖 {BOLD}{'Modeling':<20}:{RESET} Train and evaluate machine learning models.")
-    print(f"6. 📈 {BOLD}{'Reporting':<20}:{RESET} Extract and communicate final results.")
+    print(f"{BOLD}1.{RESET} 📥 {BOLD}{'Data Ingestion':<20}:{RESET} Collect raw data from various sources.")
+    print(f"{BOLD}2.{RESET} 🧹 {BOLD}{'Data Cleaning':<20}:{RESET} Preprocess and handle missing values.")
+    print(f"{BOLD}3.{RESET} 📊 {BOLD}{'EDA':<20}:{RESET} Visualize and understand data distributions.")
+    print(f"{BOLD}4.{RESET} ⚙️ {BOLD}{'Feature Engineering':<20}:{RESET} Create new variables for modeling.")
+    print(f"{BOLD}5.{RESET} 🤖 {BOLD}{'Modeling':<20}:{RESET} Train and evaluate machine learning models.")
+    print(f"{BOLD}6.{RESET} 📈 {BOLD}{'Reporting':<20}:{RESET} Extract and communicate final results.")
 
-    if all_found:
-        tip_text = f"Ready to start? Check the {BOLD}Roadmap{RESET} above and run your first analysis!"
-    else:
+    if not all_found:
         tip_text = f"Dependencies missing? Run the {BOLD}pip install{RESET} command in the Status section above."
+    elif not data_found:
+        tip_text = f"No data directory found? Create a {BOLD}data/{RESET} folder to store your product datasets."
+    else:
+        tip_text = f"Ready to start? Check the {BOLD}Roadmap{RESET} above and run your first analysis!"
 
     print(f"\n💡 {CYAN}{BOLD}Tip:{RESET} {tip_text}")
     print(f"   Use {BOLD}--help{RESET} or refer to README.md for detailed documentation.")
