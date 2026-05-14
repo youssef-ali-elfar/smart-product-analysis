@@ -9,3 +9,7 @@
 ## 2025-05-20 - CLI Roadmap and System Feedback
 **Learning:** In data science CLI tools, users benefit from immediate confirmation of their environment (library versions) and a clear roadmap of the entire analysis pipeline. This builds trust and sets expectations before they even begin.
 **Action:** Incorporate a "System Status" and a full "Roadmap" section in the tool's welcome message to orient users and confirm environment readiness.
+
+## 2026-05-13 - Context-Aware CLI Onboarding
+**Learning:** For multi-stage data analysis pipelines, checking for physical project structure (like a `data/` directory) is just as important as checking for dependencies. Users benefit from dynamic "Tips" that guide them specifically to the next setup step based on what's missing (dependencies first, then data).
+**Action:** Implement proactive directory existence checks and use them to drive context-specific onboarding tips in CLI entry points.
