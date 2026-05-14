@@ -13,3 +13,7 @@
 ## 2026-05-13 - Context-Aware CLI Onboarding
 **Learning:** For multi-stage data analysis pipelines, checking for physical project structure (like a `data/` directory) is just as important as checking for dependencies. Users benefit from dynamic "Tips" that guide them specifically to the next setup step based on what's missing (dependencies first, then data).
 **Action:** Implement proactive directory existence checks and use them to drive context-specific onboarding tips in CLI entry points.
+
+## 2026-05-14 - Granular Data Readiness and Status Priority
+**Learning:** Checking only for a directory's existence is often insufficient; an empty directory can be just as blocking as a missing one. Providing a file count and a distinct "Pending" status (using yellow as a warning color) helps users distinguish between environment issues and data readiness issues. Furthermore, prioritizing dependency checks over data checks ensures a logical troubleshooting flow.
+**Action:** Include file counts in directory status reports and use a priority-based status hierarchy (Incomplete -> Pending -> Ready) to guide users through environment and then data setup.
