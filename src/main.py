@@ -28,6 +28,7 @@ def main():
     BLUE = "\033[94m"
     GREEN = "\033[92m"
     RED = "\033[91m"
+    YELLOW = "\033[93m"
     CYAN = "\033[96m"
     BOLD = "\033[1m"
     RESET = "\033[0m"
@@ -62,11 +63,24 @@ def main():
             all_found = False
         print(f"• {label:<15}: {status}")
 
-    data_found = os.path.isdir("data")
-    data_status = f"✅ {GREEN}Found{RESET}" if data_found else f"❌ {RED}Not Found{RESET}"
+    data_dir_exists = os.path.isdir("data")
+    data_count = 0
+    if data_dir_exists:
+        data_count = len([f for f in os.listdir("data") if os.path.isfile(os.path.join("data", f))])
+
+    if data_dir_exists:
+        data_status = f"✅ {GREEN}Found ({data_count} files){RESET}"
+    else:
+        data_status = f"❌ {RED}Not Found{RESET}"
     print(f"• {'Data Source':<15}: {data_status}")
 
-    status_msg = f"✅ {GREEN}Ready{RESET}" if all_found else f"❌ {RED}Incomplete - Please run: {BOLD}pip install -r requirements.txt{RESET}"
+    if not all_found:
+        status_msg = f"❌ {RED}Incomplete - Please run: {BOLD}pip install -r requirements.txt{RESET}"
+    elif not data_dir_exists or data_count == 0:
+        status_msg = f"⚠️ {YELLOW}Pending - Please add data to the 'data/' directory{RESET}"
+    else:
+        status_msg = f"✅ {GREEN}Ready{RESET}"
+
     print(f"• {'Status':<15}: {status_msg}")
 
     print(f"\n🚀 Welcome! This tool is designed to help you extract insights from product data.")
@@ -81,8 +95,10 @@ def main():
 
     if not all_found:
         tip_text = f"Dependencies missing? Run the {BOLD}pip install{RESET} command in the Status section above."
-    elif not data_found:
+    elif not data_dir_exists:
         tip_text = f"No data directory found? Create a {BOLD}data/{RESET} folder to store your product datasets."
+    elif data_count == 0:
+        tip_text = f"Data directory is empty? Add some CSV or JSON product data to the {BOLD}data/{RESET} folder."
     else:
         tip_text = f"Ready to start? Check the {BOLD}Roadmap{RESET} above and run your first analysis!"
 

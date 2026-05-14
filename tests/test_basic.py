@@ -31,5 +31,25 @@ class TestBasic(unittest.TestCase):
             main()
         self.assertEqual(cm.exception.code, 0)
 
+    @patch('sys.argv', ['src/main.py'])
+    @patch('src.main.get_lib_version')
+    @patch('src.main.os.path.isdir')
+    @patch('src.main.os.listdir')
+    def test_main_status_pending(self, mock_listdir, mock_isdir, mock_get_lib_version):
+        """Test that main() displays 'Pending' when dependencies are found but data is missing."""
+        mock_get_lib_version.return_value = "1.0.0"
+        mock_isdir.return_value = True
+        mock_listdir.return_value = [] # Empty directory
+
+        captured_output = io.StringIO()
+        sys.stdout = captured_output
+        try:
+            main()
+            output = captured_output.getvalue()
+            self.assertIn("Pending", output)
+            self.assertIn("Data directory is empty", output)
+        finally:
+            sys.stdout = sys.__stdout__
+
 if __name__ == '__main__':
     unittest.main()
