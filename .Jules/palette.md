@@ -13,3 +13,7 @@
 ## 2026-05-13 - Context-Aware CLI Onboarding
 **Learning:** For multi-stage data analysis pipelines, checking for physical project structure (like a `data/` directory) is just as important as checking for dependencies. Users benefit from dynamic "Tips" that guide them specifically to the next setup step based on what's missing (dependencies first, then data).
 **Action:** Implement proactive directory existence checks and use them to drive context-specific onboarding tips in CLI entry points.
+
+## 2026-05-15 - Granular CLI Status Feedback
+**Learning:** Binary "Found/Not Found" checks for directories can be misleading. A "Found" status on an empty data directory can lead to confusing downstream errors. Providing granular feedback (e.g., file counts) and warning states (YELLOW) for empty but existing directories significantly improves the onboarding experience.
+**Action:** Use a three-tier status (Success/Warning/Error) for directory checks and include item counts to provide users with immediate, actionable context.
