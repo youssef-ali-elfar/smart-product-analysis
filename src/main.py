@@ -84,15 +84,29 @@ def main():
         status_msg = f"✅ {GREEN}Ready{RESET}"
     print(f"• {'Status':<15}: {status_msg}")
 
+    # Roadmap Status Logic
+    done_lbl = f"{GREEN}[DONE]{RESET}"
+    next_lbl = f"{CYAN}{BOLD}[NEXT]{RESET}"
+    pend_lbl = f"{YELLOW}[PEND]{RESET}"
+
+    s1_stat = s2_stat = s3_stat = s4_stat = s5_stat = s6_stat = pend_lbl
+
+    if all_found:
+        if data_count > 0:
+            s1_stat = done_lbl
+            s2_stat = next_lbl
+        else:
+            s1_stat = next_lbl
+
     print(f"\n🚀 Welcome! This tool is designed to help you extract insights from product data.")
 
     print(f"\n{GREEN}{BOLD}Analysis Roadmap:{RESET}")
-    print(f"{BOLD}1.{RESET} 📥 {BOLD}{'Data Ingestion':<20}:{RESET} Collect raw data from various sources.")
-    print(f"{BOLD}2.{RESET} 🧹 {BOLD}{'Data Cleaning':<20}:{RESET} Preprocess and handle missing values.")
-    print(f"{BOLD}3.{RESET} 📊 {BOLD}{'EDA':<20}:{RESET} Visualize and understand data distributions.")
-    print(f"{BOLD}4.{RESET} ⚙️ {BOLD}{'Feature Engineering':<20}:{RESET} Create new variables for modeling.")
-    print(f"{BOLD}5.{RESET} 🤖 {BOLD}{'Modeling':<20}:{RESET} Train and evaluate machine learning models.")
-    print(f"{BOLD}6.{RESET} 📈 {BOLD}{'Reporting & Insights':<20}:{RESET} Extract and communicate final results.")
+    print(f"{BOLD}1.{RESET} 📥 {BOLD}{'Data Ingestion':<20}:{RESET} {s1_stat} Collect raw data from various sources.")
+    print(f"{BOLD}2.{RESET} 🧹 {BOLD}{'Data Cleaning':<20}:{RESET} {s2_stat} Preprocess and handle missing values.")
+    print(f"{BOLD}3.{RESET} 📊 {BOLD}{'EDA':<20}:{RESET} {s3_stat} Visualize and understand data distributions.")
+    print(f"{BOLD}4.{RESET} ⚙️ {BOLD}{'Feature Engineering':<20}:{RESET} {s4_stat} Create new variables for modeling.")
+    print(f"{BOLD}5.{RESET} 🤖 {BOLD}{'Modeling':<20}:{RESET} {s5_stat} Train and evaluate machine learning models.")
+    print(f"{BOLD}6.{RESET} 📈 {BOLD}{'Reporting & Insights':<20}:{RESET} {s6_stat} Extract and communicate final results.")
 
     if not all_found:
         tip_text = f"Dependencies missing? Run the {BOLD}pip install -r requirements.txt{RESET} command."
