@@ -17,3 +17,7 @@
 ## 2026-05-15 - Granular CLI Status Feedback
 **Learning:** Binary "Found/Not Found" checks for directories can be misleading. A "Found" status on an empty data directory can lead to confusing downstream errors. Providing granular feedback (e.g., file counts) and warning states (YELLOW) for empty but existing directories significantly improves the onboarding experience.
 **Action:** Use a three-tier status (Success/Warning/Error) for directory checks and include item counts to provide users with immediate, actionable context.
+
+## 2026-05-17 - Dynamic CLI Roadmap Status
+**Learning:** For multi-stage CLI tools, a static roadmap is informative but a dynamic one is engaging. Providing real-time visual feedback on stage completion (DONE, NEXT, PEND) helps users track progress and understand the next required action.
+**Action:** Refactor static roadmap lists into a data-driven loop that calculates and displays stage statuses based on the current environment and data state.
