@@ -87,12 +87,32 @@ def main():
     print(f"\n🚀 Welcome! This tool is designed to help you extract insights from product data.")
 
     print(f"\n{GREEN}{BOLD}Analysis Roadmap:{RESET}")
-    print(f"{BOLD}1.{RESET} 📥 {BOLD}{'Data Ingestion':<20}:{RESET} Collect raw data from various sources.")
-    print(f"{BOLD}2.{RESET} 🧹 {BOLD}{'Data Cleaning':<20}:{RESET} Preprocess and handle missing values.")
-    print(f"{BOLD}3.{RESET} 📊 {BOLD}{'EDA':<20}:{RESET} Visualize and understand data distributions.")
-    print(f"{BOLD}4.{RESET} ⚙️ {BOLD}{'Feature Engineering':<20}:{RESET} Create new variables for modeling.")
-    print(f"{BOLD}5.{RESET} 🤖 {BOLD}{'Modeling':<20}:{RESET} Train and evaluate machine learning models.")
-    print(f"{BOLD}6.{RESET} 📈 {BOLD}{'Reporting & Insights':<20}:{RESET} Extract and communicate final results.")
+    stages = [
+        {"emoji": "📥", "label": "Data Ingestion", "desc": "Collect raw data from various sources."},
+        {"emoji": "🧹", "label": "Data Cleaning", "desc": "Preprocess and handle missing values."},
+        {"emoji": "📊", "label": "EDA", "desc": "Visualize and understand data distributions."},
+        {"emoji": "⚙️", "label": "Feature Engineering", "desc": "Create new variables for modeling."},
+        {"emoji": "🤖", "label": "Modeling", "desc": "Train and evaluate machine learning models."},
+        {"emoji": "📈", "label": "Reporting & Insights", "desc": "Extract and communicate final results."},
+    ]
+
+    for i, stage in enumerate(stages, 1):
+        if i == 1:
+            if data_count > 0:
+                status_tag = f"{GREEN}[DONE]{RESET}"
+            elif all_found:
+                status_tag = f"{BOLD}{CYAN}[NEXT]{RESET}"
+            else:
+                status_tag = f"{YELLOW}[PEND]{RESET}"
+        elif i == 2:
+            if data_count > 0:
+                status_tag = f"{BOLD}{CYAN}[NEXT]{RESET}"
+            else:
+                status_tag = f"{YELLOW}[PEND]{RESET}"
+        else:
+            status_tag = f"{YELLOW}[PEND]{RESET}"
+
+        print(f"{BOLD}{i}.{RESET} {stage['emoji']} {status_tag} {BOLD}{stage['label']:<20}:{RESET} {stage['desc']}")
 
     if not all_found:
         tip_text = f"Dependencies missing? Run the {BOLD}pip install -r requirements.txt{RESET} command."
