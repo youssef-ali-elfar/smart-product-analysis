@@ -19,6 +19,8 @@ class TestBasic(unittest.TestCase):
             self.assertIn("System", output)
             self.assertIn("Data Source", output)
             self.assertIn("1.", output)
+            # Check for new dynamic status indicators
+            self.assertIn("[PEND]", output)
         except Exception as e:
             self.fail(f"main() raised {type(e).__name__} unexpectedly!")
         finally:
