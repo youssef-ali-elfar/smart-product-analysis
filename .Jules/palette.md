@@ -21,3 +21,7 @@
 ## 2026-05-18 - Dynamic Roadmap Progress
 **Learning:** Transforming a static roadmap into a dynamic progress indicator using status tags (e.g., [DONE], [NEXT], [PEND]) provides users with immediate visual feedback on their current state in a multi-stage pipeline. This reduces cognitive load and clearly highlights the "next best action."
 **Action:** Use a data-driven approach (e.g., a list of stages) and conditional logic to render roadmap statuses dynamically based on the application's environment state.
+
+## 2026-05-20 - Multi-Metric CLI Status Feedback
+**Learning:** Providing combined metrics (e.g., file count AND total size) for data directories gives users a much clearer picture of their environment readiness than a single count. Combining this with specific missing-dependency counts (e.g., "3 libraries missing") creates a highly actionable onboarding experience.
+**Action:** When reporting on collections (files, dependencies), always provide both the count and a relevant secondary metric (like size or specific names) and ensure perfect grammatical pluralization.

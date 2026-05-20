@@ -12,6 +12,17 @@ def get_lib_version(name):
     except ImportError:
         return None
 
+def format_size(size_bytes):
+    """Format size in bytes to a human-readable string."""
+    if size_bytes == 0:
+        return "0 B"
+    size_name = ("B", "KB", "MB", "GB", "TB")
+    import math
+    i = int(math.floor(math.log(size_bytes, 1024)))
+    p = math.pow(1024, i)
+    s = round(size_bytes / p, 2)
+    return f"{s} {size_name[i]}"
+
 def main():
     version = "1.0.0"
     parser = argparse.ArgumentParser(
@@ -53,24 +64,30 @@ def main():
         "Jupyter": "jupyter"
     }
 
-    all_found = True
+    missing_libs = []
     for label, name in libs.items():
         lib_version = get_lib_version(name)
         if lib_version:
             status = f"✅ {GREEN}{lib_version}{RESET}"
         else:
             status = f"❌ {RED}Not Found{RESET}"
-            all_found = False
+            missing_libs.append(label)
         print(f"• {label:<15}: {status}")
+
+    all_found = len(missing_libs) == 0
 
     data_dir_exists = os.path.isdir("data")
     data_count = 0
+    total_size = 0
     if data_dir_exists:
-        data_count = len([f for f in os.listdir("data") if os.path.isfile(os.path.join("data", f))])
+        files = [f for f in os.listdir("data") if os.path.isfile(os.path.join("data", f))]
+        data_count = len(files)
+        total_size = sum(os.path.getsize(os.path.join("data", f)) for f in files)
 
     if data_dir_exists and data_count > 0:
         suffix = "file" if data_count == 1 else "files"
-        data_status = f"✅ {GREEN}Found ({data_count} {suffix}){RESET}"
+        size_str = format_size(total_size)
+        data_status = f"✅ {GREEN}Found ({data_count} {suffix}, {size_str}){RESET}"
     elif data_dir_exists:
         data_status = f"⚠️ {YELLOW}Empty (0 files){RESET}"
     else:
@@ -78,7 +95,8 @@ def main():
     print(f"• {'Data Source':<15}: {data_status}")
 
     if not all_found:
-        status_msg = f"❌ {RED}Incomplete - Please run: {BOLD}pip install -r requirements.txt{RESET}"
+        lib_suffix = "library" if len(missing_libs) == 1 else "libraries"
+        status_msg = f"❌ {RED}Incomplete ({len(missing_libs)} {lib_suffix} missing) - Please run: {BOLD}pip install -r requirements.txt{RESET}"
     elif not data_dir_exists or data_count == 0:
         status_msg = f"⚠️ {YELLOW}Pending - Data directory missing or empty{RESET}"
     else:
@@ -116,7 +134,8 @@ def main():
         print(f"{BOLD}{i}.{RESET} {stage['emoji']} {status_tag} {BOLD}{stage['label']:<20}:{RESET} {stage['desc']}")
 
     if not all_found:
-        tip_text = f"Dependencies missing? Run the {BOLD}pip install -r requirements.txt{RESET} command."
+        lib_suffix = "library" if len(missing_libs) == 1 else "libraries"
+        tip_text = f"{len(missing_libs)} {lib_suffix} missing? Run the {BOLD}pip install -r requirements.txt{RESET} command."
     elif not data_dir_exists:
         tip_text = f"No data directory found? Run {BOLD}mkdir data{RESET} to create one."
     elif data_count == 0:
