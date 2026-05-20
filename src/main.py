@@ -69,7 +69,8 @@ def main():
         data_count = len([f for f in os.listdir("data") if os.path.isfile(os.path.join("data", f))])
 
     if data_dir_exists and data_count > 0:
-        data_status = f"✅ {GREEN}Found ({data_count} files){RESET}"
+        suffix = "file" if data_count == 1 else "files"
+        data_status = f"✅ {GREEN}Found ({data_count} {suffix}){RESET}"
     elif data_dir_exists:
         data_status = f"⚠️ {YELLOW}Empty (0 files){RESET}"
     else:
@@ -121,7 +122,7 @@ def main():
     elif data_count == 0:
         tip_text = f"Data directory is empty? Add some product datasets to the {BOLD}data/{RESET} folder."
     else:
-        tip_text = f"Ready to start? Check the {BOLD}Roadmap{RESET} above and run your first analysis!"
+        tip_text = f"Ready to start? Head over to the {BOLD}Data Cleaning{RESET} stage to prepare your dataset!"
 
     print(f"\n💡 {CYAN}{BOLD}Tip:{RESET} {tip_text}")
     print(f"   Use {BOLD}--help{RESET} or refer to README.md for detailed documentation.")
@@ -131,5 +132,5 @@ if __name__ == "__main__":
     try:
         main()
     except KeyboardInterrupt:
-        print("\n\nAnalysis interrupted. Exiting gracefully...")
+        print("\n\n👋 Analysis interrupted. Exiting gracefully...")
         sys.exit(0)
