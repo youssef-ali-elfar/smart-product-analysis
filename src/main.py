@@ -87,7 +87,11 @@ def main():
     if data_dir_exists and data_count > 0:
         suffix = "file" if data_count == 1 else "files"
         size_str = format_size(total_size)
-        data_status = f"✅ {GREEN}Found ({data_count} {suffix}, {size_str}){RESET}"
+        files.sort()
+        names = ", ".join(files[:2])
+        if data_count > 2:
+            names += ", ..."
+        data_status = f"✅ {GREEN}Found ({data_count} {suffix}: {names}, {size_str}){RESET}"
     elif data_dir_exists:
         data_status = f"⚠️ {YELLOW}Empty (0 files){RESET}"
     else:
@@ -124,7 +128,7 @@ def main():
             else:
                 status_tag = f"{YELLOW}[PEND]{RESET}"
         elif i == 2:
-            if data_count > 0:
+            if data_count > 0 and all_found:
                 status_tag = f"{BOLD}{CYAN}[NEXT]{RESET}"
             else:
                 status_tag = f"{YELLOW}[PEND]{RESET}"
@@ -135,13 +139,13 @@ def main():
 
     if not all_found:
         lib_suffix = "library" if len(missing_libs) == 1 else "libraries"
-        tip_text = f"{len(missing_libs)} {lib_suffix} missing? Run the {BOLD}pip install -r requirements.txt{RESET} command."
+        tip_text = f"{len(missing_libs)} {lib_suffix} missing? Run the {BOLD}pip install -r requirements.txt{RESET} command to set up your environment."
     elif not data_dir_exists:
-        tip_text = f"No data directory found? Run {BOLD}mkdir data{RESET} to create one."
+        tip_text = f"Almost there! Run {BOLD}mkdir data{RESET} and add your product datasets to get started."
     elif data_count == 0:
-        tip_text = f"Data directory is empty? Add some product datasets to the {BOLD}data/{RESET} folder."
+        tip_text = f"Data folder is ready but empty. Add some CSV or JSON product datasets to {BOLD}data/{RESET} to begin."
     else:
-        tip_text = f"Ready to start? Head over to the {BOLD}Data Cleaning{RESET} stage to prepare your dataset!"
+        tip_text = f"✨ {BOLD}Everything is set!{RESET} Head over to the {BOLD}Data Cleaning{RESET} stage to prepare your dataset!"
 
     print(f"\n💡 {CYAN}{BOLD}Tip:{RESET} {tip_text}")
     print(f"   Use {BOLD}--help{RESET} or refer to README.md for detailed documentation.")
