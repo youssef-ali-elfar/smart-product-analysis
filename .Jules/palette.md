@@ -25,3 +25,7 @@
 ## 2026-05-20 - Multi-Metric CLI Status Feedback
 **Learning:** Providing combined metrics (e.g., file count AND total size) for data directories gives users a much clearer picture of their environment readiness than a single count. Combining this with specific missing-dependency counts (e.g., "3 libraries missing") creates a highly actionable onboarding experience.
 **Action:** When reporting on collections (files, dependencies), always provide both the count and a relevant secondary metric (like size or specific names) and ensure perfect grammatical pluralization.
+
+## 2026-05-22 - Environment Context and Data Freshness
+**Learning:** In Python-based data tools, explicitly displaying the environment type (Virtual Env vs Global) serves as a critical diagnostic that helps users avoid common dependency pitfalls. Additionally, providing "data freshness" (relative age of files) offers an implicit "liveness" indicator, building user confidence that they are working with the most recent datasets.
+**Action:** Incorporate environment detection and file freshness (using relative time) into CLI status reports to provide deeper operational context.
