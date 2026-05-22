@@ -4,11 +4,34 @@ import platform
 import os
 from datetime import datetime
 
+def is_venv():
+    """Detect if the script is running in a virtual environment."""
+    return (
+        hasattr(sys, "real_prefix")
+        or (hasattr(sys, "base_prefix") and sys.base_prefix != sys.prefix)
+    )
+
+def get_relative_time(timestamp):
+    """Format a timestamp into a human-readable relative time."""
+    diff = datetime.now() - datetime.fromtimestamp(timestamp)
+    seconds = diff.total_seconds()
+    if seconds < 60:
+        return "just now"
+    elif seconds < 3600:
+        minutes = int(seconds // 60)
+        return f"{minutes}m ago"
+    elif seconds < 86400:
+        hours = int(seconds // 3600)
+        return f"{hours}h ago"
+    else:
+        days = int(seconds // 86400)
+        return f"{days}d ago"
+
 def get_lib_version(name):
     """Safely get the version of a library."""
     try:
         module = __import__(name)
-        return getattr(module, "__version__", "Unknown")
+        return getattr(module, "__version__", "Detected")
     except ImportError:
         return None
 
@@ -54,6 +77,8 @@ def main():
     print(f"• {'Session Start':<15}: {now}")
     print(f"• {'System':<15}: {platform.system()} ({platform.machine()})")
     print(f"• {'Python':<15}: {platform.python_version()}")
+    env_type = f"{GREEN}Virtual Env{RESET}" if is_venv() else f"{YELLOW}Global{RESET}"
+    print(f"• {'Environment':<15}: {env_type}")
 
     libs = {
         "Pandas": "pandas",
@@ -79,10 +104,14 @@ def main():
     data_dir_exists = os.path.isdir("data")
     data_count = 0
     total_size = 0
+    freshest_time = 0
     if data_dir_exists:
         files = [f for f in os.listdir("data") if os.path.isfile(os.path.join("data", f))]
         data_count = len(files)
-        total_size = sum(os.path.getsize(os.path.join("data", f)) for f in files)
+        for f in files:
+            path = os.path.join("data", f)
+            total_size += os.path.getsize(path)
+            freshest_time = max(freshest_time, os.path.getmtime(path))
 
     if data_dir_exists and data_count > 0:
         suffix = "file" if data_count == 1 else "files"
@@ -91,7 +120,8 @@ def main():
         names = ", ".join(files[:2])
         if data_count > 2:
             names += ", ..."
-        data_status = f"✅ {GREEN}Found ({data_count} {suffix}: {names}, {size_str}){RESET}"
+        freshness = f" - Updated {get_relative_time(freshest_time)}"
+        data_status = f"✅ {GREEN}Found ({data_count} {suffix}: {names}, {size_str}){RESET}{freshness}"
     elif data_dir_exists:
         data_status = f"⚠️ {YELLOW}Empty (0 files){RESET}"
     else:
