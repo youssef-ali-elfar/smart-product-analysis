@@ -3,6 +3,7 @@ import sys
 import platform
 import os
 from datetime import datetime
+from collections import Counter
 
 def is_venv():
     """Detect if the script is running in a virtual environment."""
@@ -116,12 +117,10 @@ def main():
     if data_dir_exists and data_count > 0:
         suffix = "file" if data_count == 1 else "files"
         size_str = format_size(total_size)
-        files.sort()
-        names = ", ".join(files[:2])
-        if data_count > 2:
-            names += ", ..."
+        ext_counts = Counter([os.path.splitext(f)[1][1:].upper() or "OTHER" for f in files])
+        type_summary = ", ".join([f"{count} {ext}" for ext, count in sorted(ext_counts.items())])
         freshness = f" - Updated {get_relative_time(freshest_time)}"
-        data_status = f"✅ {GREEN}Found ({data_count} {suffix}: {names}, {size_str}){RESET}{freshness}"
+        data_status = f"✅ {GREEN}Found ({data_count} {suffix}: {type_summary}, {size_str}){RESET}{freshness}"
     elif data_dir_exists:
         data_status = f"⚠️ {YELLOW}Empty (0 files){RESET}"
     else:
@@ -165,7 +164,15 @@ def main():
         else:
             status_tag = f"{YELLOW}[PEND]{RESET}"
 
-        print(f"{BOLD}{i}.{RESET} {stage['emoji']} {status_tag} {BOLD}{stage['label']:<20}:{RESET} {stage['desc']}")
+        label_color = RESET
+        current_indicator = ""
+        if "[DONE]" in status_tag:
+            label_color = GREEN
+        elif "[NEXT]" in status_tag:
+            label_color = CYAN
+            current_indicator = f" {CYAN}◀ current{RESET}"
+
+        print(f"{BOLD}{i}.{RESET} {stage['emoji']} {status_tag} {BOLD}{label_color}{stage['label']:<20}{RESET}{BOLD}:{RESET} {stage['desc']}{current_indicator}")
 
     if not all_found:
         lib_suffix = "library" if len(missing_libs) == 1 else "libraries"
