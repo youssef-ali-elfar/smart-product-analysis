@@ -29,3 +29,7 @@
 ## 2026-05-22 - Environment Context and Data Freshness
 **Learning:** In Python-based data tools, explicitly displaying the environment type (Virtual Env vs Global) serves as a critical diagnostic that helps users avoid common dependency pitfalls. Additionally, providing "data freshness" (relative age of files) offers an implicit "liveness" indicator, building user confidence that they are working with the most recent datasets.
 **Action:** Incorporate environment detection and file freshness (using relative time) into CLI status reports to provide deeper operational context.
+
+## 2026-05-25 - Informative Data Summaries and Roadmap Navigation
+**Learning:** In CLI tools, summarizing directory contents by file extension (e.g., "2 CSV, 1 JSON") provides a more representative overview than listing the first few filenames. Additionally, visually highlighting the "current" stage in a roadmap using both color (CYAN) and a pointer (◀ current) significantly improves the scannability of progress in multi-step processes.
+**Action:** Use `collections.Counter` to provide extension-based data summaries and implement explicit "current" indicators in roadmaps to guide users through workflows.
