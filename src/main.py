@@ -3,6 +3,7 @@ import sys
 import platform
 import os
 from datetime import datetime
+from collections import Counter
 
 def is_venv():
     """Detect if the script is running in a virtual environment."""
@@ -116,12 +117,14 @@ def main():
     if data_dir_exists and data_count > 0:
         suffix = "file" if data_count == 1 else "files"
         size_str = format_size(total_size)
-        files.sort()
-        names = ", ".join(files[:2])
-        if data_count > 2:
-            names += ", ..."
+
+        # Generate file type breakdown
+        extensions = [os.path.splitext(f)[1][1:].upper() or 'OTHER' for f in files]
+        counts = Counter(extensions)
+        breakdown = ", ".join([f"{count} {ext}" for ext, count in counts.items()])
+
         freshness = f" - Updated {get_relative_time(freshest_time)}"
-        data_status = f"✅ {GREEN}Found ({data_count} {suffix}: {names}, {size_str}){RESET}{freshness}"
+        data_status = f"✅ {GREEN}Found ({data_count} {suffix}: {breakdown}, {size_str}){RESET}{freshness}"
     elif data_dir_exists:
         data_status = f"⚠️ {YELLOW}Empty (0 files){RESET}"
     else:
@@ -153,19 +156,26 @@ def main():
         if i == 1:
             if data_count > 0:
                 status_tag = f"{GREEN}[DONE]{RESET}"
+                label_style = GREEN
             elif all_found:
                 status_tag = f"{BOLD}{CYAN}[NEXT]{RESET}"
+                label_style = BOLD + CYAN
             else:
                 status_tag = f"{YELLOW}[PEND]{RESET}"
+                label_style = BOLD
         elif i == 2:
             if data_count > 0 and all_found:
                 status_tag = f"{BOLD}{CYAN}[NEXT]{RESET}"
+                label_style = BOLD + CYAN
             else:
                 status_tag = f"{YELLOW}[PEND]{RESET}"
+                label_style = BOLD
         else:
             status_tag = f"{YELLOW}[PEND]{RESET}"
+            label_style = BOLD
 
-        print(f"{BOLD}{i}.{RESET} {stage['emoji']} {status_tag} {BOLD}{stage['label']:<20}:{RESET} {stage['desc']}")
+        current_indicator = f" {CYAN}◀ current{RESET}" if "[NEXT]" in status_tag else ""
+        print(f"{BOLD}{i}.{RESET} {stage['emoji']} {status_tag} {label_style}{stage['label']:<20}:{RESET} {stage['desc']}{current_indicator}")
 
     if not all_found:
         lib_suffix = "library" if len(missing_libs) == 1 else "libraries"
