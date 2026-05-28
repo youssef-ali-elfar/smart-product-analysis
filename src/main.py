@@ -67,8 +67,38 @@ def main():
     BOLD = "\033[1m"
     RESET = "\033[0m"
 
+    # Pre-check environment
+    libs = {
+        "Pandas": "pandas",
+        "NumPy": "numpy",
+        "Matplotlib": "matplotlib",
+        "Seaborn": "seaborn",
+        "Scikit-Learn": "sklearn",
+        "Jupyter": "jupyter"
+    }
+
+    lib_versions = {label: get_lib_version(name) for label, name in libs.items()}
+    missing_libs = [label for label, ver in lib_versions.items() if ver is None]
+    all_found = len(missing_libs) == 0
+
+    data_dir_exists = os.path.isdir("data")
+    data_count = 0
+    if data_dir_exists:
+        data_count = len([f for f in os.listdir("data") if os.path.isfile(os.path.join("data", f))])
+
+    # Determine status badge
+    if not all_found:
+        badge_text, badge_color = "[INC]", RED
+    elif not data_dir_exists or data_count == 0:
+        badge_text, badge_color = "[PEND]", YELLOW
+    else:
+        badge_text, badge_color = "[READY]", GREEN
+
+    badge = f"{badge_color}{badge_text}{RESET}"
+    badge_padding = " " * (14 - len(badge_text) - len(version))
+
     print(f"{BLUE}┌────────────────────────────────────────┐{RESET}")
-    print(f"{BLUE}│ {BOLD}Smart Product Analysis{RESET} v{version:<14} {BLUE}│{RESET}")
+    print(f"{BLUE}│ {BOLD}Smart Product Analysis{RESET} v{version}{badge_padding}{badge} {BLUE}│{RESET}")
     print(f"{BLUE}└────────────────────────────────────────┘{RESET}")
 
     # System Status
@@ -80,32 +110,17 @@ def main():
     env_type = f"{GREEN}Virtual Env{RESET}" if is_venv() else f"{YELLOW}Global{RESET}"
     print(f"• {'Environment':<15}: {env_type}")
 
-    libs = {
-        "Pandas": "pandas",
-        "NumPy": "numpy",
-        "Matplotlib": "matplotlib",
-        "Seaborn": "seaborn",
-        "Scikit-Learn": "sklearn",
-        "Jupyter": "jupyter"
-    }
-
-    missing_libs = []
-    for label, name in libs.items():
-        lib_version = get_lib_version(name)
-        if lib_version:
-            status = f"✅ {GREEN}{lib_version}{RESET}"
+    for label, lib_ver in lib_versions.items():
+        if lib_ver:
+            status = f"✅ {GREEN}{lib_ver}{RESET}"
         else:
             status = f"❌ {RED}Not Found{RESET}"
-            missing_libs.append(label)
         print(f"• {label:<15}: {status}")
 
-    all_found = len(missing_libs) == 0
-
-    data_dir_exists = os.path.isdir("data")
-    data_count = 0
     total_size = 0
     freshest_time = 0
     file_types = []
+    type_summary = ""
     if data_dir_exists:
         from collections import Counter
         files = [f for f in os.listdir("data") if os.path.isfile(os.path.join("data", f))]
