@@ -105,23 +105,30 @@ def main():
     data_count = 0
     total_size = 0
     freshest_time = 0
+    file_types = []
     if data_dir_exists:
+        from collections import Counter
         files = [f for f in os.listdir("data") if os.path.isfile(os.path.join("data", f))]
         data_count = len(files)
         for f in files:
             path = os.path.join("data", f)
             total_size += os.path.getsize(path)
             freshest_time = max(freshest_time, os.path.getmtime(path))
+            ext = os.path.splitext(f)[1][1:].upper() or "OTHER"
+            file_types.append(ext)
+        type_counts = Counter(file_types)
+        type_summary = ", ".join([f"{count} {t}" for t, count in type_counts.items()])
 
     if data_dir_exists and data_count > 0:
         suffix = "file" if data_count == 1 else "files"
         size_str = format_size(total_size)
-        files.sort()
-        names = ", ".join(files[:2])
-        if data_count > 2:
-            names += ", ..."
-        freshness = f" - Updated {get_relative_time(freshest_time)}"
-        data_status = f"✅ {GREEN}Found ({data_count} {suffix}: {names}, {size_str}){RESET}{freshness}"
+
+        import time
+        is_very_fresh = (time.time() - freshest_time) < 3600
+        fresh_color = GREEN if is_very_fresh else RESET
+        freshness = f" - Updated {fresh_color}{get_relative_time(freshest_time)}{RESET}"
+
+        data_status = f"✅ {GREEN}Found ({data_count} {suffix}: {type_summary}, {size_str}){RESET}{freshness}"
     elif data_dir_exists:
         data_status = f"⚠️ {YELLOW}Empty (0 files){RESET}"
     else:
@@ -150,22 +157,32 @@ def main():
     ]
 
     for i, stage in enumerate(stages, 1):
+        is_current = False
         if i == 1:
             if data_count > 0:
                 status_tag = f"{GREEN}[DONE]{RESET}"
+                stage_color = GREEN
             elif all_found:
                 status_tag = f"{BOLD}{CYAN}[NEXT]{RESET}"
+                stage_color = CYAN
+                is_current = True
             else:
                 status_tag = f"{YELLOW}[PEND]{RESET}"
+                stage_color = RESET
         elif i == 2:
             if data_count > 0 and all_found:
                 status_tag = f"{BOLD}{CYAN}[NEXT]{RESET}"
+                stage_color = CYAN
+                is_current = True
             else:
                 status_tag = f"{YELLOW}[PEND]{RESET}"
+                stage_color = RESET
         else:
             status_tag = f"{YELLOW}[PEND]{RESET}"
+            stage_color = RESET
 
-        print(f"{BOLD}{i}.{RESET} {stage['emoji']} {status_tag} {BOLD}{stage['label']:<20}:{RESET} {stage['desc']}")
+        current_indicator = f" {CYAN}◀ current{RESET}" if is_current else ""
+        print(f"{BOLD}{i}.{RESET} {stage['emoji']} {status_tag} {BOLD}{stage_color}{stage['label']:<20}:{RESET} {stage['desc']}{current_indicator}")
 
     if not all_found:
         lib_suffix = "library" if len(missing_libs) == 1 else "libraries"

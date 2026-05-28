@@ -29,3 +29,7 @@
 ## 2026-05-22 - Environment Context and Data Freshness
 **Learning:** In Python-based data tools, explicitly displaying the environment type (Virtual Env vs Global) serves as a critical diagnostic that helps users avoid common dependency pitfalls. Additionally, providing "data freshness" (relative age of files) offers an implicit "liveness" indicator, building user confidence that they are working with the most recent datasets.
 **Action:** Incorporate environment detection and file freshness (using relative time) into CLI status reports to provide deeper operational context.
+
+## 2026-05-27 - Enhanced Data Visibility and Roadmap Guidance
+**Learning:** In data-centric CLI tools, summarizing file types (e.g., "1 CSV, 2 JSON") and color-coding freshness (e.g., GREEN for <1h) provides more immediate value than a list of filenames. Furthermore, color-coding roadmap stages and adding a "◀ current" pointer explicitly guides the user to their next action, reducing cognitive friction.
+**Action:** Use `collections.Counter` for data type summaries and apply status-based colorization and directional indicators to multi-step progress visualizations.
