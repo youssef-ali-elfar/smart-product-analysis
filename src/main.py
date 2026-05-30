@@ -58,28 +58,7 @@ def main():
     # Parse arguments
     parser.parse_args()
 
-    # ANSI colors
-    BLUE = "\033[94m"
-    GREEN = "\033[92m"
-    RED = "\033[91m"
-    YELLOW = "\033[93m"
-    CYAN = "\033[96m"
-    BOLD = "\033[1m"
-    RESET = "\033[0m"
-
-    print(f"{BLUE}┌────────────────────────────────────────┐{RESET}")
-    print(f"{BLUE}│ {BOLD}Smart Product Analysis{RESET} v{version:<14} {BLUE}│{RESET}")
-    print(f"{BLUE}└────────────────────────────────────────┘{RESET}")
-
-    # System Status
-    print(f"\n{CYAN}{BOLD}System Status:{RESET}")
-    now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    print(f"• {'Session Start':<15}: {now}")
-    print(f"• {'System':<15}: {platform.system()} ({platform.machine()})")
-    print(f"• {'Python':<15}: {platform.python_version()}")
-    env_type = f"{GREEN}Virtual Env{RESET}" if is_venv() else f"{YELLOW}Global{RESET}"
-    print(f"• {'Environment':<15}: {env_type}")
-
+    # --- Step 1: Pre-calculation of Status ---
     libs = {
         "Pandas": "pandas",
         "NumPy": "numpy",
@@ -90,14 +69,15 @@ def main():
     }
 
     missing_libs = []
+    lib_status_report = []
     for label, name in libs.items():
         lib_version = get_lib_version(name)
         if lib_version:
-            status = f"✅ {GREEN}{lib_version}{RESET}"
+            status = f"✅ \033[92m{lib_version}\033[0m"
         else:
-            status = f"❌ {RED}Not Found{RESET}"
+            status = f"❌ \033[91mNot Found\033[0m"
             missing_libs.append(label)
-        print(f"• {label:<15}: {status}")
+        lib_status_report.append((label, status))
 
     all_found = len(missing_libs) == 0
 
@@ -118,6 +98,46 @@ def main():
             file_types.append(ext)
         type_counts = Counter(file_types)
         type_summary = ", ".join([f"{count} {t}" for t, count in type_counts.items()])
+
+    # ANSI colors (redefined here for calculation if needed)
+    BLUE = "\033[94m"
+    GREEN = "\033[92m"
+    RED = "\033[91m"
+    YELLOW = "\033[93m"
+    CYAN = "\033[96m"
+    BOLD = "\033[1m"
+    RESET = "\033[0m"
+
+    # Badge Calculation
+    if not all_found:
+        badge_text = "[INC]"
+        badge_color = RED
+    elif not data_dir_exists or data_count == 0:
+        badge_text = "[PEND]"
+        badge_color = YELLOW
+    else:
+        badge_text = "[READY]"
+        badge_color = GREEN
+
+    badge = f"{badge_color}{BOLD}{badge_text}{RESET}"
+    badge_padding = " " * (14 - len(version) - len(badge_text))
+
+    # --- Step 2: UI Rendering ---
+    print(f"{BLUE}┌────────────────────────────────────────┐{RESET}")
+    print(f"{BLUE}│ {BOLD}Smart Product Analysis{RESET} v{version}{badge_padding}{badge} {BLUE}│{RESET}")
+    print(f"{BLUE}└────────────────────────────────────────┘{RESET}")
+
+    # System Status
+    print(f"\n{CYAN}{BOLD}System Status:{RESET}")
+    now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    print(f"• {'Session Start':<15}: {now}")
+    print(f"• {'System':<15}: {platform.system()} ({platform.machine()})")
+    print(f"• {'Python':<15}: {platform.python_version()}")
+    env_type = f"{GREEN}Virtual Env{RESET}" if is_venv() else f"{YELLOW}Global{RESET}"
+    print(f"• {'Environment':<15}: {env_type}")
+
+    for label, status in lib_status_report:
+        print(f"• {label:<15}: {status}")
 
     if data_dir_exists and data_count > 0:
         suffix = "file" if data_count == 1 else "files"
