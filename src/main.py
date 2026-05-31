@@ -67,19 +67,7 @@ def main():
     BOLD = "\033[1m"
     RESET = "\033[0m"
 
-    print(f"{BLUE}┌────────────────────────────────────────┐{RESET}")
-    print(f"{BLUE}│ {BOLD}Smart Product Analysis{RESET} v{version:<14} {BLUE}│{RESET}")
-    print(f"{BLUE}└────────────────────────────────────────┘{RESET}")
-
-    # System Status
-    print(f"\n{CYAN}{BOLD}System Status:{RESET}")
-    now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    print(f"• {'Session Start':<15}: {now}")
-    print(f"• {'System':<15}: {platform.system()} ({platform.machine()})")
-    print(f"• {'Python':<15}: {platform.python_version()}")
-    env_type = f"{GREEN}Virtual Env{RESET}" if is_venv() else f"{YELLOW}Global{RESET}"
-    print(f"• {'Environment':<15}: {env_type}")
-
+    # 1. Proactive Environment & Data Checks
     libs = {
         "Pandas": "pandas",
         "NumPy": "numpy",
@@ -90,14 +78,14 @@ def main():
     }
 
     missing_libs = []
+    lib_statuses = {}
     for label, name in libs.items():
-        lib_version = get_lib_version(name)
-        if lib_version:
-            status = f"✅ {GREEN}{lib_version}{RESET}"
+        found_version = get_lib_version(name)
+        if found_version:
+            lib_statuses[label] = f"✅ {GREEN}{found_version}{RESET}"
         else:
-            status = f"❌ {RED}Not Found{RESET}"
+            lib_statuses[label] = f"❌ {RED}Not Found{RESET}"
             missing_libs.append(label)
-        print(f"• {label:<15}: {status}")
 
     all_found = len(missing_libs) == 0
 
@@ -106,6 +94,7 @@ def main():
     total_size = 0
     freshest_time = 0
     file_types = []
+    type_summary = ""
     if data_dir_exists:
         from collections import Counter
         files = [f for f in os.listdir("data") if os.path.isfile(os.path.join("data", f))]
@@ -119,13 +108,48 @@ def main():
         type_counts = Counter(file_types)
         type_summary = ", ".join([f"{count} {t}" for t, count in type_counts.items()])
 
+    # Determine readiness badge
+    if not all_found:
+        badge_text = "[INC]"
+        badge_color = RED
+    elif not data_dir_exists or data_count == 0:
+        badge_text = "[PEND]"
+        badge_color = YELLOW
+    else:
+        badge_text = "[READY]"
+        badge_color = GREEN
+
+    badge_padding = " " * (14 - len(badge_text) - len(version))
+
+    # Header
+    print(f"{BLUE}┌────────────────────────────────────────┐{RESET}")
+    print(f"{BLUE}│ {BOLD}Smart Product Analysis{RESET} v{version}{badge_padding}{badge_color}{badge_text}{RESET} {BLUE}│{RESET}")
+    print(f"{BLUE}└────────────────────────────────────────┘{RESET}")
+
+    # System Status
+    print(f"\n{CYAN}{BOLD}System Status:{RESET}")
+    now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    print(f"• {'Session Start':<15}: {now}")
+    print(f"• {'System':<15}: {platform.system()} ({platform.machine()})")
+    print(f"• {'Python':<15}: {platform.python_version()}")
+    env_type = f"{GREEN}Virtual Env{RESET}" if is_venv() else f"{YELLOW}Global{RESET}"
+    print(f"• {'Environment':<15}: {env_type}")
+
+    for label in libs.keys():
+        print(f"• {label:<15}: {lib_statuses[label]}")
+
     if data_dir_exists and data_count > 0:
         suffix = "file" if data_count == 1 else "files"
         size_str = format_size(total_size)
 
         import time
-        is_very_fresh = (time.time() - freshest_time) < 3600
-        fresh_color = GREEN if is_very_fresh else RESET
+        now_ts = time.time()
+        if (now_ts - freshest_time) < 3600:
+            fresh_color = GREEN
+        elif (now_ts - freshest_time) < 86400:
+            fresh_color = CYAN
+        else:
+            fresh_color = RESET
         freshness = f" - Updated {fresh_color}{get_relative_time(freshest_time)}{RESET}"
 
         data_status = f"✅ {GREEN}Found ({data_count} {suffix}: {type_summary}, {size_str}){RESET}{freshness}"
