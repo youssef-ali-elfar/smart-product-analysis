@@ -44,7 +44,7 @@ def format_size(size_bytes):
     i = int(math.floor(math.log(size_bytes, 1024)))
     p = math.pow(1024, i)
     s = round(size_bytes / p, 2)
-    return f"{s} {size_name[i]}"
+    return f"{s:g} {size_name[i]}"
 
 def main():
     version = "1.0.0"
@@ -67,19 +67,7 @@ def main():
     BOLD = "\033[1m"
     RESET = "\033[0m"
 
-    print(f"{BLUE}┌────────────────────────────────────────┐{RESET}")
-    print(f"{BLUE}│ {BOLD}Smart Product Analysis{RESET} v{version:<14} {BLUE}│{RESET}")
-    print(f"{BLUE}└────────────────────────────────────────┘{RESET}")
-
-    # System Status
-    print(f"\n{CYAN}{BOLD}System Status:{RESET}")
-    now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    print(f"• {'Session Start':<15}: {now}")
-    print(f"• {'System':<15}: {platform.system()} ({platform.machine()})")
-    print(f"• {'Python':<15}: {platform.python_version()}")
-    env_type = f"{GREEN}Virtual Env{RESET}" if is_venv() else f"{YELLOW}Global{RESET}"
-    print(f"• {'Environment':<15}: {env_type}")
-
+    # 1. Environment & Data Checks (Logic First)
     libs = {
         "Pandas": "pandas",
         "NumPy": "numpy",
@@ -89,27 +77,26 @@ def main():
         "Jupyter": "jupyter"
     }
 
+    lib_results = {}
     missing_libs = []
     for label, name in libs.items():
         lib_version = get_lib_version(name)
-        if lib_version:
-            status = f"✅ {GREEN}{lib_version}{RESET}"
-        else:
-            status = f"❌ {RED}Not Found{RESET}"
+        lib_results[label] = lib_version
+        if not lib_version:
             missing_libs.append(label)
-        print(f"• {label:<15}: {status}")
 
     all_found = len(missing_libs) == 0
-
     data_dir_exists = os.path.isdir("data")
     data_count = 0
     total_size = 0
     freshest_time = 0
-    file_types = []
+    type_summary = ""
+
     if data_dir_exists:
         from collections import Counter
         files = [f for f in os.listdir("data") if os.path.isfile(os.path.join("data", f))]
         data_count = len(files)
+        file_types = []
         for f in files:
             path = os.path.join("data", f)
             total_size += os.path.getsize(path)
@@ -119,29 +106,55 @@ def main():
         type_counts = Counter(file_types)
         type_summary = ", ".join([f"{count} {t}" for t, count in type_counts.items()])
 
+    # 2. Status & Badge Calculation
+    if not all_found:
+        badge, badge_color = "[INC]", RED
+        lib_suffix = "library" if len(missing_libs) == 1 else "libraries"
+        status_msg = f"❌ {RED}Incomplete ({len(missing_libs)} {lib_suffix} missing) - Please run: {BOLD}pip install -r requirements.txt{RESET}"
+    elif not data_dir_exists or data_count == 0:
+        badge, badge_color = "[PEND]", YELLOW
+        status_msg = f"⚠️ {YELLOW}Pending - Data directory missing or empty{RESET}"
+    else:
+        badge, badge_color = "[READY]", GREEN
+        status_msg = f"✅ {GREEN}Ready{RESET}"
+
+    # 3. Header with Readiness Badge
+    badge_text = f"{badge_color}{BOLD}{badge}{RESET}"
+    badge_padding = 14 - len(badge) - len(version)
+    print(f"{BLUE}┌────────────────────────────────────────┐{RESET}")
+    print(f"{BLUE}│ {BOLD}Smart Product Analysis{RESET} v{version}{' ' * badge_padding}{badge_text} {BLUE}│{RESET}")
+    print(f"{BLUE}└────────────────────────────────────────┘{RESET}")
+
+    # 4. System Status (Reporting)
+    print(f"\n{CYAN}{BOLD}System Status:{RESET}")
+    now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    print(f"• {'Session Start':<15}: {now}")
+    print(f"• {'System':<15}: {platform.system()} ({platform.machine()})")
+    print(f"• {'Python':<15}: {platform.python_version()}")
+    env_type = f"{GREEN}Virtual Env{RESET}" if is_venv() else f"{YELLOW}Global{RESET}"
+    print(f"• {'Environment':<15}: {env_type}")
+
+    for label in libs:
+        lib_version = lib_results[label]
+        if lib_version:
+            status = f"✅ {GREEN}{lib_version}{RESET}"
+        else:
+            status = f"❌ {RED}Not Found{RESET}"
+        print(f"• {label:<15}: {status}")
+
     if data_dir_exists and data_count > 0:
         suffix = "file" if data_count == 1 else "files"
         size_str = format_size(total_size)
-
         import time
         is_very_fresh = (time.time() - freshest_time) < 3600
         fresh_color = GREEN if is_very_fresh else RESET
         freshness = f" - Updated {fresh_color}{get_relative_time(freshest_time)}{RESET}"
-
         data_status = f"✅ {GREEN}Found ({data_count} {suffix}: {type_summary}, {size_str}){RESET}{freshness}"
     elif data_dir_exists:
         data_status = f"⚠️ {YELLOW}Empty (0 files){RESET}"
     else:
         data_status = f"❌ {RED}Not Found{RESET}"
     print(f"• {'Data Source':<15}: {data_status}")
-
-    if not all_found:
-        lib_suffix = "library" if len(missing_libs) == 1 else "libraries"
-        status_msg = f"❌ {RED}Incomplete ({len(missing_libs)} {lib_suffix} missing) - Please run: {BOLD}pip install -r requirements.txt{RESET}"
-    elif not data_dir_exists or data_count == 0:
-        status_msg = f"⚠️ {YELLOW}Pending - Data directory missing or empty{RESET}"
-    else:
-        status_msg = f"✅ {GREEN}Ready{RESET}"
     print(f"• {'Status':<15}: {status_msg}")
 
     print(f"\n🚀 Welcome! This tool is designed to help you extract insights from product data.")
