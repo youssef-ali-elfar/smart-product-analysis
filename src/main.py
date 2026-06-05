@@ -67,8 +67,62 @@ def main():
     BOLD = "\033[1m"
     RESET = "\033[0m"
 
+    # Environment & Data Checks
+    libs = {
+        "Pandas": "pandas",
+        "NumPy": "numpy",
+        "Matplotlib": "matplotlib",
+        "Seaborn": "seaborn",
+        "Scikit-Learn": "sklearn",
+        "Jupyter": "jupyter"
+    }
+
+    missing_libs = []
+    lib_statuses = {}
+    for label, name in libs.items():
+        lib_version = get_lib_version(name)
+        if lib_version:
+            lib_statuses[label] = f"✅ {GREEN}{lib_version}{RESET}"
+        else:
+            lib_statuses[label] = f"❌ {RED}Not Found{RESET}"
+            missing_libs.append(label)
+
+    all_found = len(missing_libs) == 0
+
+    data_dir_exists = os.path.isdir("data")
+    data_count = 0
+    total_size = 0
+    freshest_time = 0
+    type_summary = ""
+    if data_dir_exists:
+        from collections import Counter
+        files = [f for f in os.listdir("data") if os.path.isfile(os.path.join("data", f))]
+        data_count = len(files)
+        file_types = []
+        for f in files:
+            path = os.path.join("data", f)
+            total_size += os.path.getsize(path)
+            freshest_time = max(freshest_time, os.path.getmtime(path))
+            ext = os.path.splitext(f)[1][1:].upper() or "OTHER"
+            file_types.append(ext)
+        type_counts = Counter(file_types)
+        type_summary = ", ".join([f"{count} {t}" for t, count in type_counts.items()])
+
+    # Readiness Badge Logic
+    if not all_found:
+        badge = "[INC]"
+        badge_color = RED
+    elif data_count == 0:
+        badge = "[PEND]"
+        badge_color = YELLOW
+    else:
+        badge = "[READY]"
+        badge_color = GREEN
+
+    badge_padding = " " * (14 - len(version) - len(badge))
+
     print(f"{BLUE}┌────────────────────────────────────────┐{RESET}")
-    print(f"{BLUE}│ {BOLD}Smart Product Analysis{RESET} v{version:<14} {BLUE}│{RESET}")
+    print(f"{BLUE}│ {BOLD}Smart Product Analysis{RESET} v{version}{badge_padding}{badge_color}{badge}{RESET} {BLUE}│{RESET}")
     print(f"{BLUE}└────────────────────────────────────────┘{RESET}")
 
     # System Status
@@ -80,44 +134,8 @@ def main():
     env_type = f"{GREEN}Virtual Env{RESET}" if is_venv() else f"{YELLOW}Global{RESET}"
     print(f"• {'Environment':<15}: {env_type}")
 
-    libs = {
-        "Pandas": "pandas",
-        "NumPy": "numpy",
-        "Matplotlib": "matplotlib",
-        "Seaborn": "seaborn",
-        "Scikit-Learn": "sklearn",
-        "Jupyter": "jupyter"
-    }
-
-    missing_libs = []
-    for label, name in libs.items():
-        lib_version = get_lib_version(name)
-        if lib_version:
-            status = f"✅ {GREEN}{lib_version}{RESET}"
-        else:
-            status = f"❌ {RED}Not Found{RESET}"
-            missing_libs.append(label)
-        print(f"• {label:<15}: {status}")
-
-    all_found = len(missing_libs) == 0
-
-    data_dir_exists = os.path.isdir("data")
-    data_count = 0
-    total_size = 0
-    freshest_time = 0
-    file_types = []
-    if data_dir_exists:
-        from collections import Counter
-        files = [f for f in os.listdir("data") if os.path.isfile(os.path.join("data", f))]
-        data_count = len(files)
-        for f in files:
-            path = os.path.join("data", f)
-            total_size += os.path.getsize(path)
-            freshest_time = max(freshest_time, os.path.getmtime(path))
-            ext = os.path.splitext(f)[1][1:].upper() or "OTHER"
-            file_types.append(ext)
-        type_counts = Counter(file_types)
-        type_summary = ", ".join([f"{count} {t}" for t, count in type_counts.items()])
+    for label in libs:
+        print(f"• {label:<15}: {lib_statuses[label]}")
 
     if data_dir_exists and data_count > 0:
         suffix = "file" if data_count == 1 else "files"
