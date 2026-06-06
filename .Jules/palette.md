@@ -33,3 +33,7 @@
 ## 2026-05-27 - Enhanced Data Visibility and Roadmap Guidance
 **Learning:** In data-centric CLI tools, summarizing file types (e.g., "1 CSV, 2 JSON") and color-coding freshness (e.g., GREEN for <1h) provides more immediate value than a list of filenames. Furthermore, color-coding roadmap stages and adding a "◀ current" pointer explicitly guides the user to their next action, reducing cognitive friction.
 **Action:** Use `collections.Counter` for data type summaries and apply status-based colorization and directional indicators to multi-step progress visualizations.
+
+## 2026-06-06 - CLI Readiness Badges and Visual Integrity
+**Learning:** High-level status "badges" (e.g., [READY], [PEND], [INC]) in the primary CLI header provide immediate, pre-attentive feedback on system readiness. Maintaining visual integrity in ASCII boxes with dynamic content requires precise padding calculations to ensure consistent right-alignment within fixed-width frames.
+**Action:** Implement "Readiness Badges" in CLI headers and use dynamic padding (e.g., based on interior width) to preserve the layout of Unicode frame components.
