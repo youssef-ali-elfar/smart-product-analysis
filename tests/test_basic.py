@@ -16,11 +16,14 @@ class TestBasic(unittest.TestCase):
         try:
             main()
             output = captured_output.getvalue()
-            self.assertIn("System", output)
+            self.assertIn("System Status", output)
             self.assertIn("Data Source", output)
             self.assertIn("1.", output)
-            # Check for new dynamic status indicators
-            self.assertIn("[PEND]", output)
+            # Check for new dynamic status indicators and readiness badge
+            self.assertTrue("[PEND]" in output or "[INC]" in output or "[READY]" in output)
+            # Verify ANSI colors/bolding are present
+            self.assertIn("\033[1m", output)
+            self.assertIn("\033[94m", output)
         except Exception as e:
             self.fail(f"main() raised {type(e).__name__} unexpectedly!")
         finally:
