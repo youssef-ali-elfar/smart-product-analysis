@@ -43,8 +43,8 @@ def format_size(size_bytes):
     import math
     i = int(math.floor(math.log(size_bytes, 1024)))
     p = math.pow(1024, i)
-    s = round(size_bytes / p, 2)
-    return f"{s} {size_name[i]}"
+    s = size_bytes / p
+    return f"{s:g} {size_name[i]}"
 
 def main():
     version = "1.0.0"
@@ -67,8 +67,38 @@ def main():
     BOLD = "\033[1m"
     RESET = "\033[0m"
 
+    # Proactive checks
+    libs = {
+        "Pandas": "pandas",
+        "NumPy": "numpy",
+        "Matplotlib": "matplotlib",
+        "Seaborn": "seaborn",
+        "Scikit-Learn": "sklearn",
+        "Jupyter": "jupyter"
+    }
+    missing_libs = [l for l, n in libs.items() if get_lib_version(n) is None]
+    all_found = len(missing_libs) == 0
+
+    data_dir_exists = os.path.isdir("data")
+    data_count = 0
+    if data_dir_exists:
+        data_count = len([f for f in os.listdir("data") if os.path.isfile(os.path.join("data", f))])
+
+    # Determine badge
+    if not all_found:
+        badge = f"{RED}[INC]{RESET}"
+        badge_plain = "[INC]"
+    elif not data_dir_exists or data_count == 0:
+        badge = f"{YELLOW}[PEND]{RESET}"
+        badge_plain = "[PEND]"
+    else:
+        badge = f"{GREEN}[READY]{RESET}"
+        badge_plain = "[READY]"
+
+    badge_padding = " " * (14 - len(badge_plain) - len(version))
+
     print(f"{BLUE}┌────────────────────────────────────────┐{RESET}")
-    print(f"{BLUE}│ {BOLD}Smart Product Analysis{RESET} v{version:<14} {BLUE}│{RESET}")
+    print(f"{BLUE}│ {BOLD}Smart Product Analysis{RESET} v{version}{badge_padding}{badge} {BLUE}│{RESET}")
     print(f"{BLUE}└────────────────────────────────────────┘{RESET}")
 
     # System Status
@@ -80,28 +110,15 @@ def main():
     env_type = f"{GREEN}Virtual Env{RESET}" if is_venv() else f"{YELLOW}Global{RESET}"
     print(f"• {'Environment':<15}: {env_type}")
 
-    libs = {
-        "Pandas": "pandas",
-        "NumPy": "numpy",
-        "Matplotlib": "matplotlib",
-        "Seaborn": "seaborn",
-        "Scikit-Learn": "sklearn",
-        "Jupyter": "jupyter"
-    }
-
-    missing_libs = []
     for label, name in libs.items():
         lib_version = get_lib_version(name)
         if lib_version:
             status = f"✅ {GREEN}{lib_version}{RESET}"
         else:
             status = f"❌ {RED}Not Found{RESET}"
-            missing_libs.append(label)
         print(f"• {label:<15}: {status}")
 
-    all_found = len(missing_libs) == 0
-
-    data_dir_exists = os.path.isdir("data")
+    # Data Source Details
     data_count = 0
     total_size = 0
     freshest_time = 0
