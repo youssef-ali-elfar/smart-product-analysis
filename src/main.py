@@ -3,6 +3,8 @@ import sys
 import platform
 import os
 from datetime import datetime
+from collections import Counter
+import time
 
 def is_venv():
     """Detect if the script is running in a virtual environment."""
@@ -44,7 +46,8 @@ def format_size(size_bytes):
     i = int(math.floor(math.log(size_bytes, 1024)))
     p = math.pow(1024, i)
     s = round(size_bytes / p, 2)
-    return f"{s} {size_name[i]}"
+    # Ensure clean UX by removing unnecessary zeros
+    return f"{s:g} {size_name[i]}"
 
 def main():
     version = "1.0.0"
@@ -67,19 +70,7 @@ def main():
     BOLD = "\033[1m"
     RESET = "\033[0m"
 
-    print(f"{BLUE}┌────────────────────────────────────────┐{RESET}")
-    print(f"{BLUE}│ {BOLD}Smart Product Analysis{RESET} v{version:<14} {BLUE}│{RESET}")
-    print(f"{BLUE}└────────────────────────────────────────┘{RESET}")
-
-    # System Status
-    print(f"\n{CYAN}{BOLD}System Status:{RESET}")
-    now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    print(f"• {'Session Start':<15}: {now}")
-    print(f"• {'System':<15}: {platform.system()} ({platform.machine()})")
-    print(f"• {'Python':<15}: {platform.python_version()}")
-    env_type = f"{GREEN}Virtual Env{RESET}" if is_venv() else f"{YELLOW}Global{RESET}"
-    print(f"• {'Environment':<15}: {env_type}")
-
+    # 1. Environment & Data Checks (Proactive)
     libs = {
         "Pandas": "pandas",
         "NumPy": "numpy",
@@ -89,15 +80,15 @@ def main():
         "Jupyter": "jupyter"
     }
 
+    lib_status_list = []
     missing_libs = []
     for label, name in libs.items():
         lib_version = get_lib_version(name)
         if lib_version:
-            status = f"✅ {GREEN}{lib_version}{RESET}"
+            lib_status_list.append((label, f"✅ {GREEN}{lib_version}{RESET}"))
         else:
-            status = f"❌ {RED}Not Found{RESET}"
+            lib_status_list.append((label, f"❌ {RED}{BOLD}Not Found{RESET}"))
             missing_libs.append(label)
-        print(f"• {label:<15}: {status}")
 
     all_found = len(missing_libs) == 0
 
@@ -105,11 +96,11 @@ def main():
     data_count = 0
     total_size = 0
     freshest_time = 0
-    file_types = []
+    type_summary = ""
     if data_dir_exists:
-        from collections import Counter
         files = [f for f in os.listdir("data") if os.path.isfile(os.path.join("data", f))]
         data_count = len(files)
+        file_types = []
         for f in files:
             path = os.path.join("data", f)
             total_size += os.path.getsize(path)
@@ -119,33 +110,60 @@ def main():
         type_counts = Counter(file_types)
         type_summary = ", ".join([f"{count} {t}" for t, count in type_counts.items()])
 
+    # Determine Badge & Status
+    if not all_found:
+        badge = "[INC]"
+        badge_color = RED
+    elif not data_dir_exists or data_count == 0:
+        badge = "[PEND]"
+        badge_color = YELLOW
+    else:
+        badge = "[READY]"
+        badge_color = GREEN
+
+    # 2. Header
+    badge_padding = " " * (14 - len(badge) - len(version))
+    print(f"{BLUE}┌────────────────────────────────────────┐{RESET}")
+    print(f"{BLUE}│ {BOLD}Smart Product Analysis{RESET} v{version}{badge_padding}{BOLD}{badge_color}{badge}{RESET} {BLUE}│{RESET}")
+    print(f"{BLUE}└────────────────────────────────────────┘{RESET}")
+
+    # 3. System Status
+    print(f"\n{CYAN}{BOLD}System Status:{RESET}")
+    now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    print(f"• {'Session Start':<15}: {now}")
+    print(f"• {'System':<15}: {platform.system()} ({platform.machine()})")
+    print(f"• {'Python':<15}: {platform.python_version()}")
+    env_type = f"{GREEN}{BOLD}Virtual Env{RESET}" if is_venv() else f"{YELLOW}{BOLD}Global{RESET}"
+    print(f"• {'Environment':<15}: {env_type}")
+
+    for label, status in lib_status_list:
+        print(f"• {label:<15}: {status}")
+
     if data_dir_exists and data_count > 0:
         suffix = "file" if data_count == 1 else "files"
         size_str = format_size(total_size)
-
-        import time
         is_very_fresh = (time.time() - freshest_time) < 3600
         fresh_color = GREEN if is_very_fresh else RESET
         freshness = f" - Updated {fresh_color}{get_relative_time(freshest_time)}{RESET}"
-
-        data_status = f"✅ {GREEN}Found ({data_count} {suffix}: {type_summary}, {size_str}){RESET}{freshness}"
+        data_status = f"✅ {GREEN}{BOLD}Found{RESET} ({data_count} {suffix}: {type_summary}, {size_str}){freshness}"
     elif data_dir_exists:
-        data_status = f"⚠️ {YELLOW}Empty (0 files){RESET}"
+        data_status = f"⚠️ {YELLOW}{BOLD}Empty{RESET} (0 files)"
     else:
-        data_status = f"❌ {RED}Not Found{RESET}"
+        data_status = f"❌ {RED}{BOLD}Not Found{RESET}"
     print(f"• {'Data Source':<15}: {data_status}")
 
     if not all_found:
         lib_suffix = "library" if len(missing_libs) == 1 else "libraries"
-        status_msg = f"❌ {RED}Incomplete ({len(missing_libs)} {lib_suffix} missing) - Please run: {BOLD}pip install -r requirements.txt{RESET}"
+        status_msg = f"❌ {RED}{BOLD}Incomplete{RESET} ({len(missing_libs)} {lib_suffix} missing) - Please run: {BOLD}pip install -r requirements.txt{RESET}"
     elif not data_dir_exists or data_count == 0:
-        status_msg = f"⚠️ {YELLOW}Pending - Data directory missing or empty{RESET}"
+        status_msg = f"⚠️ {YELLOW}{BOLD}Pending{RESET} - Data directory missing or empty"
     else:
-        status_msg = f"✅ {GREEN}Ready{RESET}"
+        status_msg = f"✅ {GREEN}{BOLD}Ready{RESET}"
     print(f"• {'Status':<15}: {status_msg}")
 
     print(f"\n🚀 Welcome! This tool is designed to help you extract insights from product data.")
 
+    # 4. Analysis Roadmap
     print(f"\n{GREEN}{BOLD}Analysis Roadmap:{RESET}")
     stages = [
         {"emoji": "📥", "label": "Data Ingestion", "desc": "Collect raw data from various sources."},
@@ -160,14 +178,14 @@ def main():
         is_current = False
         if i == 1:
             if data_count > 0:
-                status_tag = f"{GREEN}[DONE]{RESET}"
+                status_tag = f"{GREEN}{BOLD}[DONE]{RESET}"
                 stage_color = GREEN
             elif all_found:
                 status_tag = f"{BOLD}{CYAN}[NEXT]{RESET}"
                 stage_color = CYAN
                 is_current = True
             else:
-                status_tag = f"{YELLOW}[PEND]{RESET}"
+                status_tag = f"{YELLOW}{BOLD}[PEND]{RESET}"
                 stage_color = RESET
         elif i == 2:
             if data_count > 0 and all_found:
@@ -175,15 +193,23 @@ def main():
                 stage_color = CYAN
                 is_current = True
             else:
-                status_tag = f"{YELLOW}[PEND]{RESET}"
+                status_tag = f"{YELLOW}{BOLD}[PEND]{RESET}"
                 stage_color = RESET
         else:
-            status_tag = f"{YELLOW}[PEND]{RESET}"
+            status_tag = f"{YELLOW}{BOLD}[PEND]{RESET}"
             stage_color = RESET
 
         current_indicator = f" {CYAN}◀ current{RESET}" if is_current else ""
-        print(f"{BOLD}{i}.{RESET} {stage['emoji']} {status_tag} {BOLD}{stage_color}{stage['label']:<20}:{RESET} {stage['desc']}{current_indicator}")
 
+        # Add vertical connector line
+        prefix = f"{BOLD}{i}.{RESET}"
+        if i < len(stages):
+            print(f"{prefix} {stage['emoji']} {status_tag} {BOLD}{stage_color}{stage['label']:<20}:{RESET} {stage['desc']}{current_indicator}")
+            print(f"   {BOLD}│{RESET}")
+        else:
+            print(f"{prefix} {stage['emoji']} {status_tag} {BOLD}{stage_color}{stage['label']:<20}:{RESET} {stage['desc']}{current_indicator}")
+
+    # 5. Onboarding Tip
     if not all_found:
         lib_suffix = "library" if len(missing_libs) == 1 else "libraries"
         tip_text = f"{len(missing_libs)} {lib_suffix} missing? Run the {BOLD}pip install -r requirements.txt{RESET} command to set up your environment."
