@@ -77,7 +77,7 @@ def main():
     print(f"• {'Session Start':<15}: {now}")
     print(f"• {'System':<15}: {platform.system()} ({platform.machine()})")
     print(f"• {'Python':<15}: {platform.python_version()}")
-    env_type = f"{GREEN}Virtual Env{RESET}" if is_venv() else f"{YELLOW}Global{RESET}"
+    env_type = f"{BOLD}{GREEN}Virtual Env{RESET}" if is_venv() else f"{BOLD}{YELLOW}Global{RESET}"
     print(f"• {'Environment':<15}: {env_type}")
 
     libs = {
@@ -93,9 +93,9 @@ def main():
     for label, name in libs.items():
         lib_version = get_lib_version(name)
         if lib_version:
-            status = f"✅ {GREEN}{lib_version}{RESET}"
+            status = f"✅ {BOLD}{GREEN}{lib_version}{RESET}"
         else:
-            status = f"❌ {RED}Not Found{RESET}"
+            status = f"❌ {BOLD}{RED}Not Found{RESET}"
             missing_libs.append(label)
         print(f"• {label:<15}: {status}")
 
@@ -126,22 +126,22 @@ def main():
         import time
         is_very_fresh = (time.time() - freshest_time) < 3600
         fresh_color = GREEN if is_very_fresh else RESET
-        freshness = f" - Updated {fresh_color}{get_relative_time(freshest_time)}{RESET}"
+        freshness = f" - Updated {BOLD}{fresh_color}{get_relative_time(freshest_time)}{RESET}"
 
-        data_status = f"✅ {GREEN}Found ({data_count} {suffix}: {type_summary}, {size_str}){RESET}{freshness}"
+        data_status = f"✅ {BOLD}{GREEN}Found{RESET} ({data_count} {suffix}: {type_summary}, {size_str}){freshness}"
     elif data_dir_exists:
-        data_status = f"⚠️ {YELLOW}Empty (0 files){RESET}"
+        data_status = f"⚠️ {BOLD}{YELLOW}Empty{RESET} (0 files)"
     else:
-        data_status = f"❌ {RED}Not Found{RESET}"
+        data_status = f"❌ {BOLD}{RED}Not Found{RESET}"
     print(f"• {'Data Source':<15}: {data_status}")
 
     if not all_found:
         lib_suffix = "library" if len(missing_libs) == 1 else "libraries"
-        status_msg = f"❌ {RED}Incomplete ({len(missing_libs)} {lib_suffix} missing) - Please run: {BOLD}pip install -r requirements.txt{RESET}"
+        status_msg = f"❌ {BOLD}{RED}Incomplete{RESET} ({len(missing_libs)} {lib_suffix} missing) - Run: {BOLD}pip install -r requirements.txt{RESET}"
     elif not data_dir_exists or data_count == 0:
-        status_msg = f"⚠️ {YELLOW}Pending - Data directory missing or empty{RESET}"
+        status_msg = f"⚠️ {BOLD}{YELLOW}Pending{RESET} - Data directory missing or empty"
     else:
-        status_msg = f"✅ {GREEN}Ready{RESET}"
+        status_msg = f"✅ {BOLD}{GREEN}Ready{RESET}"
     print(f"• {'Status':<15}: {status_msg}")
 
     print(f"\n🚀 Welcome! This tool is designed to help you extract insights from product data.")
@@ -160,14 +160,14 @@ def main():
         is_current = False
         if i == 1:
             if data_count > 0:
-                status_tag = f"{GREEN}[DONE]{RESET}"
+                status_tag = f"{BOLD}{GREEN}[DONE]{RESET}"
                 stage_color = GREEN
             elif all_found:
                 status_tag = f"{BOLD}{CYAN}[NEXT]{RESET}"
                 stage_color = CYAN
                 is_current = True
             else:
-                status_tag = f"{YELLOW}[PEND]{RESET}"
+                status_tag = f"{BOLD}{YELLOW}[PEND]{RESET}"
                 stage_color = RESET
         elif i == 2:
             if data_count > 0 and all_found:
@@ -175,14 +175,17 @@ def main():
                 stage_color = CYAN
                 is_current = True
             else:
-                status_tag = f"{YELLOW}[PEND]{RESET}"
+                status_tag = f"{BOLD}{YELLOW}[PEND]{RESET}"
                 stage_color = RESET
         else:
-            status_tag = f"{YELLOW}[PEND]{RESET}"
+            status_tag = f"{BOLD}{YELLOW}[PEND]{RESET}"
             stage_color = RESET
 
         current_indicator = f" {CYAN}◀ current{RESET}" if is_current else ""
         print(f"{BOLD}{i}.{RESET} {stage['emoji']} {status_tag} {BOLD}{stage_color}{stage['label']:<20}:{RESET} {stage['desc']}{current_indicator}")
+
+        if i < len(stages):
+            print(f"   {BLUE}│{RESET}")
 
     if not all_found:
         lib_suffix = "library" if len(missing_libs) == 1 else "libraries"
