@@ -33,3 +33,7 @@
 ## 2026-05-27 - Enhanced Data Visibility and Roadmap Guidance
 **Learning:** In data-centric CLI tools, summarizing file types (e.g., "1 CSV, 2 JSON") and color-coding freshness (e.g., GREEN for <1h) provides more immediate value than a list of filenames. Furthermore, color-coding roadmap stages and adding a "◀ current" pointer explicitly guides the user to their next action, reducing cognitive friction.
 **Action:** Use `collections.Counter` for data type summaries and apply status-based colorization and directional indicators to multi-step progress visualizations.
+
+## 2026-06-12 - Preserving Readability in UX Patches
+**Learning:** Maintaining readability is paramount even when aiming for micro-UX improvements. Refactoring idiomatic Python into dense one-liners to save line count is a regression in code quality and is rejected by senior reviewers.
+**Action:** Prefer targeted Git merge diffs over full-function rewrites to stay within line limits while preserving the original code structure and readability.
