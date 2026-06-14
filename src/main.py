@@ -182,6 +182,8 @@ def main():
             stage_color = RESET
 
         current_indicator = f" {CYAN}◀ current{RESET}" if is_current else ""
+        if i > 1:
+            print(f"   │")
         print(f"{BOLD}{i}.{RESET} {stage['emoji']} {status_tag} {BOLD}{stage_color}{stage['label']:<20}:{RESET} {stage['desc']}{current_indicator}")
 
     if not all_found:
