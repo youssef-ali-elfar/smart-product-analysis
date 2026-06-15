@@ -157,6 +157,8 @@ def main():
     ]
 
     for i, stage in enumerate(stages, 1):
+        if i > 1:
+            print(f"   │")
         is_current = False
         if i == 1:
             if data_count > 0:

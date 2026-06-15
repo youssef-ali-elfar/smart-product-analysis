@@ -33,3 +33,7 @@
 ## 2026-05-27 - Enhanced Data Visibility and Roadmap Guidance
 **Learning:** In data-centric CLI tools, summarizing file types (e.g., "1 CSV, 2 JSON") and color-coding freshness (e.g., GREEN for <1h) provides more immediate value than a list of filenames. Furthermore, color-coding roadmap stages and adding a "◀ current" pointer explicitly guides the user to their next action, reducing cognitive friction.
 **Action:** Use `collections.Counter` for data type summaries and apply status-based colorization and directional indicators to multi-step progress visualizations.
+
+## 2026-06-15 - Visual Continuity in CLI Roadmaps
+**Learning:** In sequential multi-step CLI roadmaps, adding vertical connector lines between stages visually reinforces the pipeline's flow and reduces cognitive load by clearly linking the steps together.
+**Action:** Implement a conditional print statement (e.g., `if i > 1: print("   │")`) within roadmap loops to insert vertical connectors between numbered stages.
