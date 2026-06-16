@@ -67,8 +67,35 @@ def main():
     BOLD = "\033[1m"
     RESET = "\033[0m"
 
+    # Pre-checks for readiness badge
+    libs = {
+        "Pandas": "pandas",
+        "NumPy": "numpy",
+        "Matplotlib": "matplotlib",
+        "Seaborn": "seaborn",
+        "Scikit-Learn": "sklearn",
+        "Jupyter": "jupyter"
+    }
+    missing_libs = [label for label, name in libs.items() if get_lib_version(name) is None]
+    all_found = len(missing_libs) == 0
+
+    data_dir_exists = os.path.isdir("data")
+    data_count = 0
+    if data_dir_exists:
+        data_count = len([f for f in os.listdir("data") if os.path.isfile(os.path.join("data", f))])
+
+    if not all_found:
+        badge = f"{RED}[INC]{RESET}"
+    elif data_count == 0:
+        badge = f"{YELLOW}[PEND]{RESET}"
+    else:
+        badge = f"{GREEN}[READY]{RESET}"
+
+    badge_plain = badge.replace(RED, "").replace(YELLOW, "").replace(GREEN, "").replace(RESET, "")
+    badge_padding = " " * (14 - len(version) - len(badge_plain))
+
     print(f"{BLUE}┌────────────────────────────────────────┐{RESET}")
-    print(f"{BLUE}│ {BOLD}Smart Product Analysis{RESET} v{version:<14} {BLUE}│{RESET}")
+    print(f"{BLUE}│ {BOLD}Smart Product Analysis{RESET} v{version}{badge_padding}{badge} {BLUE}│{RESET}")
     print(f"{BLUE}└────────────────────────────────────────┘{RESET}")
 
     # System Status
@@ -80,36 +107,20 @@ def main():
     env_type = f"{GREEN}Virtual Env{RESET}" if is_venv() else f"{YELLOW}Global{RESET}"
     print(f"• {'Environment':<15}: {env_type}")
 
-    libs = {
-        "Pandas": "pandas",
-        "NumPy": "numpy",
-        "Matplotlib": "matplotlib",
-        "Seaborn": "seaborn",
-        "Scikit-Learn": "sklearn",
-        "Jupyter": "jupyter"
-    }
-
-    missing_libs = []
     for label, name in libs.items():
         lib_version = get_lib_version(name)
         if lib_version:
             status = f"✅ {GREEN}{lib_version}{RESET}"
         else:
             status = f"❌ {RED}Not Found{RESET}"
-            missing_libs.append(label)
         print(f"• {label:<15}: {status}")
 
-    all_found = len(missing_libs) == 0
-
-    data_dir_exists = os.path.isdir("data")
-    data_count = 0
     total_size = 0
     freshest_time = 0
     file_types = []
     if data_dir_exists:
         from collections import Counter
         files = [f for f in os.listdir("data") if os.path.isfile(os.path.join("data", f))]
-        data_count = len(files)
         for f in files:
             path = os.path.join("data", f)
             total_size += os.path.getsize(path)
@@ -157,6 +168,8 @@ def main():
     ]
 
     for i, stage in enumerate(stages, 1):
+        if i > 1:
+            print(f"   │")
         is_current = False
         if i == 1:
             if data_count > 0:
