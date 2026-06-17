@@ -43,8 +43,8 @@ def format_size(size_bytes):
     import math
     i = int(math.floor(math.log(size_bytes, 1024)))
     p = math.pow(1024, i)
-    s = round(size_bytes / p, 2)
-    return f"{s} {size_name[i]}"
+    s = size_bytes / p
+    return f"{s:g} {size_name[i]}"
 
 def main():
     version = "1.0.0"
@@ -58,28 +58,7 @@ def main():
     # Parse arguments
     parser.parse_args()
 
-    # ANSI colors
-    BLUE = "\033[94m"
-    GREEN = "\033[92m"
-    RED = "\033[91m"
-    YELLOW = "\033[93m"
-    CYAN = "\033[96m"
-    BOLD = "\033[1m"
-    RESET = "\033[0m"
-
-    print(f"{BLUE}┌────────────────────────────────────────┐{RESET}")
-    print(f"{BLUE}│ {BOLD}Smart Product Analysis{RESET} v{version:<14} {BLUE}│{RESET}")
-    print(f"{BLUE}└────────────────────────────────────────┘{RESET}")
-
-    # System Status
-    print(f"\n{CYAN}{BOLD}System Status:{RESET}")
-    now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    print(f"• {'Session Start':<15}: {now}")
-    print(f"• {'System':<15}: {platform.system()} ({platform.machine()})")
-    print(f"• {'Python':<15}: {platform.python_version()}")
-    env_type = f"{GREEN}Virtual Env{RESET}" if is_venv() else f"{YELLOW}Global{RESET}"
-    print(f"• {'Environment':<15}: {env_type}")
-
+    # Pre-calculate status for header badge
     libs = {
         "Pandas": "pandas",
         "NumPy": "numpy",
@@ -89,27 +68,59 @@ def main():
         "Jupyter": "jupyter"
     }
 
-    missing_libs = []
+    missing_libs = [label for label, name in libs.items() if get_lib_version(name) is None]
+    all_found = len(missing_libs) == 0
+    data_dir_exists = os.path.isdir("data")
+    data_count = 0
+    if data_dir_exists:
+        data_count = len([f for f in os.listdir("data") if os.path.isfile(os.path.join("data", f))])
+
+    if not all_found:
+        badge = f"\033[91m[INC]\033[0m"
+    elif not data_dir_exists or data_count == 0:
+        badge = f"\033[93m[PEND]\033[0m"
+    else:
+        badge = f"\033[92m[READY]\033[0m"
+
+    # ANSI colors
+    BLUE = "\033[94m"
+    GREEN = "\033[92m"
+    RED = "\033[91m"
+    YELLOW = "\033[93m"
+    CYAN = "\033[96m"
+    BOLD = "\033[1m"
+    RESET = "\033[0m"
+
+    badge_label = "[INC]" if not all_found else "[PEND]" if not data_dir_exists or data_count == 0 else "[READY]"
+    badge_padding = " " * (14 - len(badge_label) - len(version))
+
+    print(f"{BLUE}┌────────────────────────────────────────┐{RESET}")
+    print(f"{BLUE}│ {BOLD}Smart Product Analysis{RESET} v{version}{badge_padding}{badge} {BLUE}│{RESET}")
+    print(f"{BLUE}└────────────────────────────────────────┘{RESET}")
+
+    # System Status
+    print(f"\n{CYAN}{BOLD}System Status:{RESET}")
+    now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    print(f"• {'Session Start':<15}: {now}")
+    print(f"• {'System':<15}: {platform.system()} ({platform.machine()})")
+    print(f"• {'Python':<15}: {platform.python_version()}")
+    env_type = f"{BOLD}{GREEN}Virtual Env{RESET}" if is_venv() else f"{BOLD}{YELLOW}Global{RESET}"
+    print(f"• {'Environment':<15}: {env_type}")
+
     for label, name in libs.items():
         lib_version = get_lib_version(name)
         if lib_version:
             status = f"✅ {GREEN}{lib_version}{RESET}"
         else:
-            status = f"❌ {RED}Not Found{RESET}"
-            missing_libs.append(label)
+            status = f"❌ {BOLD}{RED}Not Found{RESET}"
         print(f"• {label:<15}: {status}")
 
-    all_found = len(missing_libs) == 0
-
-    data_dir_exists = os.path.isdir("data")
-    data_count = 0
     total_size = 0
     freshest_time = 0
     file_types = []
     if data_dir_exists:
         from collections import Counter
         files = [f for f in os.listdir("data") if os.path.isfile(os.path.join("data", f))]
-        data_count = len(files)
         for f in files:
             path = os.path.join("data", f)
             total_size += os.path.getsize(path)
@@ -126,22 +137,22 @@ def main():
         import time
         is_very_fresh = (time.time() - freshest_time) < 3600
         fresh_color = GREEN if is_very_fresh else RESET
-        freshness = f" - Updated {fresh_color}{get_relative_time(freshest_time)}{RESET}"
+        freshness = f" - Updated {BOLD}{fresh_color}{get_relative_time(freshest_time)}{RESET}"
 
-        data_status = f"✅ {GREEN}Found ({data_count} {suffix}: {type_summary}, {size_str}){RESET}{freshness}"
+        data_status = f"✅ {BOLD}{GREEN}Found ({data_count} {suffix}: {type_summary}, {size_str}){RESET}{freshness}"
     elif data_dir_exists:
-        data_status = f"⚠️ {YELLOW}Empty (0 files){RESET}"
+        data_status = f"⚠️ {BOLD}{YELLOW}Empty (0 files){RESET}"
     else:
-        data_status = f"❌ {RED}Not Found{RESET}"
+        data_status = f"❌ {BOLD}{RED}Not Found{RESET}"
     print(f"• {'Data Source':<15}: {data_status}")
 
     if not all_found:
         lib_suffix = "library" if len(missing_libs) == 1 else "libraries"
-        status_msg = f"❌ {RED}Incomplete ({len(missing_libs)} {lib_suffix} missing) - Please run: {BOLD}pip install -r requirements.txt{RESET}"
+        status_msg = f"❌ {BOLD}{RED}Incomplete ({len(missing_libs)} {lib_suffix} missing){RESET} - Please run: {BOLD}pip install -r requirements.txt{RESET}"
     elif not data_dir_exists or data_count == 0:
-        status_msg = f"⚠️ {YELLOW}Pending - Data directory missing or empty{RESET}"
+        status_msg = f"⚠️ {BOLD}{YELLOW}Pending - Data directory missing or empty{RESET}"
     else:
-        status_msg = f"✅ {GREEN}Ready{RESET}"
+        status_msg = f"✅ {BOLD}{GREEN}Ready{RESET}"
     print(f"• {'Status':<15}: {status_msg}")
 
     print(f"\n🚀 Welcome! This tool is designed to help you extract insights from product data.")
@@ -157,17 +168,19 @@ def main():
     ]
 
     for i, stage in enumerate(stages, 1):
+        if i > 1:
+            print(f"   │")
         is_current = False
         if i == 1:
             if data_count > 0:
-                status_tag = f"{GREEN}[DONE]{RESET}"
+                status_tag = f"{BOLD}{GREEN}[DONE]{RESET}"
                 stage_color = GREEN
             elif all_found:
                 status_tag = f"{BOLD}{CYAN}[NEXT]{RESET}"
                 stage_color = CYAN
                 is_current = True
             else:
-                status_tag = f"{YELLOW}[PEND]{RESET}"
+                status_tag = f"{BOLD}{YELLOW}[PEND]{RESET}"
                 stage_color = RESET
         elif i == 2:
             if data_count > 0 and all_found:
@@ -175,10 +188,10 @@ def main():
                 stage_color = CYAN
                 is_current = True
             else:
-                status_tag = f"{YELLOW}[PEND]{RESET}"
+                status_tag = f"{BOLD}{YELLOW}[PEND]{RESET}"
                 stage_color = RESET
         else:
-            status_tag = f"{YELLOW}[PEND]{RESET}"
+            status_tag = f"{BOLD}{YELLOW}[PEND]{RESET}"
             stage_color = RESET
 
         current_indicator = f" {CYAN}◀ current{RESET}" if is_current else ""
