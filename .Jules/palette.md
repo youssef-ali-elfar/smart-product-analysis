@@ -37,3 +37,7 @@
 ## 2026-06-19 - High-Level Readiness Badge and Sequential Flow
 **Learning:** Providing a high-level readiness badge (e.g., [READY], [PEND], [INC]) in the primary CLI header allows users to instantly verify their environment state before reading detailed reports. Additionally, adding vertical connector lines between roadmap stages visually reinforces the sequential nature of the pipeline, making the workflow more intuitive.
 **Action:** Implement a state-driven readiness badge in CLI headers and use vertical connectors (`│`) in roadmap visualizations to improve scannability and guide user progression.
+
+## 2026-06-20 - CLI Information Hierarchy and Best-Practice Guidance
+**Learning:** Dense CLI status reports benefit from internal grouping (e.g., a "Dependencies" sub-section) to reduce top-level cognitive load. Furthermore, context-aware tips can be used to nudge users toward best practices (like using Virtual Environments) without displacing immediate actionable steps (like adding data).
+**Action:** Use sub-headers and indentation to create hierarchy in CLI reports, and append "best practice" nudges parenthetically to existing setup tips to maintain focus while providing long-term guidance.
