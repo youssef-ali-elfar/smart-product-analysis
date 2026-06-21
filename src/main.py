@@ -45,8 +45,8 @@ def format_size(size_bytes):
     size_name = ("B", "KB", "MB", "GB", "TB")
     i = int(math.floor(math.log(size_bytes, 1024)))
     p = math.pow(1024, i)
-    s = round(size_bytes / p, 2)
-    return f"{s} {size_name[i]}"
+    s = size_bytes / p
+    return f"{s:g} {size_name[i]}"
 
 def main():
     version = "1.0.0"
@@ -105,7 +105,7 @@ def main():
             ext = os.path.splitext(f)[1][1:].upper() or "OTHER"
             file_types.append(ext)
         type_counts = Counter(file_types)
-        type_summary = ", ".join([f"{count} {t}" for t, count in type_counts.items()])
+        type_summary = ", ".join([f"{count} {t}" for t, count in type_counts.most_common()])
 
     # Determine Status and Badge
     if not all_found:
@@ -134,12 +134,13 @@ def main():
     env_type = f"{BOLD}{GREEN}Virtual Env{RESET}" if is_venv() else f"{BOLD}{YELLOW}Global{RESET}"
     print(f"• {'Environment':<15}: {env_type}")
 
+    print(f"  {BOLD}Dependencies:{RESET}")
     for label, lib_version in lib_results.items():
         if lib_version:
             status = f"✅ {GREEN}{lib_version}{RESET}"
         else:
             status = f"❌ {RED}Not Found{RESET}"
-        print(f"• {label:<15}: {status}")
+        print(f"  - {label:<13}: {status}")
 
     if data_dir_exists and data_count > 0:
         suffix = "file" if data_count == 1 else "files"
@@ -205,13 +206,20 @@ def main():
         current_indicator = f" {CYAN}◀ current{RESET}" if is_current else ""
         print(f"{BOLD}{i}.{RESET} {stage['emoji']} {status_tag} {BOLD}{stage_color}{stage['label']:<20}:{RESET} {stage['desc']}{current_indicator}")
 
+    is_virtual = is_venv()
     if not all_found:
         lib_suffix = "library" if len(missing_libs) == 1 else "libraries"
         tip_text = f"{len(missing_libs)} {lib_suffix} missing? Run the {BOLD}pip install -r requirements.txt{RESET} command to set up your environment."
     elif not data_dir_exists:
         tip_text = f"Almost there! Run {BOLD}mkdir data{RESET} and add your product datasets to get started."
+        if not is_virtual:
+            tip_text += f" (Tip: Use a {BOLD}Virtual Env{RESET} for better management!)"
     elif data_count == 0:
         tip_text = f"Data folder is ready but empty. Add some CSV or JSON product datasets to {BOLD}data/{RESET} to begin."
+        if not is_virtual:
+            tip_text += f" (Tip: Use a {BOLD}Virtual Env{RESET} for better management!)"
+    elif not is_virtual:
+        tip_text = f"Consider using a {BOLD}Virtual Environment{RESET} for better dependency management. Run {BOLD}python -m venv venv{RESET} to create one!"
     else:
         tip_text = f"✨ {BOLD}Everything is set!{RESET} Head over to the {BOLD}Data Cleaning{RESET} stage to prepare your dataset!"
 
