@@ -48,6 +48,16 @@ def format_size(size_bytes):
     s = size_bytes / p
     return f"{s:g} {size_name[i]}"
 
+def natural_join(items):
+    """Format a list of strings into a grammatically correct natural language string."""
+    if not items:
+        return ""
+    if len(items) == 1:
+        return items[0]
+    if len(items) == 2:
+        return f"{items[0]} and {items[1]}"
+    return f"{', '.join(items[:-1])}, and {items[-1]}"
+
 def main():
     version = "1.0.0"
     parser = argparse.ArgumentParser(
@@ -105,7 +115,8 @@ def main():
             ext = os.path.splitext(f)[1][1:].upper() or "OTHER"
             file_types.append(ext)
         type_counts = Counter(file_types)
-        type_summary = ", ".join([f"{count} {t}" for t, count in type_counts.most_common()])
+        type_items = [f"{count} {t}{'s' if count > 1 else ''}" for t, count in type_counts.most_common()]
+        type_summary = natural_join(type_items)
 
     # Determine Status and Badge
     if not all_found:

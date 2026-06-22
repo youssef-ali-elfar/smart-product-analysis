@@ -33,6 +33,13 @@ class TestUX(unittest.TestCase):
                 "data_dir_exists": True,
                 "data_files": ["products.csv", "metadata.json", "styles.css"],
                 "file_times": [1716843600, 1716843600, 1716843600] # Mocked times
+            },
+            {
+                "name": "Multiple Files Pluralization",
+                "libs": {lib: "1.2.3" for lib in ["pandas", "numpy", "matplotlib", "seaborn", "sklearn", "jupyter"]},
+                "data_dir_exists": True,
+                "data_files": ["data1.csv", "data2.csv", "info.json"],
+                "file_times": [1716843600, 1716843600, 1716843600]
             }
         ]
 

@@ -41,3 +41,7 @@
 ## 2026-06-20 - CLI Information Hierarchy and Best-Practice Guidance
 **Learning:** Dense CLI status reports benefit from internal grouping (e.g., a "Dependencies" sub-section) to reduce top-level cognitive load. Furthermore, context-aware tips can be used to nudge users toward best practices (like using Virtual Environments) without displacing immediate actionable steps (like adding data).
 **Action:** Use sub-headers and indentation to create hierarchy in CLI reports, and append "best practice" nudges parenthetically to existing setup tips to maintain focus while providing long-term guidance.
+
+## 2026-06-22 - Natural Language CLI Summaries
+**Learning:** In CLI status reports, presenting collections of items (like file types) as a grammatically correct natural language list (using an Oxford comma and "and") combined with proper pluralization significantly reduces the "raw data" feel and makes the tool feel more professional and human-centric.
+**Action:** Use a `natural_join` utility and conditional pluralization logic when summarizing multiple data points in CLI outputs to improve readability and user delight.
