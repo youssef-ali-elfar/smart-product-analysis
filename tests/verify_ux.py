@@ -40,6 +40,13 @@ class TestUX(unittest.TestCase):
                 "data_dir_exists": True,
                 "data_files": ["data1.csv", "data2.csv", "info.json"],
                 "file_times": [1716843600, 1716843600, 1716843600]
+            },
+            {
+                "name": "Many File Types Capping",
+                "libs": {lib: "1.2.3" for lib in ["pandas", "numpy", "matplotlib", "seaborn", "sklearn", "jupyter"]},
+                "data_dir_exists": True,
+                "data_files": ["a.csv", "b.json", "c.txt", "d.parquet", "e.xls"],
+                "file_times": [1716843600] * 5
             }
         ]
 
