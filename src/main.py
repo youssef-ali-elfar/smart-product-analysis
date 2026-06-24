@@ -115,12 +115,15 @@ def main():
             ext = os.path.splitext(f)[1][1:].upper() or "OTHER"
             file_types.append(ext)
         type_counts = Counter(file_types)
-        type_items = [f"{count} {t}{'s' if count > 1 else ''}" for t, count in type_counts.most_common()]
+        common_types = type_counts.most_common(3)
+        type_items = [f"{count} {t}{'s' if count > 1 else ''}" for t, count in common_types]
+        if len(type_counts) > 3:
+            type_items.append("others")
         type_summary = natural_join(type_items)
 
     # Determine Status and Badge
     if not all_found:
-        badge_text = "[INC]"
+        badge_text = f"[INC:{len(missing_libs)}]"
         badge_color = RED
     elif not data_dir_exists or data_count == 0:
         badge_text = "[PEND]"
@@ -140,7 +143,9 @@ def main():
     print(f"\n{CYAN}{BOLD}System Status:{RESET}")
     now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     print(f"• {'Session Start':<15}: {now}")
-    print(f"• {'System':<15}: {platform.system()} ({platform.machine()})")
+    os_name = platform.system()
+    os_icon = "🐧 " if os_name == "Linux" else "🍎 " if os_name == "Darwin" else "🪟 " if os_name == "Windows" else ""
+    print(f"• {'System':<15}: {os_icon}{os_name} ({platform.machine()})")
     print(f"• {'Python':<15}: {platform.python_version()}")
     env_type = f"{BOLD}{GREEN}Virtual Env{RESET}" if is_venv() else f"{BOLD}{YELLOW}Global{RESET}"
     print(f"• {'Environment':<15}: {env_type}")
@@ -187,14 +192,18 @@ def main():
         {"emoji": "📈", "label": "Reporting & Insights", "desc": "Extract and communicate final results."},
     ]
 
+    prev_stage_done = False
     for i, stage in enumerate(stages, 1):
         if i > 1:
-            print(f"   {BLUE}│{RESET}")
+            connector_color = GREEN if prev_stage_done else BLUE
+            print(f"   {connector_color}│{RESET}")
         is_current = False
+        this_stage_done = False
         if i == 1:
             if data_count > 0:
                 status_tag = f"{BOLD}{GREEN}[DONE]{RESET}"
                 stage_color = GREEN
+                this_stage_done = True
             elif all_found:
                 status_tag = f"{BOLD}{CYAN}[NEXT]{RESET}"
                 stage_color = CYAN
@@ -216,6 +225,7 @@ def main():
 
         current_indicator = f" {CYAN}◀ current{RESET}" if is_current else ""
         print(f"{BOLD}{i}.{RESET} {stage['emoji']} {status_tag} {BOLD}{stage_color}{stage['label']:<20}:{RESET} {stage['desc']}{current_indicator}")
+        prev_stage_done = this_stage_done
 
     is_virtual = is_venv()
     if not all_found:
