@@ -81,18 +81,18 @@ def main():
 
     # Consolidated Checks
     libs = {
-        "Pandas": "pandas",
-        "NumPy": "numpy",
-        "Matplotlib": "matplotlib",
-        "Seaborn": "seaborn",
-        "Scikit-Learn": "sklearn",
-        "Jupyter": "jupyter"
+        "Pandas": {"pkg": "pandas", "purpose": "Data manipulation"},
+        "NumPy": {"pkg": "numpy", "purpose": "Numerical computing"},
+        "Matplotlib": {"pkg": "matplotlib", "purpose": "Data visualization"},
+        "Seaborn": {"pkg": "seaborn", "purpose": "Statistical graphics"},
+        "Scikit-Learn": {"pkg": "sklearn", "purpose": "Machine learning"},
+        "Jupyter": {"pkg": "jupyter", "purpose": "Interactive notebooks"}
     }
 
     lib_results = {}
     missing_libs = []
-    for label, name in libs.items():
-        lib_version = get_lib_version(name)
+    for label, info in libs.items():
+        lib_version = get_lib_version(info["pkg"])
         lib_results[label] = lib_version
         if not lib_version:
             missing_libs.append(label)
@@ -155,7 +155,8 @@ def main():
         if lib_version:
             status = f"✅ {GREEN}{lib_version}{RESET}"
         else:
-            status = f"❌ {RED}Not Found{RESET}"
+            purpose = libs[label]["purpose"]
+            status = f"❌ {RED}Not Found{RESET} ({purpose})"
         print(f"  - {label:<13}: {status}")
 
     if data_dir_exists and data_count > 0:
