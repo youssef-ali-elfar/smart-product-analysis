@@ -49,3 +49,7 @@
 ## 2026-06-23 - Progressive Pipeline Visualization and Information Density
 **Learning:** Visualizing pipeline progress through color-coded connectors (e.g., GREEN for completed transitions) provides a strong intuitive sense of flow. Additionally, in high-density status reports, capping extensive lists (like file types) to the top 3 items and appending a natural "others" indicator prevents visual overwhelm while maintaining transparency.
 **Action:** Use look-behind logic in roadmap loops to color stage connectors and implement capping for collection summaries in CLI tools to balance detail with scannability.
+
+## 2026-06-25 - Contextual Dependency Feedback
+**Learning:** Listing the "purpose" of a missing dependency next to its error status (e.g., "Not Found (Data manipulation)") provides immediate context on the impact of the missing package. Furthermore, providing a specific installation tip that names the missing libraries when only a few are absent makes the onboarding path more direct and less generic.
+**Action:** Store library metadata (like purpose) in the configuration and use it to augment error messages; transition from generic counts to specific names in setup tips when the number of missing items is low.

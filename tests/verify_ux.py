@@ -47,6 +47,18 @@ class TestUX(unittest.TestCase):
                 "data_dir_exists": True,
                 "data_files": ["a.csv", "b.json", "c.txt", "d.parquet", "e.xls"],
                 "file_times": [1716843600] * 5
+            },
+            {
+                "name": "One Missing Library Tip",
+                "libs": {lib: "1.2.3" for lib in ["numpy", "matplotlib", "seaborn", "sklearn", "jupyter"]},
+                "data_dir_exists": True,
+                "data_files": ["products.csv"]
+            },
+            {
+                "name": "Two Missing Libraries Tip",
+                "libs": {lib: "1.2.3" for lib in ["matplotlib", "seaborn", "sklearn", "jupyter"]},
+                "data_dir_exists": True,
+                "data_files": ["products.csv"]
             }
         ]
 
