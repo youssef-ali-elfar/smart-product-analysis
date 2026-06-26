@@ -118,7 +118,8 @@ def main():
         common_types = type_counts.most_common(3)
         type_items = [f"{count} {t}{'s' if count > 1 else ''}" for t, count in common_types]
         if len(type_counts) > 3:
-            type_items.append("others")
+            others_count = sum(count for _, count in type_counts.most_common()[3:])
+            type_items.append(f"{others_count} other{'s' if others_count > 1 else ''}")
         type_summary = natural_join(type_items)
 
     # Determine Status and Badge
@@ -162,15 +163,15 @@ def main():
     if data_dir_exists and data_count > 0:
         suffix = "file" if data_count == 1 else "files"
         size_str = format_size(total_size)
+        print(f"• {'Data Source':<15}: ✅ {GREEN}Found ({data_count} {suffix}, {size_str}){RESET}")
+        print(f"  - {'Composition':<13}: {type_summary}")
         is_very_fresh = (time.time() - freshest_time) < 3600
         fresh_color = GREEN if is_very_fresh else RESET
-        freshness = f" - Updated {fresh_color}{get_relative_time(freshest_time)}{RESET}"
-        data_status = f"✅ {GREEN}Found ({data_count} {suffix}: {type_summary}, {size_str}){RESET}{freshness}"
+        print(f"  - {'Freshness':<13}: {fresh_color}{get_relative_time(freshest_time)}{RESET}")
     elif data_dir_exists:
-        data_status = f"⚠️ {BOLD}{YELLOW}Empty (0 files){RESET}"
+        print(f"• {'Data Source':<15}: ⚠️ {BOLD}{YELLOW}Empty (0 files){RESET}")
     else:
-        data_status = f"❌ {BOLD}{RED}Not Found{RESET}"
-    print(f"• {'Data Source':<15}: {data_status}")
+        print(f"• {'Data Source':<15}: ❌ {BOLD}{RED}Not Found{RESET}")
 
     if not all_found:
         lib_suffix = "library" if len(missing_libs) == 1 else "libraries"

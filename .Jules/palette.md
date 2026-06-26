@@ -53,3 +53,7 @@
 ## 2026-06-25 - Contextual Dependency Feedback
 **Learning:** Listing the "purpose" of a missing dependency next to its error status (e.g., "Not Found (Data manipulation)") provides immediate context on the impact of the missing package. Furthermore, providing a specific installation tip that names the missing libraries when only a few are absent makes the onboarding path more direct and less generic.
 **Action:** Store library metadata (like purpose) in the configuration and use it to augment error messages; transition from generic counts to specific names in setup tips when the number of missing items is low.
+
+## 2026-06-26 - Hierarchical CLI Status Reporting
+**Learning:** Dense single-line CLI statuses (e.g., combining file counts, types, size, and freshness) become difficult to scan as data complexity increases. Transitioning to a hierarchical "summary + sub-bullets" pattern improves readability and allows for greater granularity, such as providing precise counts for truncated "other" items, without overwhelming the user.
+**Action:** Use a primary summary line for high-level status and indented sub-bullets for detailed metadata (Composition, Freshness, etc.) to maintain a clean and professional visual hierarchy in CLI reports.
