@@ -81,18 +81,18 @@ def main():
 
     # Consolidated Checks
     libs = {
-        "Pandas": "pandas",
-        "NumPy": "numpy",
-        "Matplotlib": "matplotlib",
-        "Seaborn": "seaborn",
-        "Scikit-Learn": "sklearn",
-        "Jupyter": "jupyter"
+        "Pandas": {"pkg": "pandas", "purpose": "Data manipulation"},
+        "NumPy": {"pkg": "numpy", "purpose": "Numerical computing"},
+        "Matplotlib": {"pkg": "matplotlib", "purpose": "Static visualizations"},
+        "Seaborn": {"pkg": "seaborn", "purpose": "Statistical data visualization"},
+        "Scikit-Learn": {"pkg": "sklearn", "purpose": "Machine learning algorithms"},
+        "Jupyter": {"pkg": "jupyter", "purpose": "Interactive notebooks"}
     }
 
     lib_results = {}
     missing_libs = []
-    for label, name in libs.items():
-        lib_version = get_lib_version(name)
+    for label, info in libs.items():
+        lib_version = get_lib_version(info["pkg"])
         lib_results[label] = lib_version
         if not lib_version:
             missing_libs.append(label)
@@ -155,7 +155,8 @@ def main():
         if lib_version:
             status = f"✅ {GREEN}{lib_version}{RESET}"
         else:
-            status = f"❌ {RED}Not Found{RESET}"
+            purpose = libs[label]["purpose"]
+            status = f"❌ {RED}Not Found{RESET} ({purpose})"
         print(f"  - {label:<13}: {status}")
 
     if data_dir_exists and data_count > 0:
@@ -229,8 +230,11 @@ def main():
 
     is_virtual = is_venv()
     if not all_found:
-        lib_suffix = "library" if len(missing_libs) == 1 else "libraries"
-        tip_text = f"{len(missing_libs)} {lib_suffix} missing? Run the {BOLD}pip install -r requirements.txt{RESET} command to set up your environment."
+        if len(missing_libs) <= 2:
+            missing_list = natural_join([f"{BOLD}{m}{RESET}" for m in missing_libs])
+            tip_text = f"Missing {missing_list}? Run {BOLD}pip install -r requirements.txt{RESET} to complete your setup."
+        else:
+            tip_text = f"{len(missing_libs)} libraries missing? Run the {BOLD}pip install -r requirements.txt{RESET} command to set up your environment."
     elif not data_dir_exists:
         tip_text = f"Almost there! Run {BOLD}mkdir data{RESET} and add your product datasets to get started."
         if not is_virtual:
