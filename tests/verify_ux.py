@@ -89,6 +89,14 @@ class TestUX(unittest.TestCase):
                 output = captured_output.getvalue()
                 sys.stdout = sys.__stdout__
                 print(output)
+
+                if scenario['data_dir_exists'] and scenario['data_files']:
+                    self.assertIn("Composition", output)
+                    self.assertIn("Freshness", output)
+
+                if scenario['name'] == "Many File Types Capping":
+                    self.assertIn("2 others", output)
+
             except Exception as e:
                 sys.stdout = sys.__stdout__
                 print(f"Error in scenario {scenario['name']}: {e}")

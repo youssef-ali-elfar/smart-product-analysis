@@ -18,6 +18,7 @@ class TestBasic(unittest.TestCase):
             output = captured_output.getvalue()
             self.assertIn("System", output)
             self.assertIn("Data Source", output)
+            self.assertIn("Dependencies", output)
             self.assertIn("1.", output)
             # Check for new dynamic status indicators
             self.assertIn("[PEND]", output)
