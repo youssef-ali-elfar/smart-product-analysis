@@ -105,7 +105,7 @@ def main():
     freshest_time = 0
     type_summary = ""
     if data_dir_exists:
-        files = [f for f in os.listdir("data") if os.path.isfile(os.path.join("data", f))]
+        files = sorted([f for f in os.listdir("data") if os.path.isfile(os.path.join("data", f))])
         data_count = len(files)
         file_types = []
         for f in files:
@@ -170,6 +170,9 @@ def main():
         fresh_color = GREEN if is_very_fresh else RESET
         freshness = f"Updated {fresh_color}{get_relative_time(freshest_time)}{RESET}"
         print(f"• {'Data Source':<15}: ✅ {GREEN}Found ({data_count} {suffix}, {size_str}){RESET}")
+        if 1 <= data_count <= 3:
+            file_list = natural_join([f"{BOLD}{f}{RESET}" for f in files])
+            print(f"  - {'Files':<13}: {file_list}")
         print(f"  - {'Composition':<13}: {type_summary}")
         print(f"  - {'Freshness':<13}: {freshness}")
     elif data_dir_exists:
