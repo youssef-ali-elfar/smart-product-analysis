@@ -58,7 +58,30 @@ def natural_join(items):
         return f"{items[0]} and {items[1]}"
     return f"{', '.join(items[:-1])}, and {items[-1]}"
 
+def supports_color():
+    """
+    Check if the terminal supports color.
+    Follows NO_COLOR standard (https://no-color.org/)
+    """
+    if os.environ.get("NO_COLOR"):
+        return False
+    if not hasattr(sys.stdout, "isatty") or not sys.stdout.isatty():
+        return False
+    if os.environ.get("TERM") == "dumb":
+        return False
+    return True
+
 def main():
+    # ANSI colors
+    use_color = supports_color()
+    BLUE = "\033[94m" if use_color else ""
+    GREEN = "\033[92m" if use_color else ""
+    RED = "\033[91m" if use_color else ""
+    YELLOW = "\033[93m" if use_color else ""
+    CYAN = "\033[96m" if use_color else ""
+    BOLD = "\033[1m" if use_color else ""
+    RESET = "\033[0m" if use_color else ""
+
     version = "1.0.0"
     parser = argparse.ArgumentParser(
         description="Smart Product Analysis - A tool for analyzing product data."
@@ -69,15 +92,6 @@ def main():
 
     # Parse arguments
     parser.parse_args()
-
-    # ANSI colors
-    BLUE = "\033[94m"
-    GREEN = "\033[92m"
-    RED = "\033[91m"
-    YELLOW = "\033[93m"
-    CYAN = "\033[96m"
-    BOLD = "\033[1m"
-    RESET = "\033[0m"
 
     # Consolidated Checks
     libs = {
