@@ -61,3 +61,7 @@
 ## 2026-06-28 - Immediate Data Visibility for Small Datasets
 **Learning:** For users working with small datasets, seeing the actual filenames in the status report provides immediate confirmation and confidence that the correct data has been detected. This explicit transparency is more delightful than a simple count when the list is short (1-3 files).
 **Action:** In CLI status reports, explicitly list filenames for very small collections (1-3 items) using a natural language join, before transitioning to more condensed summaries for larger datasets.
+
+## 2026-06-29 - Universal CLI Accessibility via NO_COLOR and TTY Detection
+**Learning:** Hardcoded ANSI colors in CLI tools can be problematic for accessibility (screen readers), certain log aggregators, and "dumb" terminals. Supporting the `NO_COLOR` standard and performing `isatty` checks ensures the tool is inclusive and usable in all environments without forcing users to manually strip codes.
+**Action:** Always implement a `supports_color()` helper that checks `NO_COLOR` in `os.environ`, `sys.stdout.isatty()`, and `TERM == "dumb"` to conditionally apply ANSI styling in CLI applications.
