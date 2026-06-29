@@ -57,3 +57,7 @@
 ## 2026-06-27 - Hierarchical CLI Reports and Precise Summaries
 **Learning:** Restructuring high-density CLI status reports into a hierarchical format (summary line + indented sub-bullets) significantly improves scannability. Furthermore, providing precise counts for hidden items (e.g., "and 2 others") instead of generic labels increases user confidence in the accuracy of the report.
 **Action:** Use indented sub-bullets with standardized label padding (13 for sub-bullets, 15 for top-level) to organize complex status data, and always quantify "others" in capped collection summaries.
+
+## 2026-06-28 - Immediate Data Visibility for Small Datasets
+**Learning:** For users working with small datasets, seeing the actual filenames in the status report provides immediate confirmation and confidence that the correct data has been detected. This explicit transparency is more delightful than a simple count when the list is short (1-3 files).
+**Action:** In CLI status reports, explicitly list filenames for very small collections (1-3 items) using a natural language join, before transitioning to more condensed summaries for larger datasets.
