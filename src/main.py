@@ -7,6 +7,16 @@ import time
 from datetime import datetime
 from collections import Counter
 
+def supports_color():
+    """Detect if the terminal supports ANSI color."""
+    if "NO_COLOR" in os.environ:
+        return False
+    if os.environ.get("TERM") == "dumb":
+        return False
+    if not hasattr(sys.stdout, "isatty") or not sys.stdout.isatty():
+        return False
+    return True
+
 def is_venv():
     """Detect if the script is running in a virtual environment."""
     return (
@@ -71,13 +81,16 @@ def main():
     parser.parse_args()
 
     # ANSI colors
-    BLUE = "\033[94m"
-    GREEN = "\033[92m"
-    RED = "\033[91m"
-    YELLOW = "\033[93m"
-    CYAN = "\033[96m"
-    BOLD = "\033[1m"
-    RESET = "\033[0m"
+    if supports_color():
+        BLUE = "\033[94m"
+        GREEN = "\033[92m"
+        RED = "\033[91m"
+        YELLOW = "\033[93m"
+        CYAN = "\033[96m"
+        BOLD = "\033[1m"
+        RESET = "\033[0m"
+    else:
+        BLUE = GREEN = RED = YELLOW = CYAN = BOLD = RESET = ""
 
     # Consolidated Checks
     libs = {
@@ -169,7 +182,7 @@ def main():
         is_very_fresh = (time.time() - freshest_time) < 3600
         fresh_color = GREEN if is_very_fresh else RESET
         freshness = f"Updated {fresh_color}{get_relative_time(freshest_time)}{RESET}"
-        print(f"• {'Data Source':<15}: ✅ {GREEN}Found ({data_count} {suffix}, {size_str}){RESET}")
+        print(f"• {'Data Source':<15}: ✅ {BOLD}{GREEN}Found{RESET} ({data_count} {suffix}, {size_str})")
         if 1 <= data_count <= 3:
             file_list = natural_join([f"{BOLD}{f}{RESET}" for f in files])
             print(f"  - {'Files':<13}: {file_list}")

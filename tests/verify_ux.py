@@ -59,6 +59,13 @@ class TestUX(unittest.TestCase):
                 "libs": {lib: "1.2.3" for lib in ["matplotlib", "seaborn", "sklearn", "jupyter"]},
                 "data_dir_exists": True,
                 "data_files": ["products.csv"]
+            },
+            {
+                "name": "No Color Support (NO_COLOR=1)",
+                "libs": {lib: "1.2.3" for lib in ["pandas", "numpy", "matplotlib", "seaborn", "sklearn", "jupyter"]},
+                "data_dir_exists": True,
+                "data_files": ["products.csv"],
+                "env": {"NO_COLOR": "1"}
             }
         ]
 
@@ -69,6 +76,8 @@ class TestUX(unittest.TestCase):
             print(f"\n{'='*20} Scenario: {scenario['name']} {'='*20}")
 
             # Setup mocks
+            env_patch = patch.dict(os.environ, scenario.get("env", {}))
+            env_patch.start()
             mock_get_lib_version.side_effect = lambda name: scenario['libs'].get(name)
             mock_isdir.return_value = scenario['data_dir_exists']
             mock_listdir.return_value = scenario['data_files']
@@ -97,10 +106,14 @@ class TestUX(unittest.TestCase):
                 if scenario['name'] == "Many File Types Capping":
                     self.assertIn("2 others", output)
 
+                if scenario.get("env", {}).get("NO_COLOR") == "1":
+                    self.assertNotIn("\033[", output)
+
             except Exception as e:
                 sys.stdout = sys.__stdout__
                 print(f"Error in scenario {scenario['name']}: {e}")
             finally:
+                env_patch.stop()
                 sys.stdout = sys.__stdout__
 
 if __name__ == '__main__':
