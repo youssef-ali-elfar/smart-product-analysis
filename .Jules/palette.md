@@ -46,6 +46,10 @@
 **Learning:** In CLI status reports, presenting collections of items (like file types) as a grammatically correct natural language list (using an Oxford comma and "and") combined with proper pluralization significantly reduces the "raw data" feel and makes the tool feel more professional and human-centric.
 **Action:** Use a `natural_join` utility and conditional pluralization logic when summarizing multiple data points in CLI outputs to improve readability and user delight.
 
+## 2026-07-01 - Accessible CLI Color Support
+**Learning:** CLI tools that unconditionally output ANSI colors can produce garbled text in non-interactive environments (pipes, CI/CD logs). Respecting the `NO_COLOR` standard and detecting TTY status ensures that the interface remains accessible and readable for all users, including those using screen readers or automated logging systems.
+**Action:** Always implement a `supports_color()` helper that checks `NO_COLOR`, `TERM=dumb`, and `sys.stdout.isatty()` before applying ANSI escape sequences in CLI applications.
+
 ## 2026-06-23 - Progressive Pipeline Visualization and Information Density
 **Learning:** Visualizing pipeline progress through color-coded connectors (e.g., GREEN for completed transitions) provides a strong intuitive sense of flow. Additionally, in high-density status reports, capping extensive lists (like file types) to the top 3 items and appending a natural "others" indicator prevents visual overwhelm while maintaining transparency.
 **Action:** Use look-behind logic in roadmap loops to color stage connectors and implement capping for collection summaries in CLI tools to balance detail with scannability.
