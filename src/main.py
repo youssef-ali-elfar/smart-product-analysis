@@ -58,6 +58,16 @@ def natural_join(items):
         return f"{items[0]} and {items[1]}"
     return f"{', '.join(items[:-1])}, and {items[-1]}"
 
+def supports_color():
+    """Check if the terminal supports color."""
+    if "NO_COLOR" in os.environ:
+        return False
+    if os.environ.get("TERM") == "dumb":
+        return False
+    if not hasattr(sys.stdout, "isatty") or not sys.stdout.isatty():
+        return False
+    return True
+
 def main():
     version = "1.0.0"
     parser = argparse.ArgumentParser(
@@ -71,13 +81,14 @@ def main():
     parser.parse_args()
 
     # ANSI colors
-    BLUE = "\033[94m"
-    GREEN = "\033[92m"
-    RED = "\033[91m"
-    YELLOW = "\033[93m"
-    CYAN = "\033[96m"
-    BOLD = "\033[1m"
-    RESET = "\033[0m"
+    use_color = supports_color()
+    BLUE = "\033[94m" if use_color else ""
+    GREEN = "\033[92m" if use_color else ""
+    RED = "\033[91m" if use_color else ""
+    YELLOW = "\033[93m" if use_color else ""
+    CYAN = "\033[96m" if use_color else ""
+    BOLD = "\033[1m" if use_color else ""
+    RESET = "\033[0m" if use_color else ""
 
     # Consolidated Checks
     libs = {
@@ -157,10 +168,10 @@ def main():
     print(f"  {BOLD}Dependencies:{RESET}")
     for label, lib_version in lib_results.items():
         if lib_version:
-            status = f"✅ {GREEN}{lib_version}{RESET}"
+            status = f"✅ {BOLD}{GREEN}{lib_version}{RESET}"
         else:
             purpose = libs[label]["purpose"]
-            status = f"❌ {RED}Not Found{RESET} ({purpose})"
+            status = f"❌ {BOLD}{RED}Not Found{RESET} ({purpose})"
         print(f"  - {label:<13}: {status}")
 
     if data_dir_exists and data_count > 0:
@@ -168,8 +179,8 @@ def main():
         size_str = format_size(total_size)
         is_very_fresh = (time.time() - freshest_time) < 3600
         fresh_color = GREEN if is_very_fresh else RESET
-        freshness = f"Updated {fresh_color}{get_relative_time(freshest_time)}{RESET}"
-        print(f"• {'Data Source':<15}: ✅ {GREEN}Found ({data_count} {suffix}, {size_str}){RESET}")
+        freshness = f"Updated {BOLD}{fresh_color}{get_relative_time(freshest_time)}{RESET}"
+        print(f"• {'Data Source':<15}: ✅ {BOLD}{GREEN}Found{RESET} ({data_count} {suffix}, {size_str})")
         if 1 <= data_count <= 3:
             file_list = natural_join([f"{BOLD}{f}{RESET}" for f in files])
             print(f"  - {'Files':<13}: {file_list}")
