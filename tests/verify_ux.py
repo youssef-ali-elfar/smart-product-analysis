@@ -107,6 +107,7 @@ class TestUX(unittest.TestCase):
 
                 if scenario['name'] == "Many File Types Capping":
                     self.assertIn("2 others", output)
+                    self.assertIn("Latest", output)
 
                 if scenario['name'] == "NO_COLOR Support":
                     self.assertNotIn("\033[", output)

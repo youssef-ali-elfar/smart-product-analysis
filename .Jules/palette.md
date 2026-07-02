@@ -65,3 +65,7 @@
 ## 2026-06-28 - Immediate Data Visibility for Small Datasets
 **Learning:** For users working with small datasets, seeing the actual filenames in the status report provides immediate confirmation and confidence that the correct data has been detected. This explicit transparency is more delightful than a simple count when the list is short (1-3 files).
 **Action:** In CLI status reports, explicitly list filenames for very small collections (1-3 items) using a natural language join, before transitioning to more condensed summaries for larger datasets.
+
+## 2026-07-02 - Visual Scannability and Information Density in CLI
+**Learning:** In data-rich CLI status reports, applying **BOLD** styling to key metrics (like file extensions) and using intuitive icons (🕒, 📦, 🌐) significantly reduces cognitive load. Furthermore, transitioning from listing all items to showing only the "Latest" modified item for large collections maintains a high information-to-density ratio while keeping the report scannable.
+**Action:** Use **BOLD** for technical identifiers and icons for environment context; implement a "Latest" sub-bullet for collections exceeding a display threshold (e.g., >3 items).
