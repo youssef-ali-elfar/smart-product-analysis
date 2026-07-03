@@ -65,3 +65,7 @@
 ## 2026-06-28 - Immediate Data Visibility for Small Datasets
 **Learning:** For users working with small datasets, seeing the actual filenames in the status report provides immediate confirmation and confidence that the correct data has been detected. This explicit transparency is more delightful than a simple count when the list is short (1-3 files).
 **Action:** In CLI status reports, explicitly list filenames for very small collections (1-3 items) using a natural language join, before transitioning to more condensed summaries for larger datasets.
+
+## 2026-07-03 - Scannability and Freshness in Large Data Reports
+**Learning:** When datasets exceed a small count (e.g., >3), listing all filenames becomes cluttered. However, providing the "Latest" modified filename maintains a sense of freshness and activity without overwhelming the user. Additionally, bolding technical identifiers like file extensions significantly improves the scannability of composition summaries.
+**Action:** Transition to a "Latest" file indicator for large collections and use bold styling for key technical terms (extensions, status keywords) to enhance CLI information density and readability.
