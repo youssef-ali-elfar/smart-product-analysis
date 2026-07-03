@@ -114,6 +114,7 @@ def main():
     data_count = 0
     total_size = 0
     freshest_time = 0
+    latest_file = ""
     type_summary = ""
     if data_dir_exists:
         files = sorted([f for f in os.listdir("data") if os.path.isfile(os.path.join("data", f))])
@@ -121,13 +122,17 @@ def main():
         file_types = []
         for f in files:
             path = os.path.join("data", f)
-            total_size += os.path.getsize(path)
-            freshest_time = max(freshest_time, os.path.getmtime(path))
+            file_size = os.path.getsize(path)
+            file_mtime = os.path.getmtime(path)
+            total_size += file_size
+            if file_mtime > freshest_time:
+                freshest_time = file_mtime
+                latest_file = f
             ext = os.path.splitext(f)[1][1:].upper() or "OTHER"
             file_types.append(ext)
         type_counts = Counter(file_types)
         common_types = type_counts.most_common(3)
-        type_items = [f"{count} {t}{'s' if count > 1 else ''}" for t, count in common_types]
+        type_items = [f"{count} {BOLD}{t}{RESET}{'s' if count > 1 else ''}" for t, count in common_types]
 
         # Calculate total files in remaining types
         if len(type_counts) > 3:
@@ -157,13 +162,14 @@ def main():
     # System Status
     print(f"\n{CYAN}{BOLD}System Status:{RESET}")
     now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    print(f"• {'Session Start':<15}: {now}")
+    print(f"• {'Session Start':<15}: 🕒 {now}")
     os_name = platform.system()
     os_icon = "🐧 " if os_name == "Linux" else "🍎 " if os_name == "Darwin" else "🪟 " if os_name == "Windows" else ""
     print(f"• {'System':<15}: {os_icon}{os_name} ({platform.machine()})")
     print(f"• {'Python':<15}: {platform.python_version()}")
+    env_icon = "📦 " if is_venv() else "🌐 "
     env_type = f"{BOLD}{GREEN}Virtual Env{RESET}" if is_venv() else f"{BOLD}{YELLOW}Global{RESET}"
-    print(f"• {'Environment':<15}: {env_type}")
+    print(f"• {'Environment':<15}: {env_icon}{env_type}")
 
     print(f"  {BOLD}Dependencies:{RESET}")
     for label, lib_version in lib_results.items():
@@ -184,6 +190,8 @@ def main():
         if 1 <= data_count <= 3:
             file_list = natural_join([f"{BOLD}{f}{RESET}" for f in files])
             print(f"  - {'Files':<13}: {file_list}")
+        elif data_count > 3:
+            print(f"  - {'Latest':<13}: {BOLD}{latest_file}{RESET}")
         print(f"  - {'Composition':<13}: {type_summary}")
         print(f"  - {'Freshness':<13}: {freshness}")
     elif data_dir_exists:
