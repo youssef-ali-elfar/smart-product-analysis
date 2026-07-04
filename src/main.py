@@ -119,15 +119,19 @@ def main():
         files = sorted([f for f in os.listdir("data") if os.path.isfile(os.path.join("data", f))])
         data_count = len(files)
         file_types = []
+        latest_file = ""
         for f in files:
             path = os.path.join("data", f)
+            mtime = os.path.getmtime(path)
             total_size += os.path.getsize(path)
-            freshest_time = max(freshest_time, os.path.getmtime(path))
+            if mtime > freshest_time:
+                freshest_time = mtime
+                latest_file = f
             ext = os.path.splitext(f)[1][1:].upper() or "OTHER"
             file_types.append(ext)
         type_counts = Counter(file_types)
         common_types = type_counts.most_common(3)
-        type_items = [f"{count} {t}{'s' if count > 1 else ''}" for t, count in common_types]
+        type_items = [f"{count} {BOLD}{t}{RESET}{'s' if count > 1 else ''}" for t, count in common_types]
 
         # Calculate total files in remaining types
         if len(type_counts) > 3:
@@ -184,6 +188,8 @@ def main():
         if 1 <= data_count <= 3:
             file_list = natural_join([f"{BOLD}{f}{RESET}" for f in files])
             print(f"  - {'Files':<13}: {file_list}")
+        elif data_count > 3:
+            print(f"  - {'Latest':<13}: {BOLD}{latest_file}{RESET}")
         print(f"  - {'Composition':<13}: {type_summary}")
         print(f"  - {'Freshness':<13}: {freshness}")
     elif data_dir_exists:
