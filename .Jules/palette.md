@@ -67,5 +67,9 @@
 **Action:** In CLI status reports, explicitly list filenames for very small collections (1-3 items) using a natural language join, before transitioning to more condensed summaries for larger datasets.
 
 ## 2026-07-04 - Liveness Indicators for Capped Collections
-**Learning:** When a CLI status report caps a long list of items (e.g., >3 files) to maintain scannability, users lose visibility into the "liveness" of the collection. Providing the name of the most recently modified item ("Latest") restores confidence that the tool is observing the correct and most current data without overwhelming the interface.
+**Learning:** When a CLI status report caps a long list of items (e.g >3 files) to maintain scannability, users lose visibility into the "liveness" of the collection. Providing the name of the most recently modified item ("Latest") restores confidence that the tool is observing the correct and most current data without overwhelming the interface.
 **Action:** In CLI tools that summarize directories or collections, always include a 'Latest' indicator identifying the most recent entry when the full list is truncated for brevity.
+
+## 2026-07-05 - Actionable Data Freshness Warnings
+**Learning:** Simple relative timestamps in CLI tools can mask potentially outdated data. Implementing a tiered freshness system (e.g., GREEN for <24h, YELLOW warning for >7d) helps users proactively identify when their data might be stale, improving the reliability of their analysis.
+**Action:** Use conditional color-coding and explicit warning suffixes (like "(Stale?)") for file modification times to provide actionable feedback on data freshness.

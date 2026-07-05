@@ -131,7 +131,7 @@ def main():
             file_types.append(ext)
         type_counts = Counter(file_types)
         common_types = type_counts.most_common(3)
-        type_items = [f"{count} {BOLD}{t}{RESET}{'s' if count > 1 else ''}" for t, count in common_types]
+        type_items = [f"{count} {BOLD}{t}{RESET} file{'s' if count > 1 else ''}" for t, count in common_types]
 
         # Calculate total files in remaining types
         if len(type_counts) > 3:
@@ -181,9 +181,11 @@ def main():
     if data_dir_exists and data_count > 0:
         suffix = "file" if data_count == 1 else "files"
         size_str = format_size(total_size)
-        is_very_fresh = (time.time() - freshest_time) < 3600
-        fresh_color = GREEN if is_very_fresh else RESET
-        freshness = f"Updated {BOLD}{fresh_color}{get_relative_time(freshest_time)}{RESET}"
+        is_very_fresh = (time.time() - freshest_time) < 86400
+        is_stale = (time.time() - freshest_time) > 604800
+        fresh_color = GREEN if is_very_fresh else YELLOW if is_stale else RESET
+        stale_suffix = f" {BOLD}{YELLOW}(Stale?){RESET}" if is_stale else ""
+        freshness = f"Updated {BOLD}{fresh_color}{get_relative_time(freshest_time)}{RESET}{stale_suffix}"
         print(f"• {'Data Source':<15}: ✅ {BOLD}{GREEN}Found{RESET} ({data_count} {suffix}, {size_str})")
         if 1 <= data_count <= 3:
             file_list = natural_join([f"{BOLD}{f}{RESET}" for f in files])
@@ -208,7 +210,7 @@ def main():
         status_msg = f"✅ {BOLD}{GREEN}Ready{RESET}"
     print(f"• {'Status':<15}: {status_msg}")
 
-    print(f"\n🚀 Welcome! This tool is designed to help you extract insights from product data.")
+    print(f"\n🚀 {BOLD}Welcome!{RESET} This tool is designed to help you extract insights from product data.")
 
     print(f"\n{GREEN}{BOLD}Analysis Roadmap:{RESET}")
     stages = [
