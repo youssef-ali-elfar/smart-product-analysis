@@ -12,8 +12,9 @@ class TestUX(unittest.TestCase):
     @patch('os.listdir')
     @patch('os.path.isfile')
     @patch('os.path.getsize')
+    @patch('src.main.supports_color')
     @patch('os.path.getmtime')
-    def test_output_scenarios(self, mock_getmtime, mock_getsize, mock_isfile, mock_listdir, mock_isdir, mock_get_lib_version):
+    def test_output_scenarios(self, mock_getmtime, mock_supports_color, mock_getsize, mock_isfile, mock_listdir, mock_isdir, mock_get_lib_version):
         scenarios = [
             {
                 "name": "Missing Libraries and Missing Data",
@@ -79,6 +80,9 @@ class TestUX(unittest.TestCase):
             if "env" in scenario:
                 patcher = patch.dict(os.environ, scenario["env"])
                 patcher.start()
+                mock_supports_color.return_value = "NO_COLOR" not in scenario["env"]
+            else:
+                mock_supports_color.return_value = True
 
             mock_get_lib_version.side_effect = lambda name: scenario['libs'].get(name)
             mock_isdir.return_value = scenario['data_dir_exists']
@@ -107,6 +111,9 @@ class TestUX(unittest.TestCase):
 
                 if scenario['name'] == "Many File Types Capping":
                     self.assertIn("2 others", output)
+                    self.assertIn("Latest", output)
+                    # Extension should be bolded: \033[1mCSV\033[0m
+                    self.assertIn("\033[1mCSV\033[0m", output)
 
                 if scenario['name'] == "NO_COLOR Support":
                     self.assertNotIn("\033[", output)
