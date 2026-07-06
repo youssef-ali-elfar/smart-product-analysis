@@ -69,3 +69,7 @@
 ## 2026-07-04 - Liveness Indicators for Capped Collections
 **Learning:** When a CLI status report caps a long list of items (e.g., >3 files) to maintain scannability, users lose visibility into the "liveness" of the collection. Providing the name of the most recently modified item ("Latest") restores confidence that the tool is observing the correct and most current data without overwhelming the interface.
 **Action:** In CLI tools that summarize directories or collections, always include a 'Latest' indicator identifying the most recent entry when the full list is truncated for brevity.
+
+## 2026-07-06 - Operational Awareness via Data Freshness Warnings
+**Learning:** Users of data analysis CLI tools benefit from subtle context about data age. A "Stale?" warning for data older than a certain threshold (e.g., 7 days) provides immediate context about the relevance of the analysis results without requiring the user to check file timestamps manually.
+**Action:** Include relative-time-based freshness indicators with color-coded warning states in data-centric CLI tools to improve operational awareness.

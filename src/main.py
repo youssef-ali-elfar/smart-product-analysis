@@ -131,12 +131,12 @@ def main():
             file_types.append(ext)
         type_counts = Counter(file_types)
         common_types = type_counts.most_common(3)
-        type_items = [f"{count} {BOLD}{t}{RESET}{'s' if count > 1 else ''}" for t, count in common_types]
+        type_items = [f"{count} {BOLD}{t}{RESET} file{'s' if count > 1 else ''}" for t, count in common_types]
 
         # Calculate total files in remaining types
         if len(type_counts) > 3:
             total_others = sum(count for t, count in type_counts.most_common()[3:])
-            type_items.append(f"{total_others} other{'' if total_others == 1 else 's'}")
+            type_items.append(f"{total_others} other file{'' if total_others == 1 else 's'}")
 
         type_summary = natural_join(type_items)
 
@@ -161,12 +161,13 @@ def main():
     # System Status
     print(f"\n{CYAN}{BOLD}System Status:{RESET}")
     now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    print(f"• {'Session Start':<15}: {now}")
+    print(f"• {'Session Start':<15}: 🕒 {now}")
     os_name = platform.system()
     os_icon = "🐧 " if os_name == "Linux" else "🍎 " if os_name == "Darwin" else "🪟 " if os_name == "Windows" else ""
     print(f"• {'System':<15}: {os_icon}{os_name} ({platform.machine()})")
     print(f"• {'Python':<15}: {platform.python_version()}")
-    env_type = f"{BOLD}{GREEN}Virtual Env{RESET}" if is_venv() else f"{BOLD}{YELLOW}Global{RESET}"
+    env_icon = "📦 " if is_venv() else "🌐 "
+    env_type = f"{env_icon}{BOLD}{GREEN}Virtual Env{RESET}" if is_venv() else f"{env_icon}{BOLD}{YELLOW}Global{RESET}"
     print(f"• {'Environment':<15}: {env_type}")
 
     print(f"  {BOLD}Dependencies:{RESET}")
@@ -181,9 +182,21 @@ def main():
     if data_dir_exists and data_count > 0:
         suffix = "file" if data_count == 1 else "files"
         size_str = format_size(total_size)
-        is_very_fresh = (time.time() - freshest_time) < 3600
-        fresh_color = GREEN if is_very_fresh else RESET
-        freshness = f"Updated {BOLD}{fresh_color}{get_relative_time(freshest_time)}{RESET}"
+
+        # Freshness logic: <24h is green, >7d is yellow warning
+        age_seconds = time.time() - freshest_time
+        if age_seconds < 86400: # 24 hours
+            fresh_color = GREEN
+            warning = ""
+        elif age_seconds > 604800: # 7 days
+            fresh_color = YELLOW
+            warning = " (Stale?)"
+        else:
+            fresh_color = RESET
+            warning = ""
+
+        warning_str = f"{BOLD}{YELLOW}{warning}{RESET}" if warning else ""
+        freshness = f"Updated {BOLD}{fresh_color}{get_relative_time(freshest_time)}{RESET}{warning_str}"
         print(f"• {'Data Source':<15}: ✅ {BOLD}{GREEN}Found{RESET} ({data_count} {suffix}, {size_str})")
         if 1 <= data_count <= 3:
             file_list = natural_join([f"{BOLD}{f}{RESET}" for f in files])
@@ -208,7 +221,7 @@ def main():
         status_msg = f"✅ {BOLD}{GREEN}Ready{RESET}"
     print(f"• {'Status':<15}: {status_msg}")
 
-    print(f"\n🚀 Welcome! This tool is designed to help you extract insights from product data.")
+    print(f"\n🚀 {BOLD}Welcome!{RESET} This tool is designed to help you extract insights from product data.")
 
     print(f"\n{GREEN}{BOLD}Analysis Roadmap:{RESET}")
     stages = [
