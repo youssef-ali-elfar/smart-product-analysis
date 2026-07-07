@@ -15,6 +15,8 @@ class TestUX(unittest.TestCase):
     @patch('src.main.supports_color')
     @patch('os.path.getmtime')
     def test_output_scenarios(self, mock_getmtime, mock_supports_color, mock_getsize, mock_isfile, mock_listdir, mock_isdir, mock_get_lib_version):
+        import time
+        current_time = time.time()
         scenarios = [
             {
                 "name": "Missing Libraries and Missing Data",
@@ -62,6 +64,13 @@ class TestUX(unittest.TestCase):
                 "data_files": ["products.csv"]
             },
             {
+                "name": "Stale Data Warning",
+                "libs": {lib: "1.2.3" for lib in ["pandas", "numpy", "matplotlib", "seaborn", "sklearn", "jupyter"]},
+                "data_dir_exists": True,
+                "data_files": ["old_data.csv"],
+                "file_times": [current_time - 800000] # > 7 days
+            },
+            {
                 "name": "NO_COLOR Support",
                 "libs": {lib: "1.2.3" for lib in ["pandas", "numpy", "matplotlib", "seaborn", "sklearn", "jupyter"]},
                 "data_dir_exists": True,
@@ -69,9 +78,6 @@ class TestUX(unittest.TestCase):
                 "env": {"NO_COLOR": "1"}
             }
         ]
-
-        import time
-        current_time = time.time()
 
         for scenario in scenarios:
             print(f"\n{'='*20} Scenario: {scenario['name']} {'='*20}")
@@ -91,8 +97,7 @@ class TestUX(unittest.TestCase):
             mock_getsize.return_value = 1024
 
             if "file_times" in scenario:
-                # Make the first file very fresh (just now)
-                mock_getmtime.side_effect = [current_time - 10] + [current_time - 7200] * (len(scenario['data_files']) - 1)
+                mock_getmtime.side_effect = scenario["file_times"]
             else:
                 mock_getmtime.side_effect = None
                 mock_getmtime.return_value = current_time - 100000
@@ -110,10 +115,13 @@ class TestUX(unittest.TestCase):
                     self.assertIn("Freshness", output)
 
                 if scenario['name'] == "Many File Types Capping":
-                    self.assertIn("2 others", output)
+                    self.assertIn("2 other files", output)
                     self.assertIn("Latest", output)
                     # Extension should be bolded: \033[1mCSV\033[0m
                     self.assertIn("\033[1mCSV\033[0m", output)
+
+                if scenario['name'] == "Stale Data Warning":
+                    self.assertIn("(Stale?)", output)
 
                 if scenario['name'] == "NO_COLOR Support":
                     self.assertNotIn("\033[", output)
