@@ -114,8 +114,10 @@ class TestUX(unittest.TestCase):
                     self.assertIn("Composition", output)
                     self.assertIn("Freshness", output)
 
+                self.assertIn("data/", output)
+
                 if scenario['name'] == "Many File Types Capping":
-                    self.assertIn("2 others", output)
+                    self.assertIn("2 other files", output)
                     self.assertIn("Latest", output)
                     # Extension should be bolded: \033[1mCSV\033[0m
                     self.assertIn("\033[1mCSV\033[0m", output)
