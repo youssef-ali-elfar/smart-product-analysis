@@ -3,7 +3,12 @@ from unittest.mock import patch, MagicMock
 import sys
 import io
 import os
+import re
 from src.main import main
+
+def strip_ansi(text):
+    ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
+    return ansi_escape.sub('', text)
 
 class TestUX(unittest.TestCase):
     @patch('sys.argv', ['src/main.py'])
@@ -76,6 +81,13 @@ class TestUX(unittest.TestCase):
                 "data_dir_exists": True,
                 "data_files": ["old_data.csv"],
                 "file_times": [current_time - 800000] # Older than 7 days
+            },
+            {
+                "name": "Empty Files Warning",
+                "libs": {lib: "1.2.3" for lib in ["pandas", "numpy", "matplotlib", "seaborn", "sklearn", "jupyter"]},
+                "data_dir_exists": True,
+                "data_files": ["empty.csv"],
+                "file_size": 0
             }
         ]
 
@@ -94,7 +106,7 @@ class TestUX(unittest.TestCase):
             mock_isdir.return_value = scenario['data_dir_exists']
             mock_listdir.return_value = scenario['data_files']
             mock_isfile.return_value = True
-            mock_getsize.return_value = 1024
+            mock_getsize.return_value = scenario.get("file_size", 1024)
 
             if "file_times" in scenario:
                 mock_getmtime.side_effect = scenario['file_times']
@@ -107,23 +119,28 @@ class TestUX(unittest.TestCase):
             try:
                 main()
                 output = captured_output.getvalue()
+                clean_output = strip_ansi(output)
                 sys.stdout = sys.__stdout__
                 print(output)
 
                 if scenario['data_dir_exists'] and scenario['data_files']:
-                    self.assertIn("Composition", output)
-                    self.assertIn("Freshness", output)
+                    self.assertIn("Composition", clean_output)
+                    self.assertIn("Freshness", clean_output)
+                    self.assertIn("Found in data/", clean_output)
 
                 if scenario['name'] == "Many File Types Capping":
-                    self.assertIn("2 others", output)
-                    self.assertIn("Latest", output)
-                    # Extension should be bolded: \033[1mCSV\033[0m
-                    self.assertIn("\033[1mCSV\033[0m", output)
-                    self.assertIn("file", output) # Check for pluralization suffix
+                    self.assertIn("2 other files", clean_output)
+                    self.assertIn("Latest", clean_output)
+                    self.assertIn("CSV", clean_output)
+                    self.assertIn("file", clean_output)
 
                 if scenario['name'] == "Stale Data Warning":
-                    self.assertIn("(Stale?)", output)
+                    self.assertIn("(Stale?)", clean_output)
                     self.assertIn("\033[93m", output) # YELLOW color
+
+                if scenario['name'] == "Empty Files Warning":
+                    self.assertIn("Files appear empty!", clean_output)
+                    self.assertIn("[PEND]", clean_output)
 
                 if scenario['name'] == "NO_COLOR Support":
                     self.assertNotIn("\033[", output)
@@ -131,6 +148,7 @@ class TestUX(unittest.TestCase):
             except Exception as e:
                 sys.stdout = sys.__stdout__
                 print(f"Error in scenario {scenario['name']}: {e}")
+                raise e
             finally:
                 sys.stdout = sys.__stdout__
                 if "env" in scenario:
