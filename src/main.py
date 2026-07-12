@@ -144,7 +144,7 @@ def main():
     if not all_found:
         badge_text = f"[INC:{len(missing_libs)}]"
         badge_color = RED
-    elif not data_dir_exists or data_count == 0:
+    elif not data_dir_exists or data_count == 0 or total_size == 0:
         badge_text = "[PEND]"
         badge_color = YELLOW
     else:
@@ -181,13 +181,14 @@ def main():
     if data_dir_exists and data_count > 0:
         suffix = "file" if data_count == 1 else "files"
         size_str = format_size(total_size)
+        integrity_warning = f" {BOLD}{YELLOW}⚠️ Files appear empty!{RESET}" if total_size == 0 else ""
         time_diff = time.time() - freshest_time
         is_very_fresh = time_diff < 86400
         is_stale = time_diff > 604800
         fresh_color = GREEN if is_very_fresh else RESET
         warning_str = f" {BOLD}{YELLOW}(Stale?){RESET}" if is_stale else ""
         freshness = f"Updated {BOLD}{fresh_color}{get_relative_time(freshest_time)}{RESET}{warning_str}"
-        print(f"• {'Data Source':<15}: ✅ {BOLD}{GREEN}Found{RESET} ({data_count} {suffix}, {size_str})")
+        print(f"• {'Data Source':<15}: ✅ {BOLD}{GREEN}Found{RESET} ({data_count} {suffix}, {size_str}){integrity_warning}")
         if 1 <= data_count <= 3:
             file_list = natural_join([f"{BOLD}{f}{RESET}" for f in files])
             print(f"  - {'Files':<13}: {file_list}")
@@ -207,6 +208,8 @@ def main():
         status_msg = f"❌ {BOLD}{RED}Incomplete{RESET} ({len(missing_libs)} {lib_suffix} missing) - Please run: {BOLD}pip install -r requirements.txt{RESET}"
     elif not data_dir_exists or data_count == 0:
         status_msg = f"⚠️ {BOLD}{YELLOW}Pending{RESET} - Data directory missing or empty"
+    elif total_size == 0:
+        status_msg = f"⚠️ {BOLD}{YELLOW}Pending{RESET} - Data files appear empty"
     else:
         status_msg = f"✅ {BOLD}{GREEN}Ready{RESET}"
     print(f"• {'Status':<15}: {status_msg}")
@@ -231,10 +234,13 @@ def main():
         is_current = False
         this_stage_done = False
         if i == 1:
-            if data_count > 0:
+            if data_count > 0 and total_size > 0:
                 status_tag = f"{BOLD}{GREEN}[DONE]{RESET}"
                 stage_color = GREEN
                 this_stage_done = True
+            elif data_count > 0:
+                status_tag = f"{BOLD}{YELLOW}[PEND]{RESET}"
+                stage_color = RESET
             elif all_found:
                 status_tag = f"{BOLD}{CYAN}[NEXT]{RESET}"
                 stage_color = CYAN
@@ -243,7 +249,7 @@ def main():
                 status_tag = f"{BOLD}{YELLOW}[PEND]{RESET}"
                 stage_color = RESET
         elif i == 2:
-            if data_count > 0 and all_found:
+            if data_count > 0 and total_size > 0 and all_found:
                 status_tag = f"{BOLD}{CYAN}[NEXT]{RESET}"
                 stage_color = CYAN
                 is_current = True
@@ -273,6 +279,8 @@ def main():
         tip_text = f"Data folder is ready but empty. Add some CSV or JSON product datasets to {BOLD}data/{RESET} to begin."
         if not is_virtual:
             tip_text += f" (Tip: Use a {BOLD}Virtual Env{RESET} for better management!)"
+    elif total_size == 0:
+        tip_text = f"Data files found in {BOLD}data/{RESET} appear to be empty (0 bytes). Please ensure your datasets contain valid product data."
     elif not is_virtual:
         tip_text = f"Consider using a {BOLD}Virtual Environment{RESET} for better dependency management. Run {BOLD}python -m venv venv{RESET} to create one!"
     else:

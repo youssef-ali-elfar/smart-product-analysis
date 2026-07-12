@@ -73,3 +73,7 @@
 ## 2026-07-08 - Actionable Data Freshness Thresholds
 **Learning:** In data-driven CLI tools, relative time alone doesn't provide enough context for the "validity" of a dataset. Implementing tiered freshness logic with specific thresholds (e.g., <24h for GREEN/Fresh, >7d for YELLOW/Stale) provides users with an immediate, actionable assessment of whether they should consider updating their source data.
 **Action:** Use conditional logic to apply status-based colors and warning labels (like " (Stale?)") based on time-since-modification thresholds to improve data reliability awareness.
+
+## 2026-07-11 - Data Integrity Awareness in CLI Onboarding
+**Learning:** Checking for file existence and count is insufficient in data-driven CLI tools; empty files (0 bytes) can lead to misleading "Ready" states. Providing specific feedback for empty files via warning icons, status badge downgrades, and context-aware tips prevents user confusion and clearly identifies the next necessary setup action.
+**Action:** Always incorporate a `total_size` check alongside file counts when verifying data directory readiness, and use it to drive conditional UI states (e.g., [PEND] vs [DONE]) and specific onboarding guidance.

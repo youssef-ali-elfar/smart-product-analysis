@@ -76,6 +76,13 @@ class TestUX(unittest.TestCase):
                 "data_dir_exists": True,
                 "data_files": ["old_data.csv"],
                 "file_times": [current_time - 800000] # Older than 7 days
+            },
+            {
+                "name": "Empty Data Files Awareness",
+                "libs": {lib: "1.2.3" for lib in ["pandas", "numpy", "matplotlib", "seaborn", "sklearn", "jupyter"]},
+                "data_dir_exists": True,
+                "data_files": ["empty.csv"],
+                "file_size": 0
             }
         ]
 
@@ -94,7 +101,7 @@ class TestUX(unittest.TestCase):
             mock_isdir.return_value = scenario['data_dir_exists']
             mock_listdir.return_value = scenario['data_files']
             mock_isfile.return_value = True
-            mock_getsize.return_value = 1024
+            mock_getsize.return_value = scenario.get("file_size", 1024)
 
             if "file_times" in scenario:
                 mock_getmtime.side_effect = scenario['file_times']
@@ -124,6 +131,11 @@ class TestUX(unittest.TestCase):
                 if scenario['name'] == "Stale Data Warning":
                     self.assertIn("(Stale?)", output)
                     self.assertIn("\033[93m", output) # YELLOW color
+
+                if scenario['name'] == "Empty Data Files Awareness":
+                    self.assertIn("Files appear empty!", output)
+                    self.assertIn("[PEND]", output)
+                    self.assertIn("0 B", output)
 
                 if scenario['name'] == "NO_COLOR Support":
                     self.assertNotIn("\033[", output)
