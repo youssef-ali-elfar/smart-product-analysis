@@ -77,3 +77,7 @@
 ## 2026-07-11 - Data Integrity Awareness in CLI Onboarding
 **Learning:** Checking for file existence and count is insufficient in data-driven CLI tools; empty files (0 bytes) can lead to misleading "Ready" states. Providing specific feedback for empty files via warning icons, status badge downgrades, and context-aware tips prevents user confusion and clearly identifies the next necessary setup action.
 **Action:** Always incorporate a `total_size` check alongside file counts when verifying data directory readiness, and use it to drive conditional UI states (e.g., [PEND] vs [DONE]) and specific onboarding guidance.
+
+## 2026-07-12 - Precise Data Visibility and Explicit Search Paths
+**Learning:** In CLI status reports, providing individual file sizes and explicitly naming the search directory (e.g., "Found in data/") builds transparency and trust. It allows users to instantly verify they are working with the intended datasets without needing to leave the tool.
+**Action:** Centralize directory paths in configuration variables and use them to provide explicit "expected/actual" path feedback in status reports. Include human-readable sizes for detected files to increase reporting precision.
