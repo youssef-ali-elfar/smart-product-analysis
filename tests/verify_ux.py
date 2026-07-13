@@ -120,9 +120,10 @@ class TestUX(unittest.TestCase):
                 if scenario['data_dir_exists'] and scenario['data_files']:
                     self.assertIn("Composition", output)
                     self.assertIn("Freshness", output)
+                    self.assertIn("Found in data/", output)
 
                 if scenario['name'] == "Many File Types Capping":
-                    self.assertIn("2 others", output)
+                    self.assertIn("2 other files", output)
                     self.assertIn("Latest", output)
                     # Extension should be bolded: \033[1mCSV\033[0m
                     self.assertIn("\033[1mCSV\033[0m", output)
@@ -132,10 +133,14 @@ class TestUX(unittest.TestCase):
                     self.assertIn("(Stale?)", output)
                     self.assertIn("\033[93m", output) # YELLOW color
 
+                if scenario['name'] == "All Libraries Found but Empty Data":
+                    self.assertIn("Empty in data/", output)
+
                 if scenario['name'] == "Empty Data Files Awareness":
                     self.assertIn("Files appear empty!", output)
                     self.assertIn("[PEND]", output)
                     self.assertIn("0 B", output)
+                    self.assertIn("Found in data/", output)
 
                 if scenario['name'] == "NO_COLOR Support":
                     self.assertNotIn("\033[", output)
