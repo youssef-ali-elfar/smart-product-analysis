@@ -70,6 +70,7 @@ def supports_color():
 
 def main():
     version = "1.0.0"
+    DATA_DIR = "data"
     parser = argparse.ArgumentParser(
         description="Smart Product Analysis - A tool for analyzing product data."
     )
@@ -110,23 +111,28 @@ def main():
 
     all_found = len(missing_libs) == 0
 
-    data_dir_exists = os.path.isdir("data")
+    data_dir_exists = os.path.isdir(DATA_DIR)
     data_count = 0
     total_size = 0
     freshest_time = 0
     type_summary = ""
     if data_dir_exists:
-        files = sorted([f for f in os.listdir("data") if os.path.isfile(os.path.join("data", f))])
+        files = sorted([f for f in os.listdir(DATA_DIR) if os.path.isfile(os.path.join(DATA_DIR, f))])
         data_count = len(files)
         file_types = []
         latest_file = ""
+        latest_file_size = 0
+        files_with_size = []
         for f in files:
-            path = os.path.join("data", f)
+            path = os.path.join(DATA_DIR, f)
             mtime = os.path.getmtime(path)
-            total_size += os.path.getsize(path)
+            fsize = os.path.getsize(path)
+            total_size += fsize
             if mtime > freshest_time:
                 freshest_time = mtime
                 latest_file = f
+                latest_file_size = fsize
+            files_with_size.append(f"{BOLD}{f}{RESET} ({format_size(fsize)})")
             ext = os.path.splitext(f)[1][1:].upper() or "OTHER"
             file_types.append(ext)
         type_counts = Counter(file_types)
@@ -136,7 +142,7 @@ def main():
         # Calculate total files in remaining types
         if len(type_counts) > 3:
             total_others = sum(count for t, count in type_counts.most_common()[3:])
-            type_items.append(f"{total_others} others")
+            type_items.append(f"{total_others} other {'file' if total_others == 1 else 'files'}")
 
         type_summary = natural_join(type_items)
 
@@ -187,20 +193,20 @@ def main():
         is_stale = time_diff > 604800
         fresh_color = GREEN if is_very_fresh else RESET
         warning_str = f" {BOLD}{YELLOW}(Stale?){RESET}" if is_stale else ""
-        freshness = f"Updated {BOLD}{fresh_color}{get_relative_time(freshest_time)}{RESET}{warning_str}"
-        print(f"• {'Data Source':<15}: ✅ {BOLD}{GREEN}Found{RESET} ({data_count} {suffix}, {size_str}){integrity_warning}")
+        freshness = f"Updated {fresh_color}{BOLD}{get_relative_time(freshest_time)}{RESET}{warning_str}"
+        print(f"• {'Data Source':<15}: ✅ {BOLD}{GREEN}Found in {DATA_DIR}/{RESET} ({data_count} {suffix}, {size_str}){integrity_warning}")
         if 1 <= data_count <= 3:
-            file_list = natural_join([f"{BOLD}{f}{RESET}" for f in files])
+            file_list = natural_join(files_with_size)
             print(f"  - {'Files':<13}: {file_list}")
         elif data_count > 3:
-            print(f"  - {'Latest':<13}: {BOLD}{latest_file}{RESET}")
+            print(f"  - {'Latest':<13}: {BOLD}{latest_file}{RESET} ({format_size(latest_file_size)})")
         print(f"  - {'Composition':<13}: {type_summary}")
         print(f"  - {'Freshness':<13}: {freshness}")
     elif data_dir_exists:
-        data_status = f"⚠️ {BOLD}{YELLOW}Empty (0 files){RESET}"
+        data_status = f"⚠️ {BOLD}{YELLOW}Empty in {DATA_DIR}/{RESET} (0 files)"
         print(f"• {'Data Source':<15}: {data_status}")
     else:
-        data_status = f"❌ {BOLD}{RED}Not Found{RESET}"
+        data_status = f"❌ {BOLD}{RED}Not Found in {DATA_DIR}/{RESET}"
         print(f"• {'Data Source':<15}: {data_status}")
 
     if not all_found:
@@ -260,7 +266,7 @@ def main():
             status_tag = f"{BOLD}{YELLOW}[PEND]{RESET}"
             stage_color = RESET
 
-        current_indicator = f" {CYAN}◀ current{RESET}" if is_current else ""
+        current_indicator = f" {BOLD}{CYAN}◀ current{RESET}" if is_current else ""
         print(f"{BOLD}{i}.{RESET} {stage['emoji']} {status_tag} {BOLD}{stage_color}{stage['label']:<20}:{RESET} {stage['desc']}{current_indicator}")
         prev_stage_done = this_stage_done
 
@@ -272,15 +278,15 @@ def main():
         else:
             tip_text = f"{len(missing_libs)} libraries missing? Run the {BOLD}pip install -r requirements.txt{RESET} command to set up your environment."
     elif not data_dir_exists:
-        tip_text = f"Almost there! Run {BOLD}mkdir data{RESET} and add your product datasets to get started."
+        tip_text = f"Almost there! Run {BOLD}mkdir {DATA_DIR}{RESET} and add your product datasets to get started."
         if not is_virtual:
             tip_text += f" (Tip: Use a {BOLD}Virtual Env{RESET} for better management!)"
     elif data_count == 0:
-        tip_text = f"Data folder is ready but empty. Add some CSV or JSON product datasets to {BOLD}data/{RESET} to begin."
+        tip_text = f"Data folder is ready but empty. Add some CSV or JSON product datasets to {BOLD}{DATA_DIR}/{RESET} to begin."
         if not is_virtual:
             tip_text += f" (Tip: Use a {BOLD}Virtual Env{RESET} for better management!)"
     elif total_size == 0:
-        tip_text = f"Data files found in {BOLD}data/{RESET} appear to be empty (0 bytes). Please ensure your datasets contain valid product data."
+        tip_text = f"Data files found in {BOLD}{DATA_DIR}/{RESET} appear to be empty (0 bytes). Please ensure your datasets contain valid product data."
     elif not is_virtual:
         tip_text = f"Consider using a {BOLD}Virtual Environment{RESET} for better dependency management. Run {BOLD}python -m venv venv{RESET} to create one!"
     else:
