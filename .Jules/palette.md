@@ -77,3 +77,7 @@
 ## 2026-07-11 - Data Integrity Awareness in CLI Onboarding
 **Learning:** Checking for file existence and count is insufficient in data-driven CLI tools; empty files (0 bytes) can lead to misleading "Ready" states. Providing specific feedback for empty files via warning icons, status badge downgrades, and context-aware tips prevents user confusion and clearly identifies the next necessary setup action.
 **Action:** Always incorporate a `total_size` check alongside file counts when verifying data directory readiness, and use it to drive conditional UI states (e.g., [PEND] vs [DONE]) and specific onboarding guidance.
+
+## 2026-07-15 - Granular Data Transparency and Grammatical Polish
+**Learning:** Providing individual file sizes for small datasets and the size of the "Latest" file for larger ones offers immediate operational context without overwhelming the user. Furthermore, ensuring grammatical correctness in natural language summaries (e.g., "2 other files" vs "2 others") significantly enhances the professional quality of the interface.
+**Action:** Incorporate individual and "Latest" item sizes in collection summaries, and always apply strict pluralization logic to natural language joins in CLI tools.
