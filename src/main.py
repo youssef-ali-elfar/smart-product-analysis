@@ -76,12 +76,18 @@ def main():
     parser.add_argument(
         "--version", action="version", version=f"Smart Product Analysis {version}"
     )
+    parser.add_argument(
+        "--no-color", action="store_true", help="Disable ANSI color output"
+    )
+    parser.add_argument(
+        "--plain", action="store_true", help="Plain text mode (no colors, no emojis, no box drawing)"
+    )
 
     # Parse arguments
-    parser.parse_args()
+    args = parser.parse_args()
 
     # ANSI colors
-    use_color = supports_color()
+    use_color = supports_color() and not args.no_color and not args.plain
     BLUE = "\033[94m" if use_color else ""
     GREEN = "\033[92m" if use_color else ""
     RED = "\033[91m" if use_color else ""
@@ -89,6 +95,35 @@ def main():
     CYAN = "\033[96m" if use_color else ""
     BOLD = "\033[1m" if use_color else ""
     RESET = "\033[0m" if use_color else ""
+
+    # Emoji / Special Character Constants
+    EMOJI_OK = "" if args.plain else "✅ "
+    EMOJI_ERR = "" if args.plain else "❌ "
+    EMOJI_WARN = "" if args.plain else "⚠️ "
+    EMOJI_TIME = "" if args.plain else "🕒 "
+    EMOJI_VENV = "" if args.plain else "📦 "
+    EMOJI_GLOBAL = "" if args.plain else "🌐 "
+    EMOJI_TIP = "" if args.plain else "💡 "
+    EMOJI_ROCKET = "" if args.plain else "🚀 "
+    EMOJI_SPARKLES = "" if args.plain else "✨ "
+
+    # Borders and formatting constants
+    if args.plain:
+        border_top = "+----------------------------------------+"
+        border_bottom = "+----------------------------------------+"
+        border_mid_left = "| "
+        border_mid_right = " |"
+        connector_sym = "|"
+        current_indicator_sym = "<- current"
+        footer_line = "------------------------------------------"
+    else:
+        border_top = f"{BLUE}┌────────────────────────────────────────┐{RESET}"
+        border_bottom = f"{BLUE}└────────────────────────────────────────┘{RESET}"
+        border_mid_left = f"{BLUE}│ "
+        border_mid_right = f" {BLUE}│{RESET}"
+        connector_sym = "│"
+        current_indicator_sym = "◀ current"
+        footer_line = f"{BLUE}──────────────────────────────────────────{RESET}"
 
     # Consolidated Checks
     libs = {
@@ -154,41 +189,41 @@ def main():
     # Print Header
     padding_count = 13 - len(version) - len(badge_text)
     padding = " " * padding_count
-    print(f"{BLUE}┌────────────────────────────────────────┐{RESET}")
-    print(f"{BLUE}│ {BOLD}Smart Product Analysis{RESET} v{version} {padding}{badge_color}{BOLD}{badge_text}{RESET} {BLUE}│{RESET}")
-    print(f"{BLUE}└────────────────────────────────────────┘{RESET}")
+    print(border_top)
+    print(f"{border_mid_left}{BOLD}Smart Product Analysis{RESET} v{version} {padding}{badge_color}{BOLD}{badge_text}{RESET}{border_mid_right}")
+    print(border_bottom)
 
     # System Status
     print(f"\n{CYAN}{BOLD}System Status:{RESET}")
     now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    print(f"• {'Session Start':<15}: 🕒 {now}")
+    print(f"• {'Session Start':<15}: {EMOJI_TIME}{now}")
     os_name = platform.system()
-    os_icon = "🐧 " if os_name == "Linux" else "🍎 " if os_name == "Darwin" else "🪟 " if os_name == "Windows" else ""
+    os_icon = "" if args.plain else ("🐧 " if os_name == "Linux" else "🍎 " if os_name == "Darwin" else "🪟 " if os_name == "Windows" else "")
     print(f"• {'System':<15}: {os_icon}{os_name} ({platform.machine()})")
     print(f"• {'Python':<15}: {platform.python_version()}")
-    env_type = f"📦 {BOLD}{GREEN}Virtual Env{RESET}" if is_venv() else f"🌐 {BOLD}{YELLOW}Global{RESET}"
+    env_type = f"{EMOJI_VENV}{BOLD}{GREEN}Virtual Env{RESET}" if is_venv() else f"{EMOJI_GLOBAL}{BOLD}{YELLOW}Global{RESET}"
     print(f"• {'Environment':<15}: {env_type}")
 
     print(f"  {BOLD}Dependencies:{RESET}")
     for label, lib_version in lib_results.items():
         if lib_version:
-            status = f"✅ {BOLD}{GREEN}{lib_version}{RESET}"
+            status = f"{EMOJI_OK}{BOLD}{GREEN}{lib_version}{RESET}"
         else:
             purpose = libs[label]["purpose"]
-            status = f"❌ {BOLD}{RED}Not Found{RESET} ({purpose})"
+            status = f"{EMOJI_ERR}{BOLD}{RED}Not Found{RESET} ({purpose})"
         print(f"  - {label:<13}: {status}")
 
     if data_dir_exists and data_count > 0:
         suffix = "file" if data_count == 1 else "files"
         size_str = format_size(total_size)
-        integrity_warning = f" {BOLD}{YELLOW}⚠️ Files appear empty!{RESET}" if total_size == 0 else ""
+        integrity_warning = f" {BOLD}{YELLOW}{EMOJI_WARN}Files appear empty!{RESET}" if total_size == 0 else ""
         time_diff = time.time() - freshest_time
         is_very_fresh = time_diff < 86400
         is_stale = time_diff > 604800
         fresh_color = GREEN if is_very_fresh else RESET
         warning_str = f" {BOLD}{YELLOW}(Stale?){RESET}" if is_stale else ""
         freshness = f"Updated {BOLD}{fresh_color}{get_relative_time(freshest_time)}{RESET}{warning_str}"
-        print(f"• {'Data Source':<15}: ✅ {BOLD}{GREEN}Found{RESET} ({data_count} {suffix}, {size_str}){integrity_warning}")
+        print(f"• {'Data Source':<15}: {EMOJI_OK}{BOLD}{GREEN}Found{RESET} ({data_count} {suffix}, {size_str}){integrity_warning}")
         if 1 <= data_count <= 3:
             file_list = natural_join([f"{BOLD}{f}{RESET}" for f in files])
             print(f"  - {'Files':<13}: {file_list}")
@@ -197,24 +232,24 @@ def main():
         print(f"  - {'Composition':<13}: {type_summary}")
         print(f"  - {'Freshness':<13}: {freshness}")
     elif data_dir_exists:
-        data_status = f"⚠️ {BOLD}{YELLOW}Empty (0 files){RESET}"
+        data_status = f"{EMOJI_WARN}{BOLD}{YELLOW}Empty (0 files){RESET}"
         print(f"• {'Data Source':<15}: {data_status}")
     else:
-        data_status = f"❌ {BOLD}{RED}Not Found{RESET}"
+        data_status = f"{EMOJI_ERR}{BOLD}{RED}Not Found{RESET}"
         print(f"• {'Data Source':<15}: {data_status}")
 
     if not all_found:
         lib_suffix = "library" if len(missing_libs) == 1 else "libraries"
-        status_msg = f"❌ {BOLD}{RED}Incomplete{RESET} ({len(missing_libs)} {lib_suffix} missing) - Please run: {BOLD}pip install -r requirements.txt{RESET}"
+        status_msg = f"{EMOJI_ERR}{BOLD}{RED}Incomplete{RESET} ({len(missing_libs)} {lib_suffix} missing) - Please run: {BOLD}pip install -r requirements.txt{RESET}"
     elif not data_dir_exists or data_count == 0:
-        status_msg = f"⚠️ {BOLD}{YELLOW}Pending{RESET} - Data directory missing or empty"
+        status_msg = f"{EMOJI_WARN}{BOLD}{YELLOW}Pending{RESET} - Data directory missing or empty"
     elif total_size == 0:
-        status_msg = f"⚠️ {BOLD}{YELLOW}Pending{RESET} - Data files appear empty"
+        status_msg = f"{EMOJI_WARN}{BOLD}{YELLOW}Pending{RESET} - Data files appear empty"
     else:
-        status_msg = f"✅ {BOLD}{GREEN}Ready{RESET}"
+        status_msg = f"{EMOJI_OK}{BOLD}{GREEN}Ready{RESET}"
     print(f"• {'Status':<15}: {status_msg}")
 
-    print(f"\n🚀 Welcome! This tool is designed to help you extract insights from product data.")
+    print(f"\n{EMOJI_ROCKET}Welcome! This tool is designed to help you extract insights from product data.")
 
     print(f"\n{GREEN}{BOLD}Analysis Roadmap:{RESET}")
     stages = [
@@ -230,7 +265,7 @@ def main():
     for i, stage in enumerate(stages, 1):
         if i > 1:
             connector_color = GREEN if prev_stage_done else BLUE
-            print(f"   {connector_color}│{RESET}")
+            print(f"   {connector_color}{connector_sym}{RESET}")
         is_current = False
         this_stage_done = False
         if i == 1:
@@ -260,8 +295,9 @@ def main():
             status_tag = f"{BOLD}{YELLOW}[PEND]{RESET}"
             stage_color = RESET
 
-        current_indicator = f" {CYAN}◀ current{RESET}" if is_current else ""
-        print(f"{BOLD}{i}.{RESET} {stage['emoji']} {status_tag} {BOLD}{stage_color}{stage['label']:<20}:{RESET} {stage['desc']}{current_indicator}")
+        current_indicator = f" {CYAN}{current_indicator_sym}{RESET}" if is_current else ""
+        stage_emoji = "" if args.plain else f"{stage['emoji']} "
+        print(f"{BOLD}{i}.{RESET} {stage_emoji}{status_tag} {BOLD}{stage_color}{stage['label']:<20}:{RESET} {stage['desc']}{current_indicator}")
         prev_stage_done = this_stage_done
 
     is_virtual = is_venv()
@@ -284,11 +320,11 @@ def main():
     elif not is_virtual:
         tip_text = f"Consider using a {BOLD}Virtual Environment{RESET} for better dependency management. Run {BOLD}python -m venv venv{RESET} to create one!"
     else:
-        tip_text = f"✨ {BOLD}Everything is set!{RESET} Head over to the {BOLD}Data Cleaning{RESET} stage to prepare your dataset!"
+        tip_text = f"{EMOJI_SPARKLES}{BOLD}Everything is set!{RESET} Head over to the {BOLD}Data Cleaning{RESET} stage to prepare your dataset!"
 
-    print(f"\n💡 {CYAN}{BOLD}Tip:{RESET} {tip_text}")
+    print(f"\n{EMOJI_TIP}{CYAN}{BOLD}Tip:{RESET} {tip_text}")
     print(f"   Use {BOLD}--help{RESET} or refer to README.md for detailed documentation.")
-    print(f"{BLUE}──────────────────────────────────────────{RESET}")
+    print(footer_line)
 
 if __name__ == "__main__":
     try:
