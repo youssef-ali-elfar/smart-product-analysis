@@ -83,6 +83,20 @@ class TestUX(unittest.TestCase):
                 "data_dir_exists": True,
                 "data_files": ["empty.csv"],
                 "file_size": 0
+            },
+            {
+                "name": "Explicit CLI --plain Mode",
+                "libs": {lib: "1.2.3" for lib in ["pandas", "numpy", "matplotlib", "seaborn", "sklearn", "jupyter"]},
+                "data_dir_exists": True,
+                "data_files": ["products.csv"],
+                "argv": ["src/main.py", "--plain"]
+            },
+            {
+                "name": "Explicit CLI --no-color Mode",
+                "libs": {lib: "1.2.3" for lib in ["pandas", "numpy", "matplotlib", "seaborn", "sklearn", "jupyter"]},
+                "data_dir_exists": True,
+                "data_files": ["products.csv"],
+                "argv": ["src/main.py", "--no-color"]
             }
         ]
 
@@ -112,7 +126,9 @@ class TestUX(unittest.TestCase):
             captured_output = io.StringIO()
             sys.stdout = captured_output
             try:
-                main()
+                argv = scenario.get("argv", ["src/main.py"])
+                with patch("sys.argv", argv):
+                    main()
                 output = captured_output.getvalue()
                 sys.stdout = sys.__stdout__
                 print(output)
@@ -139,6 +155,29 @@ class TestUX(unittest.TestCase):
 
                 if scenario['name'] == "NO_COLOR Support":
                     self.assertNotIn("\033[", output)
+
+                if scenario['name'] == "Explicit CLI --plain Mode":
+                    # No ANSI escape codes
+                    self.assertNotIn("\033[", output)
+                    # No unicode emojis
+                    self.assertNotIn("✅", output)
+                    self.assertNotIn("❌", output)
+                    self.assertNotIn("⚠️", output)
+                    self.assertNotIn("🕒", output)
+                    self.assertNotIn("📦", output)
+                    self.assertNotIn("🌐", output)
+                    self.assertNotIn("💡", output)
+                    self.assertNotIn("🚀", output)
+                    # ASCII border instead of unicode box drawings
+                    self.assertIn("+----------------------------------------+", output)
+                    self.assertIn("| ", output)
+                    self.assertIn("------------------------------------------", output)
+
+                if scenario['name'] == "Explicit CLI --no-color Mode":
+                    # No ANSI escape codes
+                    self.assertNotIn("\033[", output)
+                    # Retains emojis
+                    self.assertIn("✅", output)
 
             except Exception as e:
                 sys.stdout = sys.__stdout__
