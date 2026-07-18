@@ -82,6 +82,9 @@ def main():
     parser.add_argument(
         "--plain", action="store_true", help="Plain text mode (no colors, no emojis, no box drawing)"
     )
+    parser.add_argument(
+        "-i", "--init", action="store_true", help="Initialize data/ directory and populate it with a sample products.csv file"
+    )
 
     # Parse arguments
     args = parser.parse_args()
@@ -106,6 +109,27 @@ def main():
     EMOJI_TIP = "" if args.plain else "💡 "
     EMOJI_ROCKET = "" if args.plain else "🚀 "
     EMOJI_SPARKLES = "" if args.plain else "✨ "
+
+    if args.init:
+        # Create data directory and populate sample file
+        os.makedirs("data", exist_ok=True)
+        csv_path = os.path.join("data", "products.csv")
+        sample_data = (
+            "id,name,category,price,stock\n"
+            "1,Smart Watch,Electronics,199.99,50\n"
+            "2,Wireless Earbuds,Electronics,79.99,120\n"
+            "3,Running Shoes,Apparel,89.95,85\n"
+            "4,Leather Wallet,Accessories,35.00,200\n"
+            "5,Coffee Maker,Home,49.99,40\n"
+        )
+        with open(csv_path, "w", encoding="utf-8") as f:
+            f.write(sample_data)
+
+        print(f"\n{EMOJI_SPARKLES}{BOLD}{GREEN}Initialization complete!{RESET}")
+        print(f"• Created {BOLD}data/{RESET} directory.")
+        print(f"• Populated {BOLD}data/products.csv{RESET} with sample product datasets.")
+        print(f"• Run {BOLD}python src/main.py{RESET} to view your updated workspace status!\n")
+        return
 
     # Borders and formatting constants
     if args.plain:
@@ -308,11 +332,11 @@ def main():
         else:
             tip_text = f"{len(missing_libs)} libraries missing? Run the {BOLD}pip install -r requirements.txt{RESET} command to set up your environment."
     elif not data_dir_exists:
-        tip_text = f"Almost there! Run {BOLD}mkdir data{RESET} and add your product datasets to get started."
+        tip_text = f"Almost there! Run {BOLD}python src/main.py --init{RESET} to quickly generate sample data and get started."
         if not is_virtual:
             tip_text += f" (Tip: Use a {BOLD}Virtual Env{RESET} for better management!)"
     elif data_count == 0:
-        tip_text = f"Data folder is ready but empty. Add some CSV or JSON product datasets to {BOLD}data/{RESET} to begin."
+        tip_text = f"Data folder is ready but empty. Run {BOLD}python src/main.py --init{RESET} to populate sample data and get started."
         if not is_virtual:
             tip_text += f" (Tip: Use a {BOLD}Virtual Env{RESET} for better management!)"
     elif total_size == 0:

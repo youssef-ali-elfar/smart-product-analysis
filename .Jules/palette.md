@@ -81,3 +81,7 @@
 ## 2026-07-16 - Accessible CLI Plain-Text Mode
 **Learning:** High-density CLI tools with rich colors, emojis, and Unicode box-drawing/borders can cause significant navigation hurdles for screen reader users and can result in garbled text on basic or restricted terminals. Providing an explicit `--plain` flag that strips ANSI colors, replaces complex Unicode shapes with standard text alternatives, and falls back to simple ASCII characters (`+`, `-`, `|`) for borders establishes an incredibly accessible, readable output.
 **Action:** Implement conditional formatting constants (`border_top`, `EMOJI_*`, etc.) that cleanly adapt the CLI visualization based on high-level accessibility preferences (`--plain` and `--no-color`).
+
+## 2026-07-17 - Automated CLI Workspace Initialization
+**Learning:** When a CLI tool's status report relies on an existing directory structure and files to function, demanding the user to manually create directories and populate mock files causes high friction. Providing an automated workspace initialization flag (e.g., `--init`) that generates sample data instantly reduces cognitive load and accelerates onboarding from first-run to successful execution.
+**Action:** Always implement a workspace initialization flag (`--init` or `-i`) in data-centric CLI tools, and update all empty/missing state tips to guide users directly to this command.

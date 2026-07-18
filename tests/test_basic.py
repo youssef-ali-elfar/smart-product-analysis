@@ -34,5 +34,25 @@ class TestBasic(unittest.TestCase):
             main()
         self.assertEqual(cm.exception.code, 0)
 
+    @patch('sys.argv', ['src/main.py', '--init'])
+    @patch('os.makedirs')
+    @patch('builtins.open')
+    def test_main_init(self, mock_open, mock_makedirs):
+        """Test that main() behaves correctly when called with --init."""
+        captured_output = io.StringIO()
+        sys.stdout = captured_output
+        try:
+            main()
+            output = captured_output.getvalue()
+            self.assertIn("Initialization complete!", output)
+            self.assertIn("Created data/ directory.", output)
+            self.assertIn("Populated data/products.csv", output)
+            mock_makedirs.assert_called_once_with("data", exist_ok=True)
+            mock_open.assert_called_once()
+        except Exception as e:
+            self.fail(f"main() raised {type(e).__name__} unexpectedly!")
+        finally:
+            sys.stdout = sys.__stdout__
+
 if __name__ == '__main__':
     unittest.main()
