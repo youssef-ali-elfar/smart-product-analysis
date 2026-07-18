@@ -37,8 +37,11 @@ class TestBasic(unittest.TestCase):
     @patch('sys.argv', ['src/main.py', '--init'])
     @patch('os.makedirs')
     @patch('builtins.open')
-    def test_main_init(self, mock_open, mock_makedirs):
+    @patch('os.path.isfile')
+    @patch('os.path.getsize')
+    def test_main_init(self, mock_getsize, mock_isfile, mock_open, mock_makedirs):
         """Test that main() behaves correctly when called with --init."""
+        mock_isfile.return_value = False
         captured_output = io.StringIO()
         sys.stdout = captured_output
         try:
@@ -53,6 +56,72 @@ class TestBasic(unittest.TestCase):
             self.fail(f"main() raised {type(e).__name__} unexpectedly!")
         finally:
             sys.stdout = sys.__stdout__
+
+    @patch('sys.argv', ['src/main.py', '--init'])
+    @patch('os.makedirs')
+    @patch('builtins.open')
+    @patch('os.path.isfile')
+    @patch('os.path.getsize')
+    @patch('sys.stdin')
+    def test_main_init_overwrite_confirm(self, mock_stdin, mock_getsize, mock_isfile, mock_open, mock_makedirs):
+        """Test that --init prompts for confirmation if products.csv exists and contains data."""
+        mock_isfile.return_value = True
+        mock_getsize.return_value = 100
+        mock_stdin.isatty.return_value = True
+
+        # Test case where user says No
+        captured_output = io.StringIO()
+        sys.stdout = captured_output
+        with patch('builtins.input', return_value='n'):
+            main()
+            output = captured_output.getvalue()
+            self.assertIn("Initialization aborted.", output)
+            mock_open.assert_not_called()
+
+        # Test case where user says Yes
+        mock_open.reset_mock()
+        captured_output = io.StringIO()
+        sys.stdout = captured_output
+        with patch('builtins.input', return_value='y'):
+            main()
+            output = captured_output.getvalue()
+            self.assertIn("Initialization complete!", output)
+            mock_open.assert_called_once()
+
+    @patch('sys.argv', ['src/main.py'])
+    @patch('src.main.get_lib_version')
+    @patch('os.path.isdir')
+    @patch('os.makedirs')
+    @patch('builtins.open')
+    @patch('sys.stdin')
+    def test_interactive_onboarding_prompt(self, mock_stdin, mock_open, mock_makedirs, mock_isdir, mock_get_lib_version):
+        """Test interactive onboarding prompt triggers and behaves correctly when data dir is missing."""
+        mock_get_lib_version.return_value = "1.2.3"  # All libs found
+        mock_isdir.return_value = False  # Data dir missing
+        mock_stdin.isatty.return_value = True
+
+        # Test user declines onboarding prompt
+        captured_output = io.StringIO()
+        sys.stdout = captured_output
+        with patch('builtins.input', return_value='n') as mock_input:
+            main()
+            output = captured_output.getvalue()
+            mock_input.assert_called_once()
+            self.assertIn("Would you like to initialize the workspace with sample data now?", mock_input.call_args[0][0])
+            self.assertNotIn("Initialization complete!", output)
+            mock_open.assert_not_called()
+
+        # Test user accepts onboarding prompt
+        mock_open.reset_mock()
+        captured_output = io.StringIO()
+        sys.stdout = captured_output
+        with patch('builtins.input', return_value='yes') as mock_input:
+            main()
+            output = captured_output.getvalue()
+            mock_input.assert_called_once()
+            self.assertIn("Would you like to initialize the workspace with sample data now?", mock_input.call_args[0][0])
+            self.assertIn("Initialization complete!", output)
+            mock_open.assert_called_once()
 
 if __name__ == '__main__':
     unittest.main()
