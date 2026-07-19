@@ -85,3 +85,11 @@
 ## 2026-07-17 - Automated CLI Workspace Initialization
 **Learning:** When a CLI tool's status report relies on an existing directory structure and files to function, demanding the user to manually create directories and populate mock files causes high friction. Providing an automated workspace initialization flag (e.g., `--init`) that generates sample data instantly reduces cognitive load and accelerates onboarding from first-run to successful execution.
 **Action:** Always implement a workspace initialization flag (`--init` or `-i`) in data-centric CLI tools, and update all empty/missing state tips to guide users directly to this command.
+
+## 2026-07-18 - Overwrite Protection for Destructive CLI Initialization
+**Learning:** Overwriting existing user datasets silently during workspace initialization can cause accidental data loss. Adding a warning and confirmation prompt that is specifically active in interactive (TTY) terminals prevents destructive actions while remaining fully non-blocking for headless/piped scripts.
+**Action:** Implement `sys.stdin.isatty()`-guarded confirmation prompts for potentially destructive CLI setup commands.
+
+## 2026-07-18 - On-Demand Auto-Onboarding for Empty Workspaces
+**Learning:** Users who run a CLI status check in an empty workspace are looking to get started immediately. Rather than just printing a tip on how to initialize, offering an on-demand interactive onboarding prompt to auto-generate sample data reduces onboarding steps from two command executions down to a single keystroke.
+**Action:** Proactively offer to auto-initialize empty workspaces via interactive console prompts if the terminal is a TTY and setup prerequisites are met.
