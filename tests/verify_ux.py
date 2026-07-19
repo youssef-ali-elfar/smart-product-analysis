@@ -137,12 +137,17 @@ class TestUX(unittest.TestCase):
                     self.assertIn("Composition", output)
                     self.assertIn("Freshness", output)
 
+                if scenario['data_dir_exists'] and len(scenario['data_files']) >= 1 and len(scenario['data_files']) <= 3 and "file_size" not in scenario:
+                    # Each file listed should have its formatted size in the output next to it
+                    self.assertIn("(1 KB)", output)
+
                 if scenario['name'] == "Many File Types Capping":
                     self.assertIn("2 others", output)
                     self.assertIn("Latest", output)
                     # Extension should be bolded: \033[1mCSV\033[0m
                     self.assertIn("\033[1mCSV\033[0m", output)
                     self.assertIn("file", output) # Check for pluralization suffix
+                    self.assertIn(" (1 KB)", output) # Size next to Latest file
 
                 if scenario['name'] == "Stale Data Warning":
                     self.assertIn("(Stale?)", output)

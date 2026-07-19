@@ -260,10 +260,11 @@ def main():
         freshness = f"Updated {BOLD}{fresh_color}{get_relative_time(freshest_time)}{RESET}{warning_str}"
         print(f"• {'Data Source':<15}: {EMOJI_OK}{BOLD}{GREEN}Found{RESET} ({data_count} {suffix}, {size_str}){integrity_warning}")
         if 1 <= data_count <= 3:
-            file_list = natural_join([f"{BOLD}{f}{RESET}" for f in files])
+            file_list = natural_join([f"{BOLD}{f}{RESET} ({format_size(os.path.getsize(os.path.join('data', f)))})" for f in files])
             print(f"  - {'Files':<13}: {file_list}")
         elif data_count > 3:
-            print(f"  - {'Latest':<13}: {BOLD}{latest_file}{RESET}")
+            latest_size = format_size(os.path.getsize(os.path.join("data", latest_file)))
+            print(f"  - {'Latest':<13}: {BOLD}{latest_file}{RESET} ({latest_size})")
         print(f"  - {'Composition':<13}: {type_summary}")
         print(f"  - {'Freshness':<13}: {freshness}")
     elif data_dir_exists:
