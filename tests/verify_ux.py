@@ -127,7 +127,9 @@ class TestUX(unittest.TestCase):
             sys.stdout = captured_output
             try:
                 argv = scenario.get("argv", ["src/main.py"])
-                with patch("sys.argv", argv):
+                # We mock `open` to return a predefined CSV contents when products.csv or similar is read
+                mock_csv_data = "id,name,category,price,stock\n1,Smart Watch,Electronics,199.99,50"
+                with patch("sys.argv", argv), patch("builtins.open", unittest.mock.mock_open(read_data=mock_csv_data)) as mock_file:
                     main()
                 output = captured_output.getvalue()
                 sys.stdout = sys.__stdout__
@@ -136,6 +138,11 @@ class TestUX(unittest.TestCase):
                 if scenario['data_dir_exists'] and scenario['data_files']:
                     self.assertIn("Composition", output)
                     self.assertIn("Freshness", output)
+                    # Verify our new Dataset sub-bullet if csv file is present and not empty
+                    if any(f.lower().endswith(".csv") for f in scenario['data_files']) and scenario.get("file_size", 1024) > 0:
+                        self.assertIn("Dataset", output)
+                        self.assertIn("1 row", output)
+                        self.assertIn("id, name, category, price, stock", output)
 
                 if scenario['name'] == "Many File Types Capping":
                     self.assertIn("2 other files", output)

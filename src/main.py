@@ -213,6 +213,27 @@ def main():
 
             type_summary = natural_join(type_items)
 
+            # Extract Dataset Preview from the first non-empty CSV file
+            dataset_preview = ""
+            csv_files = [f for f in files if f.lower().endswith(".csv")]
+            for target_csv in csv_files:
+                csv_path = os.path.join("data", target_csv)
+                if os.path.isfile(csv_path) and os.path.getsize(csv_path) > 0:
+                    try:
+                        with open(csv_path, "r", encoding="utf-8") as f_csv:
+                            lines = [line.strip() for line in f_csv if line.strip()]
+                        if lines:
+                            headers = [col.strip() for col in lines[0].split(",") if col.strip()]
+                            row_count = len(lines) - 1
+                            if len(headers) > 6:
+                                col_preview = ", ".join(headers[:6]) + ", ..."
+                            else:
+                                col_preview = ", ".join(headers)
+                            dataset_preview = f"{BOLD}{target_csv}{RESET} ({row_count} {'row' if row_count == 1 else 'rows'}) • {col_preview}"
+                            break
+                    except Exception:
+                        pass
+
         # Determine Status and Badge
         if not all_found:
             badge_text = f"[INC:{len(missing_libs)}]"
@@ -267,6 +288,8 @@ def main():
                 print(f"  - {'Files':<13}: {file_list}")
             elif data_count > 3:
                 print(f"  - {'Latest':<13}: {BOLD}{latest_file}{RESET}")
+            if dataset_preview:
+                print(f"  - {'Dataset':<13}: {dataset_preview}")
             print(f"  - {'Composition':<13}: {type_summary}")
             print(f"  - {'Freshness':<13}: {freshness}")
         elif data_dir_exists:
