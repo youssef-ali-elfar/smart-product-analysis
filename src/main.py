@@ -142,250 +142,256 @@ def main():
         print(f"• Run {BOLD}python src/main.py{RESET} to view your updated workspace status!\n")
         return
 
-    # Borders and formatting constants
-    if args.plain:
-        border_top = "+----------------------------------------+"
-        border_bottom = "+----------------------------------------+"
-        border_mid_left = "| "
-        border_mid_right = " |"
-        connector_sym = "|"
-        current_indicator_sym = "<- current"
-        footer_line = "------------------------------------------"
-    else:
-        border_top = f"{BLUE}┌────────────────────────────────────────┐{RESET}"
-        border_bottom = f"{BLUE}└────────────────────────────────────────┘{RESET}"
-        border_mid_left = f"{BLUE}│ "
-        border_mid_right = f" {BLUE}│{RESET}"
-        connector_sym = "│"
-        current_indicator_sym = "◀ current"
-        footer_line = f"{BLUE}──────────────────────────────────────────{RESET}"
-
-    # Consolidated Checks
-    libs = {
-        "Pandas": {"pkg": "pandas", "purpose": "Data manipulation"},
-        "NumPy": {"pkg": "numpy", "purpose": "Numerical computing"},
-        "Matplotlib": {"pkg": "matplotlib", "purpose": "Static visualizations"},
-        "Seaborn": {"pkg": "seaborn", "purpose": "Statistical data visualization"},
-        "Scikit-Learn": {"pkg": "sklearn", "purpose": "Machine learning algorithms"},
-        "Jupyter": {"pkg": "jupyter", "purpose": "Interactive notebooks"}
-    }
-
-    lib_results = {}
-    missing_libs = []
-    for label, info in libs.items():
-        lib_version = get_lib_version(info["pkg"])
-        lib_results[label] = lib_version
-        if not lib_version:
-            missing_libs.append(label)
-
-    all_found = len(missing_libs) == 0
-
-    data_dir_exists = os.path.isdir("data")
-    data_count = 0
-    total_size = 0
-    freshest_time = 0
-    type_summary = ""
-    if data_dir_exists:
-        files = sorted([f for f in os.listdir("data") if os.path.isfile(os.path.join("data", f))])
-        data_count = len(files)
-        file_types = []
-        latest_file = ""
-        for f in files:
-            path = os.path.join("data", f)
-            mtime = os.path.getmtime(path)
-            total_size += os.path.getsize(path)
-            if mtime > freshest_time:
-                freshest_time = mtime
-                latest_file = f
-            ext = os.path.splitext(f)[1][1:].upper() or "OTHER"
-            file_types.append(ext)
-        type_counts = Counter(file_types)
-        common_types = type_counts.most_common(3)
-        type_items = [f"{count} {BOLD}{t}{RESET} {'file' if count == 1 else 'files'}" for t, count in common_types]
-
-        # Calculate total files in remaining types
-        if len(type_counts) > 3:
-            total_others = sum(count for t, count in type_counts.most_common()[3:])
-            type_items.append(f"{total_others} others")
-
-        type_summary = natural_join(type_items)
-
-    # Determine Status and Badge
-    if not all_found:
-        badge_text = f"[INC:{len(missing_libs)}]"
-        badge_color = RED
-    elif not data_dir_exists or data_count == 0 or total_size == 0:
-        badge_text = "[PEND]"
-        badge_color = YELLOW
-    else:
-        badge_text = "[READY]"
-        badge_color = GREEN
-
-    # Print Header
-    padding_count = 13 - len(version) - len(badge_text)
-    padding = " " * padding_count
-    print(border_top)
-    print(f"{border_mid_left}{BOLD}Smart Product Analysis{RESET} v{version} {padding}{badge_color}{BOLD}{badge_text}{RESET}{border_mid_right}")
-    print(border_bottom)
-
-    # System Status
-    print(f"\n{CYAN}{BOLD}System Status:{RESET}")
-    now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    print(f"• {'Session Start':<15}: {EMOJI_TIME}{now}")
-    os_name = platform.system()
-    os_icon = "" if args.plain else ("🐧 " if os_name == "Linux" else "🍎 " if os_name == "Darwin" else "🪟 " if os_name == "Windows" else "")
-    print(f"• {'System':<15}: {os_icon}{os_name} ({platform.machine()})")
-    print(f"• {'Python':<15}: {platform.python_version()}")
-    env_type = f"{EMOJI_VENV}{BOLD}{GREEN}Virtual Env{RESET}" if is_venv() else f"{EMOJI_GLOBAL}{BOLD}{YELLOW}Global{RESET}"
-    print(f"• {'Environment':<15}: {env_type}")
-
-    print(f"  {BOLD}Dependencies:{RESET}")
-    for label, lib_version in lib_results.items():
-        if lib_version:
-            status = f"{EMOJI_OK}{BOLD}{GREEN}{lib_version}{RESET}"
+    refreshed = False
+    while True:
+        # Borders and formatting constants
+        if args.plain:
+            border_top = "+----------------------------------------+"
+            border_bottom = "+----------------------------------------+"
+            border_mid_left = "| "
+            border_mid_right = " |"
+            connector_sym = "|"
+            current_indicator_sym = "<- current"
+            footer_line = "------------------------------------------"
         else:
-            purpose = libs[label]["purpose"]
-            status = f"{EMOJI_ERR}{BOLD}{RED}Not Found{RESET} ({purpose})"
-        print(f"  - {label:<13}: {status}")
+            border_top = f"{BLUE}┌────────────────────────────────────────┐{RESET}"
+            border_bottom = f"{BLUE}└────────────────────────────────────────┘{RESET}"
+            border_mid_left = f"{BLUE}│ "
+            border_mid_right = f" {BLUE}│{RESET}"
+            connector_sym = "│"
+            current_indicator_sym = "◀ current"
+            footer_line = f"{BLUE}──────────────────────────────────────────{RESET}"
 
-    if data_dir_exists and data_count > 0:
-        suffix = "file" if data_count == 1 else "files"
-        size_str = format_size(total_size)
-        integrity_warning = f" {BOLD}{YELLOW}{EMOJI_WARN}Files appear empty!{RESET}" if total_size == 0 else ""
-        time_diff = time.time() - freshest_time
-        is_very_fresh = time_diff < 86400
-        is_stale = time_diff > 604800
-        fresh_color = GREEN if is_very_fresh else RESET
-        warning_str = f" {BOLD}{YELLOW}(Stale?){RESET}" if is_stale else ""
-        freshness = f"Updated {BOLD}{fresh_color}{get_relative_time(freshest_time)}{RESET}{warning_str}"
-        print(f"• {'Data Source':<15}: {EMOJI_OK}{BOLD}{GREEN}Found{RESET} ({data_count} {suffix}, {size_str}){integrity_warning}")
-        if 1 <= data_count <= 3:
-            file_list = natural_join([f"{BOLD}{f}{RESET}" for f in files])
-            print(f"  - {'Files':<13}: {file_list}")
-        elif data_count > 3:
-            print(f"  - {'Latest':<13}: {BOLD}{latest_file}{RESET}")
-        print(f"  - {'Composition':<13}: {type_summary}")
-        print(f"  - {'Freshness':<13}: {freshness}")
-    elif data_dir_exists:
-        data_status = f"{EMOJI_WARN}{BOLD}{YELLOW}Empty (0 files){RESET}"
-        print(f"• {'Data Source':<15}: {data_status}")
-    else:
-        data_status = f"{EMOJI_ERR}{BOLD}{RED}Not Found{RESET}"
-        print(f"• {'Data Source':<15}: {data_status}")
+        # Consolidated Checks
+        libs = {
+            "Pandas": {"pkg": "pandas", "purpose": "Data manipulation"},
+            "NumPy": {"pkg": "numpy", "purpose": "Numerical computing"},
+            "Matplotlib": {"pkg": "matplotlib", "purpose": "Static visualizations"},
+            "Seaborn": {"pkg": "seaborn", "purpose": "Statistical data visualization"},
+            "Scikit-Learn": {"pkg": "sklearn", "purpose": "Machine learning algorithms"},
+            "Jupyter": {"pkg": "jupyter", "purpose": "Interactive notebooks"}
+        }
 
-    if not all_found:
-        lib_suffix = "library" if len(missing_libs) == 1 else "libraries"
-        status_msg = f"{EMOJI_ERR}{BOLD}{RED}Incomplete{RESET} ({len(missing_libs)} {lib_suffix} missing) - Please run: {BOLD}pip install -r requirements.txt{RESET}"
-    elif not data_dir_exists or data_count == 0:
-        status_msg = f"{EMOJI_WARN}{BOLD}{YELLOW}Pending{RESET} - Data directory missing or empty"
-    elif total_size == 0:
-        status_msg = f"{EMOJI_WARN}{BOLD}{YELLOW}Pending{RESET} - Data files appear empty"
-    else:
-        status_msg = f"{EMOJI_OK}{BOLD}{GREEN}Ready{RESET}"
-    print(f"• {'Status':<15}: {status_msg}")
+        lib_results = {}
+        missing_libs = []
+        for label, info in libs.items():
+            lib_version = get_lib_version(info["pkg"])
+            lib_results[label] = lib_version
+            if not lib_version:
+                missing_libs.append(label)
 
-    print(f"\n{EMOJI_ROCKET}Welcome! This tool is designed to help you extract insights from product data.")
+        all_found = len(missing_libs) == 0
 
-    print(f"\n{GREEN}{BOLD}Analysis Roadmap:{RESET}")
-    stages = [
-        {"emoji": "📥", "label": "Data Ingestion", "desc": "Collect raw data from various sources."},
-        {"emoji": "🧹", "label": "Data Cleaning", "desc": "Preprocess and handle missing values."},
-        {"emoji": "📊", "label": "EDA", "desc": "Visualize and understand data distributions."},
-        {"emoji": "⚙️", "label": "Feature Engineering", "desc": "Create new variables for modeling."},
-        {"emoji": "🤖", "label": "Modeling", "desc": "Train and evaluate machine learning models."},
-        {"emoji": "📈", "label": "Reporting & Insights", "desc": "Extract and communicate final results."},
-    ]
+        data_dir_exists = os.path.isdir("data")
+        data_count = 0
+        total_size = 0
+        freshest_time = 0
+        type_summary = ""
+        if data_dir_exists:
+            files = sorted([f for f in os.listdir("data") if os.path.isfile(os.path.join("data", f))])
+            data_count = len(files)
+            file_types = []
+            latest_file = ""
+            for f in files:
+                path = os.path.join("data", f)
+                mtime = os.path.getmtime(path)
+                total_size += os.path.getsize(path)
+                if mtime > freshest_time:
+                    freshest_time = mtime
+                    latest_file = f
+                ext = os.path.splitext(f)[1][1:].upper() or "OTHER"
+                file_types.append(ext)
+            type_counts = Counter(file_types)
+            common_types = type_counts.most_common(3)
+            type_items = [f"{count} {BOLD}{t}{RESET} {'file' if count == 1 else 'files'}" for t, count in common_types]
 
-    prev_stage_done = False
-    for i, stage in enumerate(stages, 1):
-        if i > 1:
-            connector_color = GREEN if prev_stage_done else BLUE
-            print(f"   {connector_color}{connector_sym}{RESET}")
-        is_current = False
-        this_stage_done = False
-        if i == 1:
-            if data_count > 0 and total_size > 0:
-                status_tag = f"{BOLD}{GREEN}[DONE]{RESET}"
-                stage_color = GREEN
-                this_stage_done = True
-            elif data_count > 0:
-                status_tag = f"{BOLD}{YELLOW}[PEND]{RESET}"
-                stage_color = RESET
-            elif all_found:
-                status_tag = f"{BOLD}{CYAN}[NEXT]{RESET}"
-                stage_color = CYAN
-                is_current = True
+            # Calculate total files in remaining types
+            if len(type_counts) > 3:
+                total_others = sum(count for t, count in type_counts.most_common()[3:])
+                other_suffix = "file" if total_others == 1 else "files"
+                type_items.append(f"{total_others} other {other_suffix}")
+
+            type_summary = natural_join(type_items)
+
+        # Determine Status and Badge
+        if not all_found:
+            badge_text = f"[INC:{len(missing_libs)}]"
+            badge_color = RED
+        elif not data_dir_exists or data_count == 0 or total_size == 0:
+            badge_text = "[PEND]"
+            badge_color = YELLOW
+        else:
+            badge_text = "[READY]"
+            badge_color = GREEN
+
+        # Print Header
+        padding_count = 13 - len(version) - len(badge_text)
+        padding = " " * padding_count
+        print(border_top)
+        print(f"{border_mid_left}{BOLD}Smart Product Analysis{RESET} v{version} {padding}{badge_color}{BOLD}{badge_text}{RESET}{border_mid_right}")
+        print(border_bottom)
+
+        # System Status
+        print(f"\n{CYAN}{BOLD}System Status:{RESET}")
+        now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        print(f"• {'Session Start':<15}: {EMOJI_TIME}{now}")
+        os_name = platform.system()
+        os_icon = "" if args.plain else ("🐧 " if os_name == "Linux" else "🍎 " if os_name == "Darwin" else "🪟 " if os_name == "Windows" else "")
+        print(f"• {'System':<15}: {os_icon}{os_name} ({platform.machine()})")
+        print(f"• {'Python':<15}: {platform.python_version()}")
+        env_type = f"{EMOJI_VENV}{BOLD}{GREEN}Virtual Env{RESET}" if is_venv() else f"{EMOJI_GLOBAL}{BOLD}{YELLOW}Global{RESET}"
+        print(f"• {'Environment':<15}: {env_type}")
+
+        print(f"  {BOLD}Dependencies:{RESET}")
+        for label, lib_version in lib_results.items():
+            if lib_version:
+                status = f"{EMOJI_OK}{BOLD}{GREEN}{lib_version}{RESET}"
+            else:
+                purpose = libs[label]["purpose"]
+                status = f"{EMOJI_ERR}{BOLD}{RED}Not Found{RESET} ({purpose})"
+            print(f"  - {label:<13}: {status}")
+
+        if data_dir_exists and data_count > 0:
+            suffix = "file" if data_count == 1 else "files"
+            size_str = format_size(total_size)
+            integrity_warning = f" {BOLD}{YELLOW}{EMOJI_WARN}Files appear empty!{RESET}" if total_size == 0 else ""
+            time_diff = time.time() - freshest_time
+            is_very_fresh = time_diff < 86400
+            is_stale = time_diff > 604800
+            fresh_color = GREEN if is_very_fresh else RESET
+            warning_str = f" {BOLD}{YELLOW}(Stale?){RESET}" if is_stale else ""
+            freshness = f"Updated {BOLD}{fresh_color}{get_relative_time(freshest_time)}{RESET}{warning_str}"
+            print(f"• {'Data Source':<15}: {EMOJI_OK}{BOLD}{GREEN}Found{RESET} ({data_count} {suffix}, {size_str}){integrity_warning}")
+            if 1 <= data_count <= 3:
+                file_list = natural_join([f"{BOLD}{f}{RESET}" for f in files])
+                print(f"  - {'Files':<13}: {file_list}")
+            elif data_count > 3:
+                print(f"  - {'Latest':<13}: {BOLD}{latest_file}{RESET}")
+            print(f"  - {'Composition':<13}: {type_summary}")
+            print(f"  - {'Freshness':<13}: {freshness}")
+        elif data_dir_exists:
+            data_status = f"{EMOJI_WARN}{BOLD}{YELLOW}Empty (0 files){RESET}"
+            print(f"• {'Data Source':<15}: {data_status}")
+        else:
+            data_status = f"{EMOJI_ERR}{BOLD}{RED}Not Found{RESET}"
+            print(f"• {'Data Source':<15}: {data_status}")
+
+        if not all_found:
+            lib_suffix = "library" if len(missing_libs) == 1 else "libraries"
+            status_msg = f"{EMOJI_ERR}{BOLD}{RED}Incomplete{RESET} ({len(missing_libs)} {lib_suffix} missing) - Please run: {BOLD}pip install -r requirements.txt{RESET}"
+        elif not data_dir_exists or data_count == 0:
+            status_msg = f"{EMOJI_WARN}{BOLD}{YELLOW}Pending{RESET} - Data directory missing or empty"
+        elif total_size == 0:
+            status_msg = f"{EMOJI_WARN}{BOLD}{YELLOW}Pending{RESET} - Data files appear empty"
+        else:
+            status_msg = f"{EMOJI_OK}{BOLD}{GREEN}Ready{RESET}"
+        print(f"• {'Status':<15}: {status_msg}")
+
+        print(f"\n{EMOJI_ROCKET}Welcome! This tool is designed to help you extract insights from product data.")
+
+        print(f"\n{GREEN}{BOLD}Analysis Roadmap:{RESET}")
+        stages = [
+            {"emoji": "📥", "label": "Data Ingestion", "desc": "Collect raw data from various sources."},
+            {"emoji": "🧹", "label": "Data Cleaning", "desc": "Preprocess and handle missing values."},
+            {"emoji": "📊", "label": "EDA", "desc": "Visualize and understand data distributions."},
+            {"emoji": "⚙️", "label": "Feature Engineering", "desc": "Create new variables for modeling."},
+            {"emoji": "🤖", "label": "Modeling", "desc": "Train and evaluate machine learning models."},
+            {"emoji": "📈", "label": "Reporting & Insights", "desc": "Extract and communicate final results."},
+        ]
+
+        prev_stage_done = False
+        for i, stage in enumerate(stages, 1):
+            if i > 1:
+                connector_color = GREEN if prev_stage_done else BLUE
+                print(f"   {connector_color}{connector_sym}{RESET}")
+            is_current = False
+            this_stage_done = False
+            if i == 1:
+                if data_count > 0 and total_size > 0:
+                    status_tag = f"{BOLD}{GREEN}[DONE]{RESET}"
+                    stage_color = GREEN
+                    this_stage_done = True
+                elif data_count > 0:
+                    status_tag = f"{BOLD}{YELLOW}[PEND]{RESET}"
+                    stage_color = RESET
+                elif all_found:
+                    status_tag = f"{BOLD}{CYAN}[NEXT]{RESET}"
+                    stage_color = CYAN
+                    is_current = True
+                else:
+                    status_tag = f"{BOLD}{YELLOW}[PEND]{RESET}"
+                    stage_color = RESET
+            elif i == 2:
+                if data_count > 0 and total_size > 0 and all_found:
+                    status_tag = f"{BOLD}{CYAN}[NEXT]{RESET}"
+                    stage_color = CYAN
+                    is_current = True
+                else:
+                    status_tag = f"{BOLD}{YELLOW}[PEND]{RESET}"
+                    stage_color = RESET
             else:
                 status_tag = f"{BOLD}{YELLOW}[PEND]{RESET}"
                 stage_color = RESET
-        elif i == 2:
-            if data_count > 0 and total_size > 0 and all_found:
-                status_tag = f"{BOLD}{CYAN}[NEXT]{RESET}"
-                stage_color = CYAN
-                is_current = True
+
+            current_indicator = f" {CYAN}{current_indicator_sym}{RESET}" if is_current else ""
+            stage_emoji = "" if args.plain else f"{stage['emoji']} "
+            print(f"{BOLD}{i}.{RESET} {stage_emoji}{status_tag} {BOLD}{stage_color}{stage['label']:<20}:{RESET} {stage['desc']}{current_indicator}")
+            prev_stage_done = this_stage_done
+
+        is_virtual = is_venv()
+        if not all_found:
+            if len(missing_libs) <= 2:
+                missing_list = natural_join([f"{BOLD}{m}{RESET}" for m in missing_libs])
+                tip_text = f"Missing {missing_list}? Run {BOLD}pip install -r requirements.txt{RESET} to complete your setup."
             else:
-                status_tag = f"{BOLD}{YELLOW}[PEND]{RESET}"
-                stage_color = RESET
+                tip_text = f"{len(missing_libs)} libraries missing? Run the {BOLD}pip install -r requirements.txt{RESET} command to set up your environment."
+        elif not data_dir_exists:
+            tip_text = f"Almost there! Run {BOLD}python src/main.py --init{RESET} to quickly generate sample data and get started."
+            if not is_virtual:
+                tip_text += f" (Tip: Use a {BOLD}Virtual Env{RESET} for better management!)"
+        elif data_count == 0:
+            tip_text = f"Data folder is ready but empty. Run {BOLD}python src/main.py --init{RESET} to populate sample data and get started."
+            if not is_virtual:
+                tip_text += f" (Tip: Use a {BOLD}Virtual Env{RESET} for better management!)"
+        elif total_size == 0:
+            tip_text = f"Data files found in {BOLD}data/{RESET} appear to be empty (0 bytes). Please ensure your datasets contain valid product data."
+        elif not is_virtual:
+            tip_text = f"Consider using a {BOLD}Virtual Environment{RESET} for better dependency management. Run {BOLD}python -m venv venv{RESET} to create one!"
         else:
-            status_tag = f"{BOLD}{YELLOW}[PEND]{RESET}"
-            stage_color = RESET
+            tip_text = f"{EMOJI_SPARKLES}{BOLD}Everything is set!{RESET} Head over to the {BOLD}Data Cleaning{RESET} stage to prepare your dataset!"
 
-        current_indicator = f" {CYAN}{current_indicator_sym}{RESET}" if is_current else ""
-        stage_emoji = "" if args.plain else f"{stage['emoji']} "
-        print(f"{BOLD}{i}.{RESET} {stage_emoji}{status_tag} {BOLD}{stage_color}{stage['label']:<20}:{RESET} {stage['desc']}{current_indicator}")
-        prev_stage_done = this_stage_done
+        print(f"\n{EMOJI_TIP}{CYAN}{BOLD}Tip:{RESET} {tip_text}")
+        print(f"   Use {BOLD}--help{RESET} or refer to README.md for detailed documentation.")
+        print(footer_line)
 
-    is_virtual = is_venv()
-    if not all_found:
-        if len(missing_libs) <= 2:
-            missing_list = natural_join([f"{BOLD}{m}{RESET}" for m in missing_libs])
-            tip_text = f"Missing {missing_list}? Run {BOLD}pip install -r requirements.txt{RESET} to complete your setup."
-        else:
-            tip_text = f"{len(missing_libs)} libraries missing? Run the {BOLD}pip install -r requirements.txt{RESET} command to set up your environment."
-    elif not data_dir_exists:
-        tip_text = f"Almost there! Run {BOLD}python src/main.py --init{RESET} to quickly generate sample data and get started."
-        if not is_virtual:
-            tip_text += f" (Tip: Use a {BOLD}Virtual Env{RESET} for better management!)"
-    elif data_count == 0:
-        tip_text = f"Data folder is ready but empty. Run {BOLD}python src/main.py --init{RESET} to populate sample data and get started."
-        if not is_virtual:
-            tip_text += f" (Tip: Use a {BOLD}Virtual Env{RESET} for better management!)"
-    elif total_size == 0:
-        tip_text = f"Data files found in {BOLD}data/{RESET} appear to be empty (0 bytes). Please ensure your datasets contain valid product data."
-    elif not is_virtual:
-        tip_text = f"Consider using a {BOLD}Virtual Environment{RESET} for better dependency management. Run {BOLD}python -m venv venv{RESET} to create one!"
-    else:
-        tip_text = f"{EMOJI_SPARKLES}{BOLD}Everything is set!{RESET} Head over to the {BOLD}Data Cleaning{RESET} stage to prepare your dataset!"
+        # Interactive onboarding prompt
+        if not refreshed and all_found and (not data_dir_exists or data_count == 0):
+            if hasattr(sys.stdin, "isatty") and sys.stdin.isatty():
+                try:
+                    response = input(f"\n{EMOJI_SPARKLES}{BOLD}{CYAN}Would you like to initialize the workspace with sample data now? [y/N]:{RESET} ").strip().lower()
+                    if response in ("y", "yes"):
+                        csv_path = os.path.join("data", "products.csv")
+                        os.makedirs("data", exist_ok=True)
+                        sample_data = (
+                            "id,name,category,price,stock\n"
+                            "1,Smart Watch,Electronics,199.99,50\n"
+                            "2,Wireless Earbuds,Electronics,79.99,120\n"
+                            "3,Running Shoes,Apparel,89.95,85\n"
+                            "4,Leather Wallet,Accessories,35.00,200\n"
+                            "5,Coffee Maker,Home,49.99,40\n"
+                        )
+                        with open(csv_path, "w", encoding="utf-8") as f:
+                            f.write(sample_data)
 
-    print(f"\n{EMOJI_TIP}{CYAN}{BOLD}Tip:{RESET} {tip_text}")
-    print(f"   Use {BOLD}--help{RESET} or refer to README.md for detailed documentation.")
-    print(footer_line)
-
-    # Interactive onboarding prompt
-    if all_found and (not data_dir_exists or data_count == 0):
-        if hasattr(sys.stdin, "isatty") and sys.stdin.isatty():
-            try:
-                response = input(f"\n{EMOJI_SPARKLES}{BOLD}{CYAN}Would you like to initialize the workspace with sample data now? [y/N]:{RESET} ").strip().lower()
-                if response in ("y", "yes"):
-                    csv_path = os.path.join("data", "products.csv")
-                    os.makedirs("data", exist_ok=True)
-                    sample_data = (
-                        "id,name,category,price,stock\n"
-                        "1,Smart Watch,Electronics,199.99,50\n"
-                        "2,Wireless Earbuds,Electronics,79.99,120\n"
-                        "3,Running Shoes,Apparel,89.95,85\n"
-                        "4,Leather Wallet,Accessories,35.00,200\n"
-                        "5,Coffee Maker,Home,49.99,40\n"
-                    )
-                    with open(csv_path, "w", encoding="utf-8") as f:
-                        f.write(sample_data)
-
-                    print(f"\n{EMOJI_SPARKLES}{BOLD}{GREEN}Initialization complete!{RESET}")
-                    print(f"• Created {BOLD}data/{RESET} directory.")
-                    print(f"• Populated {BOLD}data/products.csv{RESET} with sample product datasets.")
-                    print(f"• Please run {BOLD}python src/main.py{RESET} again to view your updated workspace status!\n")
-            except (KeyboardInterrupt, EOFError):
-                pass
+                        print(f"\n{EMOJI_SPARKLES}{BOLD}{GREEN}Initialization complete!{RESET}")
+                        print(f"• Created {BOLD}data/{RESET} directory.")
+                        print(f"• Populated {BOLD}data/products.csv{RESET} with sample product datasets.")
+                        print(f"• Refreshing workspace status...\n")
+                        refreshed = True
+                        continue
+                except (KeyboardInterrupt, EOFError):
+                    pass
+        break
 
 if __name__ == "__main__":
     try:

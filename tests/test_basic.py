@@ -121,6 +121,7 @@ class TestBasic(unittest.TestCase):
             mock_input.assert_called_once()
             self.assertIn("Would you like to initialize the workspace with sample data now?", mock_input.call_args[0][0])
             self.assertIn("Initialization complete!", output)
+            self.assertIn("Refreshing workspace status...", output)
             mock_open.assert_called_once()
 
 if __name__ == '__main__':

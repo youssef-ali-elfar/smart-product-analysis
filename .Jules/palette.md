@@ -93,3 +93,7 @@
 ## 2026-07-18 - On-Demand Auto-Onboarding for Empty Workspaces
 **Learning:** Users who run a CLI status check in an empty workspace are looking to get started immediately. Rather than just printing a tip on how to initialize, offering an on-demand interactive onboarding prompt to auto-generate sample data reduces onboarding steps from two command executions down to a single keystroke.
 **Action:** Proactively offer to auto-initialize empty workspaces via interactive console prompts if the terminal is a TTY and setup prerequisites are met.
+
+## 2026-07-20 - Inline Auto-Onboarding Workspace Refresh
+**Learning:** Asking users to manually re-run a command after completing interactive onboarding initialization creates unnecessary cognitive friction. Transitioning to an automated, inline workspace refresh immediately prints the newly updated status screen, keeping users engaged and seamlessly advancing them to the next action.
+**Action:** Wrap the status rendering in a loop or re-execution sequence, and automatically refresh the dashboard immediately following a successful interactive workspace onboarding.
