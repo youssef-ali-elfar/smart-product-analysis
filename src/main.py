@@ -412,8 +412,11 @@ def main():
                         print(f"• Refreshing workspace status...\n")
                         refreshed = True
                         continue
+                    else:
+                        print(f"\n{EMOJI_TIP}{BOLD}No problem!{RESET} You can manually populate the {BOLD}data/{RESET} directory, or run {BOLD}python src/main.py --init{RESET} later.\n")
                 except (KeyboardInterrupt, EOFError):
-                    pass
+                    print(f"\n\n👋 Onboarding interrupted. Exiting gracefully...\n")
+                    sys.exit(0)
         break
 
 if __name__ == "__main__":
