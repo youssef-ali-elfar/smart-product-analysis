@@ -108,8 +108,20 @@ class TestBasic(unittest.TestCase):
             output = captured_output.getvalue()
             mock_input.assert_called_once()
             self.assertIn("Would you like to initialize the workspace with sample data now?", mock_input.call_args[0][0])
+            self.assertIn("Onboarding declined.", output)
+            self.assertIn("manually create", output)
             self.assertNotIn("Initialization complete!", output)
             mock_open.assert_not_called()
+
+        # Test KeyboardInterrupt during onboarding prompt
+        captured_output = io.StringIO()
+        sys.stdout = captured_output
+        with patch('builtins.input', side_effect=KeyboardInterrupt) as mock_input:
+            with self.assertRaises(SystemExit) as cm:
+                main()
+            self.assertEqual(cm.exception.code, 0)
+            output = captured_output.getvalue()
+            self.assertIn("Onboarding interrupted. Exiting gracefully...", output)
 
         # Test user accepts onboarding prompt
         mock_open.reset_mock()
