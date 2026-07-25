@@ -175,6 +175,11 @@ class TestUX(unittest.TestCase):
                     self.assertNotIn("🌐", output)
                     self.assertNotIn("💡", output)
                     self.assertNotIn("🚀", output)
+                    # No unicode bullets or separators
+                    self.assertNotIn("•", output)
+                    # ASCII bullets and separators are present
+                    self.assertIn("- Session Start", output)
+                    self.assertIn(" | ", output)
                     # ASCII border instead of unicode box drawings
                     self.assertIn("+----------------------------------------+", output)
                     self.assertIn("| ", output)
