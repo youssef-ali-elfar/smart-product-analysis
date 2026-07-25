@@ -412,8 +412,11 @@ def main():
                         print(f"• Refreshing workspace status...\n")
                         refreshed = True
                         continue
+                    else:
+                        print(f"\n{BOLD}Onboarding declined.{RESET} To start later, you can manually create the {BOLD}data/{RESET} directory or run {BOLD}python src/main.py --init{RESET}!\n")
                 except (KeyboardInterrupt, EOFError):
-                    pass
+                    print(f"\n\n👋 Onboarding interrupted. Exiting gracefully...\n")
+                    sys.exit(0)
         break
 
 if __name__ == "__main__":
