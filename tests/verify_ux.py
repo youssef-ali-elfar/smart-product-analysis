@@ -3,7 +3,7 @@ from unittest.mock import patch, MagicMock
 import sys
 import io
 import os
-from src.main import main
+from src.main import main, format_size
 
 class TestUX(unittest.TestCase):
     @patch('sys.argv', ['src/main.py'])
@@ -144,12 +144,18 @@ class TestUX(unittest.TestCase):
                         self.assertIn("1 row", output)
                         self.assertIn("id, name, category, price, stock", output)
 
+                    # Verify individual file size output
+                    if len(scenario['data_files']) <= 3:
+                        for f in scenario['data_files']:
+                            self.assertIn(f"({format_size(scenario.get('file_size', 1024))})", output)
+
                 if scenario['name'] == "Many File Types Capping":
                     self.assertIn("2 other files", output)
                     self.assertIn("Latest", output)
                     # Extension should be bolded: \033[1mCSV\033[0m
                     self.assertIn("\033[1mCSV\033[0m", output)
                     self.assertIn("file", output) # Check for pluralization suffix
+                    self.assertIn(f"({format_size(scenario.get('file_size', 1024))})", output)
 
                 if scenario['name'] == "Stale Data Warning":
                     self.assertIn("(Stale?)", output)

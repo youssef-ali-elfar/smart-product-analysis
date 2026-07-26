@@ -196,10 +196,19 @@ def main():
             data_count = len(files)
             file_types = []
             latest_file = ""
+            file_sizes = {}
             for f in files:
                 path = os.path.join("data", f)
-                mtime = os.path.getmtime(path)
-                total_size += os.path.getsize(path)
+                try:
+                    mtime = os.path.getmtime(path)
+                except OSError:
+                    mtime = 0
+                try:
+                    size = os.path.getsize(path)
+                except OSError:
+                    size = 0
+                file_sizes[f] = size
+                total_size += size
                 if mtime > freshest_time:
                     freshest_time = mtime
                     latest_file = f
@@ -288,10 +297,11 @@ def main():
             freshness = f"Updated {BOLD}{fresh_color}{get_relative_time(freshest_time)}{RESET}{warning_str}"
             print(f"{BULLET} {'Data Source':<15}: {EMOJI_OK}{BOLD}{GREEN}Found{RESET} ({data_count} {suffix}, {size_str}){integrity_warning}")
             if 1 <= data_count <= 3:
-                file_list = natural_join([f"{BOLD}{f}{RESET}" for f in files])
+                file_list = natural_join([f"{BOLD}{f}{RESET} ({format_size(file_sizes.get(f, 0))})" for f in files])
                 print(f"  - {'Files':<13}: {file_list}")
             elif data_count > 3:
-                print(f"  - {'Latest':<13}: {BOLD}{latest_file}{RESET}")
+                latest_size = file_sizes.get(latest_file, 0) if latest_file else 0
+                print(f"  - {'Latest':<13}: {BOLD}{latest_file}{RESET} ({format_size(latest_size)})")
             if dataset_preview:
                 print(f"  - {'Dataset':<13}: {dataset_preview}")
             print(f"  - {'Composition':<13}: {type_summary}")
