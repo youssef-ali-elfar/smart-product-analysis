@@ -147,9 +147,13 @@ class TestUX(unittest.TestCase):
                 if scenario['name'] == "Many File Types Capping":
                     self.assertIn("2 other files", output)
                     self.assertIn("Latest", output)
+                    self.assertIn("1 KB", output)
                     # Extension should be bolded: \033[1mCSV\033[0m
                     self.assertIn("\033[1mCSV\033[0m", output)
                     self.assertIn("file", output) # Check for pluralization suffix
+
+                if scenario['name'] == "Multiple Files Pluralization":
+                    self.assertIn("1 KB", output)
 
                 if scenario['name'] == "Stale Data Warning":
                     self.assertIn("(Stale?)", output)
