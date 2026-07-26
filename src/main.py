@@ -110,6 +110,10 @@ def main():
     EMOJI_ROCKET = "" if args.plain else "🚀 "
     EMOJI_SPARKLES = "" if args.plain else "✨ "
 
+    # Bullet and Separator Constants
+    BULLET = "-" if args.plain else "•"
+    SEP = "|" if args.plain else "•"
+
     if args.init:
         csv_path = os.path.join("data", "products.csv")
         if os.path.isfile(csv_path) and os.path.getsize(csv_path) > 0:
@@ -137,9 +141,9 @@ def main():
             f.write(sample_data)
 
         print(f"\n{EMOJI_SPARKLES}{BOLD}{GREEN}Initialization complete!{RESET}")
-        print(f"• Created {BOLD}data/{RESET} directory.")
-        print(f"• Populated {BOLD}data/products.csv{RESET} with sample product datasets.")
-        print(f"• Run {BOLD}python src/main.py{RESET} to view your updated workspace status!\n")
+        print(f"{BULLET} Created {BOLD}data/{RESET} directory.")
+        print(f"{BULLET} Populated {BOLD}data/products.csv{RESET} with sample product datasets.")
+        print(f"{BULLET} Run {BOLD}python src/main.py{RESET} to view your updated workspace status!\n")
         return
 
     refreshed = False
@@ -229,7 +233,7 @@ def main():
                                 col_preview = ", ".join(headers[:6]) + ", ..."
                             else:
                                 col_preview = ", ".join(headers)
-                            dataset_preview = f"{BOLD}{target_csv}{RESET} ({row_count} {'row' if row_count == 1 else 'rows'}) • {col_preview}"
+                            dataset_preview = f"{BOLD}{target_csv}{RESET} ({row_count} {'row' if row_count == 1 else 'rows'}) {SEP} {col_preview}"
                             break
                     except Exception:
                         pass
@@ -255,13 +259,13 @@ def main():
         # System Status
         print(f"\n{CYAN}{BOLD}System Status:{RESET}")
         now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        print(f"• {'Session Start':<15}: {EMOJI_TIME}{now}")
+        print(f"{BULLET} {'Session Start':<15}: {EMOJI_TIME}{now}")
         os_name = platform.system()
         os_icon = "" if args.plain else ("🐧 " if os_name == "Linux" else "🍎 " if os_name == "Darwin" else "🪟 " if os_name == "Windows" else "")
-        print(f"• {'System':<15}: {os_icon}{os_name} ({platform.machine()})")
-        print(f"• {'Python':<15}: {platform.python_version()}")
+        print(f"{BULLET} {'System':<15}: {os_icon}{os_name} ({platform.machine()})")
+        print(f"{BULLET} {'Python':<15}: {platform.python_version()}")
         env_type = f"{EMOJI_VENV}{BOLD}{GREEN}Virtual Env{RESET}" if is_venv() else f"{EMOJI_GLOBAL}{BOLD}{YELLOW}Global{RESET}"
-        print(f"• {'Environment':<15}: {env_type}")
+        print(f"{BULLET} {'Environment':<15}: {env_type}")
 
         print(f"  {BOLD}Dependencies:{RESET}")
         for label, lib_version in lib_results.items():
@@ -282,7 +286,7 @@ def main():
             fresh_color = GREEN if is_very_fresh else RESET
             warning_str = f" {BOLD}{YELLOW}(Stale?){RESET}" if is_stale else ""
             freshness = f"Updated {BOLD}{fresh_color}{get_relative_time(freshest_time)}{RESET}{warning_str}"
-            print(f"• {'Data Source':<15}: {EMOJI_OK}{BOLD}{GREEN}Found{RESET} ({data_count} {suffix}, {size_str}){integrity_warning}")
+            print(f"{BULLET} {'Data Source':<15}: {EMOJI_OK}{BOLD}{GREEN}Found{RESET} ({data_count} {suffix}, {size_str}){integrity_warning}")
             if 1 <= data_count <= 3:
                 file_list = natural_join([f"{BOLD}{f}{RESET}" for f in files])
                 print(f"  - {'Files':<13}: {file_list}")
@@ -294,10 +298,10 @@ def main():
             print(f"  - {'Freshness':<13}: {freshness}")
         elif data_dir_exists:
             data_status = f"{EMOJI_WARN}{BOLD}{YELLOW}Empty (0 files){RESET}"
-            print(f"• {'Data Source':<15}: {data_status}")
+            print(f"{BULLET} {'Data Source':<15}: {data_status}")
         else:
             data_status = f"{EMOJI_ERR}{BOLD}{RED}Not Found{RESET}"
-            print(f"• {'Data Source':<15}: {data_status}")
+            print(f"{BULLET} {'Data Source':<15}: {data_status}")
 
         if not all_found:
             lib_suffix = "library" if len(missing_libs) == 1 else "libraries"
@@ -308,7 +312,7 @@ def main():
             status_msg = f"{EMOJI_WARN}{BOLD}{YELLOW}Pending{RESET} - Data files appear empty"
         else:
             status_msg = f"{EMOJI_OK}{BOLD}{GREEN}Ready{RESET}"
-        print(f"• {'Status':<15}: {status_msg}")
+        print(f"{BULLET} {'Status':<15}: {status_msg}")
 
         print(f"\n{EMOJI_ROCKET}Welcome! This tool is designed to help you extract insights from product data.")
 
@@ -407,9 +411,9 @@ def main():
                             f.write(sample_data)
 
                         print(f"\n{EMOJI_SPARKLES}{BOLD}{GREEN}Initialization complete!{RESET}")
-                        print(f"• Created {BOLD}data/{RESET} directory.")
-                        print(f"• Populated {BOLD}data/products.csv{RESET} with sample product datasets.")
-                        print(f"• Refreshing workspace status...\n")
+                        print(f"{BULLET} Created {BOLD}data/{RESET} directory.")
+                        print(f"{BULLET} Populated {BOLD}data/products.csv{RESET} with sample product datasets.")
+                        print(f"{BULLET} Refreshing workspace status...\n")
                         refreshed = True
                         continue
                     else:

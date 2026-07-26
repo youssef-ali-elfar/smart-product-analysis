@@ -97,3 +97,7 @@
 ## 2026-07-20 - Inline Auto-Onboarding Workspace Refresh
 **Learning:** Asking users to manually re-run a command after completing interactive onboarding initialization creates unnecessary cognitive friction. Transitioning to an automated, inline workspace refresh immediately prints the newly updated status screen, keeping users engaged and seamlessly advancing them to the next action.
 **Action:** Wrap the status rendering in a loop or re-execution sequence, and automatically refresh the dashboard immediately following a successful interactive workspace onboarding.
+
+## 2026-07-25 - Pure ASCII Plain-Text Mode for Bullet Points and Separators
+**Learning:** High-density CLI tools running in an accessible `--plain` mode should avoid any non-ASCII Unicode characters, including common symbols like bullet points (`•`). Replacing these with simple ASCII alternatives like `-` and `|` ensures full compliance with standard screen readers and legacy terminals.
+**Action:** When implementing an accessible plain-text or screen-reader mode, review all printed punctuation and separator characters, replacing any non-ASCII symbols with standard keyboard-compatible equivalents.
