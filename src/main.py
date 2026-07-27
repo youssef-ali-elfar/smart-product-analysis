@@ -119,10 +119,15 @@ def main():
         if os.path.isfile(csv_path) and os.path.getsize(csv_path) > 0:
             if hasattr(sys.stdin, "isatty") and sys.stdin.isatty():
                 try:
-                    response = input(f"{EMOJI_WARN}{BOLD}{YELLOW}Warning:{RESET} {BOLD}{csv_path}{RESET} already exists and contains data. Overwrite? [y/N]: ").strip().lower()
-                    if response not in ("y", "yes"):
-                        print(f"\n{BOLD}Initialization aborted.{RESET}\n")
-                        return
+                    while True:
+                        response = input(f"{EMOJI_WARN}{BOLD}{YELLOW}Warning:{RESET} {BOLD}{csv_path}{RESET} already exists and contains data. Overwrite? [y/N or ? for help]: ").strip().lower()
+                        if response in ("?", "help"):
+                            print(f"\n{EMOJI_TIP}{CYAN}{BOLD}Help:{RESET} Overwriting will replace the existing data in {BOLD}{csv_path}{RESET} with fresh sample product data. This action is irreversible.\n")
+                            continue
+                        if response not in ("y", "yes"):
+                            print(f"\n{BOLD}Initialization aborted.{RESET}\n")
+                            return
+                        break
                 except (KeyboardInterrupt, EOFError):
                     print(f"\n\n👋 Initialization interrupted. Exiting gracefully...\n")
                     sys.exit(0)
@@ -405,29 +410,39 @@ def main():
         if not refreshed and all_found and (not data_dir_exists or data_count == 0):
             if hasattr(sys.stdin, "isatty") and sys.stdin.isatty():
                 try:
-                    response = input(f"\n{EMOJI_SPARKLES}{BOLD}{CYAN}Would you like to initialize the workspace with sample data now? [y/N]:{RESET} ").strip().lower()
-                    if response in ("y", "yes"):
-                        csv_path = os.path.join("data", "products.csv")
-                        os.makedirs("data", exist_ok=True)
-                        sample_data = (
-                            "id,name,category,price,stock\n"
-                            "1,Smart Watch,Electronics,199.99,50\n"
-                            "2,Wireless Earbuds,Electronics,79.99,120\n"
-                            "3,Running Shoes,Apparel,89.95,85\n"
-                            "4,Leather Wallet,Accessories,35.00,200\n"
-                            "5,Coffee Maker,Home,49.99,40\n"
-                        )
-                        with open(csv_path, "w", encoding="utf-8") as f:
-                            f.write(sample_data)
+                    onboarding_done = False
+                    while True:
+                        response = input(f"\n{EMOJI_SPARKLES}{BOLD}{CYAN}Would you like to initialize the workspace with sample data now? [y/N or ? for help]:{RESET} ").strip().lower()
+                        if response in ("?", "help"):
+                            print(f"\n{EMOJI_TIP}{CYAN}{BOLD}Help:{RESET} Selecting 'yes' will automatically create a {BOLD}data/{RESET} directory and populate it with a sample {BOLD}products.csv{RESET} file so you can explore the pipeline immediately.\n")
+                            continue
+                        if response in ("y", "yes"):
+                            csv_path = os.path.join("data", "products.csv")
+                            os.makedirs("data", exist_ok=True)
+                            sample_data = (
+                                "id,name,category,price,stock\n"
+                                "1,Smart Watch,Electronics,199.99,50\n"
+                                "2,Wireless Earbuds,Electronics,79.99,120\n"
+                                "3,Running Shoes,Apparel,89.95,85\n"
+                                "4,Leather Wallet,Accessories,35.00,200\n"
+                                "5,Coffee Maker,Home,49.99,40\n"
+                            )
+                            with open(csv_path, "w", encoding="utf-8") as f:
+                                f.write(sample_data)
 
-                        print(f"\n{EMOJI_SPARKLES}{BOLD}{GREEN}Initialization complete!{RESET}")
-                        print(f"{BULLET} Created {BOLD}data/{RESET} directory.")
-                        print(f"{BULLET} Populated {BOLD}data/products.csv{RESET} with sample product datasets.")
-                        print(f"{BULLET} Refreshing workspace status...\n")
-                        refreshed = True
+                            print(f"\n{EMOJI_SPARKLES}{BOLD}{GREEN}Initialization complete!{RESET}")
+                            print(f"{BULLET} Created {BOLD}data/{RESET} directory.")
+                            print(f"{BULLET} Populated {BOLD}data/products.csv{RESET} with sample product datasets.")
+                            print(f"{BULLET} Refreshing workspace status...\n")
+                            refreshed = True
+                            onboarding_done = True
+                            break
+                        else:
+                            print(f"\n{BOLD}Onboarding declined.{RESET} To start later, you can manually create the {BOLD}data/{RESET} directory or run {BOLD}python src/main.py --init{RESET}!\n")
+                            onboarding_done = True
+                            break
+                    if onboarding_done and refreshed:
                         continue
-                    else:
-                        print(f"\n{BOLD}Onboarding declined.{RESET} To start later, you can manually create the {BOLD}data/{RESET} directory or run {BOLD}python src/main.py --init{RESET}!\n")
                 except (KeyboardInterrupt, EOFError):
                     print(f"\n\n👋 Onboarding interrupted. Exiting gracefully...\n")
                     sys.exit(0)
