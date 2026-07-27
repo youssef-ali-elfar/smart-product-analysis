@@ -136,5 +136,93 @@ class TestBasic(unittest.TestCase):
             self.assertIn("Refreshing workspace status...", output)
             mock_open.assert_called_once()
 
+    @patch('sys.argv', ['src/main.py'])
+    @patch('src.main.get_lib_version')
+    @patch('os.path.isdir')
+    @patch('os.makedirs')
+    @patch('builtins.open')
+    @patch('sys.stdin')
+    def test_onboarding_help(self, mock_stdin, mock_open, mock_makedirs, mock_isdir, mock_get_lib_version):
+        """Test that typing ? during onboarding prompt displays help and then declines on next prompt."""
+        mock_get_lib_version.return_value = "1.2.3"
+        mock_isdir.return_value = False
+        mock_stdin.isatty.return_value = True
+
+        captured_output = io.StringIO()
+        sys.stdout = captured_output
+        with patch('builtins.input', side_effect=['?', 'n']) as mock_input:
+            main()
+            output = captured_output.getvalue()
+            self.assertEqual(mock_input.call_count, 2)
+            self.assertIn("Selecting 'yes' will automatically create", output)
+            self.assertIn("Onboarding declined.", output)
+            mock_open.assert_not_called()
+
+    @patch('sys.argv', ['src/main.py'])
+    @patch('src.main.get_lib_version')
+    @patch('os.path.isdir')
+    @patch('os.makedirs')
+    @patch('builtins.open')
+    @patch('sys.stdin')
+    def test_onboarding_help_accept(self, mock_stdin, mock_open, mock_makedirs, mock_isdir, mock_get_lib_version):
+        """Test that typing help during onboarding prompt displays help and then accepts on next prompt."""
+        mock_get_lib_version.return_value = "1.2.3"
+        mock_isdir.return_value = False
+        mock_stdin.isatty.return_value = True
+
+        captured_output = io.StringIO()
+        sys.stdout = captured_output
+        with patch('builtins.input', side_effect=['help', 'yes']) as mock_input:
+            main()
+            output = captured_output.getvalue()
+            self.assertEqual(mock_input.call_count, 2)
+            self.assertIn("Selecting 'yes' will automatically create", output)
+            self.assertIn("Initialization complete!", output)
+            mock_open.assert_called_once()
+
+    @patch('sys.argv', ['src/main.py', '--init'])
+    @patch('os.makedirs')
+    @patch('builtins.open')
+    @patch('os.path.isfile')
+    @patch('os.path.getsize')
+    @patch('sys.stdin')
+    def test_init_overwrite_help_no(self, mock_stdin, mock_getsize, mock_isfile, mock_open, mock_makedirs):
+        """Test that typing ? during init overwrite prompt displays help and then aborts on next prompt."""
+        mock_isfile.return_value = True
+        mock_getsize.return_value = 100
+        mock_stdin.isatty.return_value = True
+
+        captured_output = io.StringIO()
+        sys.stdout = captured_output
+        with patch('builtins.input', side_effect=['?', 'n']) as mock_input:
+            main()
+            output = captured_output.getvalue()
+            self.assertEqual(mock_input.call_count, 2)
+            self.assertIn("Overwriting will replace the existing data", output)
+            self.assertIn("Initialization aborted.", output)
+            mock_open.assert_not_called()
+
+    @patch('sys.argv', ['src/main.py', '--init'])
+    @patch('os.makedirs')
+    @patch('builtins.open')
+    @patch('os.path.isfile')
+    @patch('os.path.getsize')
+    @patch('sys.stdin')
+    def test_init_overwrite_help_yes(self, mock_stdin, mock_getsize, mock_isfile, mock_open, mock_makedirs):
+        """Test that typing help during init overwrite prompt displays help and then overwrites on next prompt."""
+        mock_isfile.return_value = True
+        mock_getsize.return_value = 100
+        mock_stdin.isatty.return_value = True
+
+        captured_output = io.StringIO()
+        sys.stdout = captured_output
+        with patch('builtins.input', side_effect=['help', 'y']) as mock_input:
+            main()
+            output = captured_output.getvalue()
+            self.assertEqual(mock_input.call_count, 2)
+            self.assertIn("Overwriting will replace the existing data", output)
+            self.assertIn("Initialization complete!", output)
+            mock_open.assert_called_once()
+
 if __name__ == '__main__':
     unittest.main()
