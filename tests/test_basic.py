@@ -69,6 +69,17 @@ class TestBasic(unittest.TestCase):
         mock_getsize.return_value = 100
         mock_stdin.isatty.return_value = True
 
+        # Test case where user requests help first, then says No
+        captured_output = io.StringIO()
+        sys.stdout = captured_output
+        with patch('builtins.input', side_effect=['?', 'n']) as mock_input:
+            main()
+            output = captured_output.getvalue()
+            self.assertEqual(mock_input.call_count, 2)
+            self.assertIn("Overwrite Help:", output)
+            self.assertIn("Initialization aborted.", output)
+            mock_open.assert_not_called()
+
         # Test case where user says No
         captured_output = io.StringIO()
         sys.stdout = captured_output
@@ -99,6 +110,17 @@ class TestBasic(unittest.TestCase):
         mock_get_lib_version.return_value = "1.2.3"  # All libs found
         mock_isdir.return_value = False  # Data dir missing
         mock_stdin.isatty.return_value = True
+
+        # Test user requests onboarding help, then declines
+        captured_output = io.StringIO()
+        sys.stdout = captured_output
+        with patch('builtins.input', side_effect=['help', 'n']) as mock_input:
+            main()
+            output = captured_output.getvalue()
+            self.assertEqual(mock_input.call_count, 2)
+            self.assertIn("Onboarding Help:", output)
+            self.assertIn("Onboarding declined.", output)
+            mock_open.assert_not_called()
 
         # Test user declines onboarding prompt
         captured_output = io.StringIO()

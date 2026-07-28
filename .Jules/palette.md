@@ -101,3 +101,7 @@
 ## 2026-07-25 - Pure ASCII Plain-Text Mode for Bullet Points and Separators
 **Learning:** High-density CLI tools running in an accessible `--plain` mode should avoid any non-ASCII Unicode characters, including common symbols like bullet points (`•`). Replacing these with simple ASCII alternatives like `-` and `|` ensures full compliance with standard screen readers and legacy terminals.
 **Action:** When implementing an accessible plain-text or screen-reader mode, review all printed punctuation and separator characters, replacing any non-ASCII symbols with standard keyboard-compatible equivalents.
+
+## 2026-07-28 - Interactive Prompt Help Option
+**Learning:** Destructive CLI actions and interactive onboarding workflows are highly critical moments for users. Offering an inline, case-insensitive help option (e.g. '?' or 'help') that prints clear, context-specific explanations and seamlessly re-prompts the user without breaking the current session significantly reduces cognitive anxiety and setup friction.
+**Action:** Always provide an explicit help choice ('[y/N/?]') in interactive CLI prompts, catch help commands gracefully, output contextual help, and loop back to the same prompt without interrupting user flow.

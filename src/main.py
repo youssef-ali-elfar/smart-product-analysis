@@ -119,10 +119,20 @@ def main():
         if os.path.isfile(csv_path) and os.path.getsize(csv_path) > 0:
             if hasattr(sys.stdin, "isatty") and sys.stdin.isatty():
                 try:
-                    response = input(f"{EMOJI_WARN}{BOLD}{YELLOW}Warning:{RESET} {BOLD}{csv_path}{RESET} already exists and contains data. Overwrite? [y/N]: ").strip().lower()
-                    if response not in ("y", "yes"):
-                        print(f"\n{BOLD}Initialization aborted.{RESET}\n")
-                        return
+                    while True:
+                        response = input(f"{EMOJI_WARN}{BOLD}{YELLOW}Warning:{RESET} {BOLD}{csv_path}{RESET} already exists and contains data. Overwrite? [y/N/?]: ").strip().lower()
+                        if response in ("?", "help"):
+                            print(f"\n{EMOJI_TIP}{BOLD}{CYAN}Overwrite Help:{RESET}")
+                            print(f"The file {BOLD}{csv_path}{RESET} currently has content and size greater than 0.")
+                            print("Choosing to overwrite ('y' or 'yes') will permanently replace the existing file")
+                            print("with fresh sample data (5 products across Electronics, Apparel, Home, and Accessories).")
+                            print("Choosing not to overwrite ('n', 'no', or pressing Enter) will keep your existing dataset intact.\n")
+                            continue
+                        elif response in ("y", "yes"):
+                            break
+                        else:
+                            print(f"\n{BOLD}Initialization aborted.{RESET}\n")
+                            return
                 except (KeyboardInterrupt, EOFError):
                     print(f"\n\n👋 Initialization interrupted. Exiting gracefully...\n")
                     sys.exit(0)
@@ -405,29 +415,41 @@ def main():
         if not refreshed and all_found and (not data_dir_exists or data_count == 0):
             if hasattr(sys.stdin, "isatty") and sys.stdin.isatty():
                 try:
-                    response = input(f"\n{EMOJI_SPARKLES}{BOLD}{CYAN}Would you like to initialize the workspace with sample data now? [y/N]:{RESET} ").strip().lower()
-                    if response in ("y", "yes"):
-                        csv_path = os.path.join("data", "products.csv")
-                        os.makedirs("data", exist_ok=True)
-                        sample_data = (
-                            "id,name,category,price,stock\n"
-                            "1,Smart Watch,Electronics,199.99,50\n"
-                            "2,Wireless Earbuds,Electronics,79.99,120\n"
-                            "3,Running Shoes,Apparel,89.95,85\n"
-                            "4,Leather Wallet,Accessories,35.00,200\n"
-                            "5,Coffee Maker,Home,49.99,40\n"
-                        )
-                        with open(csv_path, "w", encoding="utf-8") as f:
-                            f.write(sample_data)
+                    while True:
+                        response = input(f"\n{EMOJI_SPARKLES}{BOLD}{CYAN}Would you like to initialize the workspace with sample data now? [y/N/?]:{RESET} ").strip().lower()
+                        if response in ("?", "help"):
+                            print(f"\n{EMOJI_TIP}{BOLD}{CYAN}Onboarding Help:{RESET}")
+                            print("The workspace currently has no data directory or files.")
+                            print("Initializing the workspace ('y' or 'yes') will automatically create a 'data/' directory")
+                            print("and populate it with a sample file ('products.csv') so you can see the system in a Ready state.")
+                            print("Declining ('n', 'no', or pressing Enter) will leave the workspace empty.")
+                            print("You can always manually create the 'data/' folder or run 'python src/main.py --init' later.")
+                            continue
+                        elif response in ("y", "yes"):
+                            csv_path = os.path.join("data", "products.csv")
+                            os.makedirs("data", exist_ok=True)
+                            sample_data = (
+                                "id,name,category,price,stock\n"
+                                "1,Smart Watch,Electronics,199.99,50\n"
+                                "2,Wireless Earbuds,Electronics,79.99,120\n"
+                                "3,Running Shoes,Apparel,89.95,85\n"
+                                "4,Leather Wallet,Accessories,35.00,200\n"
+                                "5,Coffee Maker,Home,49.99,40\n"
+                            )
+                            with open(csv_path, "w", encoding="utf-8") as f:
+                                f.write(sample_data)
 
-                        print(f"\n{EMOJI_SPARKLES}{BOLD}{GREEN}Initialization complete!{RESET}")
-                        print(f"{BULLET} Created {BOLD}data/{RESET} directory.")
-                        print(f"{BULLET} Populated {BOLD}data/products.csv{RESET} with sample product datasets.")
-                        print(f"{BULLET} Refreshing workspace status...\n")
-                        refreshed = True
+                            print(f"\n{EMOJI_SPARKLES}{BOLD}{GREEN}Initialization complete!{RESET}")
+                            print(f"{BULLET} Created {BOLD}data/{RESET} directory.")
+                            print(f"{BULLET} Populated {BOLD}data/products.csv{RESET} with sample product datasets.")
+                            print(f"{BULLET} Refreshing workspace status...\n")
+                            refreshed = True
+                            break
+                        else:
+                            print(f"\n{BOLD}Onboarding declined.{RESET} To start later, you can manually create the {BOLD}data/{RESET} directory or run {BOLD}python src/main.py --init{RESET}!\n")
+                            break
+                    if refreshed:
                         continue
-                    else:
-                        print(f"\n{BOLD}Onboarding declined.{RESET} To start later, you can manually create the {BOLD}data/{RESET} directory or run {BOLD}python src/main.py --init{RESET}!\n")
                 except (KeyboardInterrupt, EOFError):
                     print(f"\n\n👋 Onboarding interrupted. Exiting gracefully...\n")
                     sys.exit(0)
