@@ -136,5 +136,75 @@ class TestBasic(unittest.TestCase):
             self.assertIn("Refreshing workspace status...", output)
             mock_open.assert_called_once()
 
+    @patch('sys.argv', ['src/main.py', '--init'])
+    @patch('os.makedirs')
+    @patch('builtins.open')
+    @patch('os.path.isfile')
+    @patch('os.path.getsize')
+    @patch('sys.stdin')
+    def test_main_init_overwrite_help(self, mock_stdin, mock_getsize, mock_isfile, mock_open, mock_makedirs):
+        """Test that --init overwrite confirmation prompt supports interactive '?' and 'help' options."""
+        mock_isfile.return_value = True
+        mock_getsize.return_value = 100
+        mock_stdin.isatty.return_value = True
+
+        # Test user enters '?', then 'n' to abort
+        captured_output = io.StringIO()
+        sys.stdout = captured_output
+        with patch('builtins.input', side_effect=['?', 'n']) as mock_input:
+            main()
+            output = captured_output.getvalue()
+            self.assertEqual(mock_input.call_count, 2)
+            self.assertIn("Detailed Explanation:", output)
+            self.assertIn("This initialization process will configure the workspace", output)
+            self.assertIn("Initialization aborted.", output)
+
+        # Test user enters 'help' (case-insensitive), then 'y' to overwrite
+        mock_open.reset_mock()
+        captured_output = io.StringIO()
+        sys.stdout = captured_output
+        with patch('builtins.input', side_effect=['HeLp', 'y']) as mock_input:
+            main()
+            output = captured_output.getvalue()
+            self.assertEqual(mock_input.call_count, 2)
+            self.assertIn("Detailed Explanation:", output)
+            self.assertIn("This initialization process will configure the workspace", output)
+            self.assertIn("Initialization complete!", output)
+
+    @patch('sys.argv', ['src/main.py'])
+    @patch('src.main.get_lib_version')
+    @patch('os.path.isdir')
+    @patch('os.makedirs')
+    @patch('builtins.open')
+    @patch('sys.stdin')
+    def test_interactive_onboarding_help(self, mock_stdin, mock_open, mock_makedirs, mock_isdir, mock_get_lib_version):
+        """Test that interactive onboarding prompt supports '?' and 'help' options."""
+        mock_get_lib_version.return_value = "1.2.3"  # All libs found
+        mock_isdir.return_value = False  # Data dir missing
+        mock_stdin.isatty.return_value = True
+
+        # Test user enters '?', then 'n' to decline
+        captured_output = io.StringIO()
+        sys.stdout = captured_output
+        with patch('builtins.input', side_effect=['?', 'n']) as mock_input:
+            main()
+            output = captured_output.getvalue()
+            self.assertEqual(mock_input.call_count, 2)
+            self.assertIn("Detailed Explanation:", output)
+            self.assertIn("Initializing the workspace creates the 'data/' directory", output)
+            self.assertIn("Onboarding declined.", output)
+
+        # Test user enters 'help' (case-insensitive), then 'y' to accept
+        mock_open.reset_mock()
+        captured_output = io.StringIO()
+        sys.stdout = captured_output
+        with patch('builtins.input', side_effect=['HELP', 'y']) as mock_input:
+            main()
+            output = captured_output.getvalue()
+            self.assertEqual(mock_input.call_count, 2)
+            self.assertIn("Detailed Explanation:", output)
+            self.assertIn("Initializing the workspace creates the 'data/' directory", output)
+            self.assertIn("Initialization complete!", output)
+
 if __name__ == '__main__':
     unittest.main()
