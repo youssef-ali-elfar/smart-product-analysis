@@ -119,7 +119,17 @@ def main():
         if os.path.isfile(csv_path) and os.path.getsize(csv_path) > 0:
             if hasattr(sys.stdin, "isatty") and sys.stdin.isatty():
                 try:
-                    response = input(f"{EMOJI_WARN}{BOLD}{YELLOW}Warning:{RESET} {BOLD}{csv_path}{RESET} already exists and contains data. Overwrite? [y/N]: ").strip().lower()
+                    while True:
+                        response = input(f"{EMOJI_WARN}{BOLD}{YELLOW}Warning:{RESET} {BOLD}{csv_path}{RESET} already exists and contains data. Overwrite? [y/N, or ? for help]: ").strip().lower()
+                        if response in ("?", "help"):
+                            print(
+                                f"\n{EMOJI_TIP}{BOLD}{CYAN}Help: Overwriting products.csv{RESET}\n"
+                                f"Re-initializing will replace your existing {BOLD}data/products.csv{RESET} file with the default sample products database.\n"
+                                f"Any modifications or additions you have made to this CSV file will be permanently lost.\n"
+                                f"Enter {BOLD}y{RESET} or {BOLD}yes{RESET} to overwrite, or {BOLD}n{RESET}/{BOLD}no{RESET} to keep your existing data and abort.\n"
+                            )
+                            continue
+                        break
                     if response not in ("y", "yes"):
                         print(f"\n{BOLD}Initialization aborted.{RESET}\n")
                         return
@@ -405,7 +415,17 @@ def main():
         if not refreshed and all_found and (not data_dir_exists or data_count == 0):
             if hasattr(sys.stdin, "isatty") and sys.stdin.isatty():
                 try:
-                    response = input(f"\n{EMOJI_SPARKLES}{BOLD}{CYAN}Would you like to initialize the workspace with sample data now? [y/N]:{RESET} ").strip().lower()
+                    while True:
+                        response = input(f"\n{EMOJI_SPARKLES}{BOLD}{CYAN}Would you like to initialize the workspace with sample data now? [y/N, or ? for help]:{RESET} ").strip().lower()
+                        if response in ("?", "help"):
+                            print(
+                                f"\n{EMOJI_TIP}{BOLD}{CYAN}Help: Onboarding Workspace Initialization{RESET}\n"
+                                f"Initializing the workspace will automatically create a {BOLD}data/{RESET} directory and populate it with a sample products dataset ({BOLD}products.csv{RESET}).\n"
+                                f"This allows you to immediately see how the analysis roadmap works and progress to the {BOLD}Data Cleaning{RESET} stage.\n"
+                                f"Enter {BOLD}y{RESET} or {BOLD}yes{RESET} to initialize, or {BOLD}n{RESET}/{BOLD}no{RESET} to skip onboarding.\n"
+                            )
+                            continue
+                        break
                     if response in ("y", "yes"):
                         csv_path = os.path.join("data", "products.csv")
                         os.makedirs("data", exist_ok=True)
