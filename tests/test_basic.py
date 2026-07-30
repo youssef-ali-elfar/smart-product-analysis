@@ -88,6 +88,17 @@ class TestBasic(unittest.TestCase):
             self.assertIn("Initialization complete!", output)
             mock_open.assert_called_once()
 
+        # Test case where user requests help first
+        mock_open.reset_mock()
+        captured_output = io.StringIO()
+        sys.stdout = captured_output
+        with patch('builtins.input', side_effect=['?', 'n']):
+            main()
+            output = captured_output.getvalue()
+            self.assertIn("Help: Overwriting products.csv", output)
+            self.assertIn("Initialization aborted.", output)
+            mock_open.assert_not_called()
+
     @patch('sys.argv', ['src/main.py'])
     @patch('src.main.get_lib_version')
     @patch('os.path.isdir')
@@ -111,6 +122,17 @@ class TestBasic(unittest.TestCase):
             self.assertIn("Onboarding declined.", output)
             self.assertIn("manually create", output)
             self.assertNotIn("Initialization complete!", output)
+            mock_open.assert_not_called()
+
+        # Test user requests help on onboarding prompt first
+        captured_output = io.StringIO()
+        sys.stdout = captured_output
+        with patch('builtins.input', side_effect=['?', 'n']) as mock_input:
+            main()
+            output = captured_output.getvalue()
+            self.assertEqual(mock_input.call_count, 2)
+            self.assertIn("Help: Onboarding Workspace Initialization", output)
+            self.assertIn("Onboarding declined.", output)
             mock_open.assert_not_called()
 
         # Test KeyboardInterrupt during onboarding prompt
