@@ -160,6 +160,30 @@ class TestBasic(unittest.TestCase):
             self.assertIn("Initialization aborted.", output)
             mock_open.assert_not_called()
 
+    @patch('sys.argv', ['src/main.py', '--init'])
+    @patch('os.makedirs')
+    @patch('builtins.open')
+    @patch('os.path.isfile')
+    @patch('os.path.getsize')
+    @patch('sys.stdin')
+    def test_init_overwrite_help_shortcut(self, mock_stdin, mock_getsize, mock_isfile, mock_open, mock_makedirs):
+        """Test that typing 'h' in the --init overwrite prompt displays details and re-prompts."""
+        mock_isfile.return_value = True
+        mock_getsize.return_value = 100
+        mock_stdin.isatty.return_value = True
+
+        captured_output = io.StringIO()
+        sys.stdout = captured_output
+        # Mock side_effect to input 'h' then 'n' (to abort)
+        with patch('builtins.input', side_effect=['h', 'n']) as mock_input:
+            main()
+            output = captured_output.getvalue()
+            self.assertEqual(mock_input.call_count, 2)
+            self.assertIn("Help - Overwriting Data:", output)
+            self.assertIn("clean sample mock data", output)
+            self.assertIn("Initialization aborted.", output)
+            mock_open.assert_not_called()
+
     @patch('sys.argv', ['src/main.py'])
     @patch('src.main.get_lib_version')
     @patch('os.path.isdir')
@@ -176,6 +200,30 @@ class TestBasic(unittest.TestCase):
         sys.stdout = captured_output
         # Mock side_effect to input '?' (which should re-prompt) then 'y' (to accept and initialize)
         with patch('builtins.input', side_effect=['?', 'y']) as mock_input:
+            main()
+            output = captured_output.getvalue()
+            self.assertEqual(mock_input.call_count, 2)
+            self.assertIn("Help - Workspace Onboarding:", output)
+            self.assertIn("lacks sample product files in the data directory", output)
+            self.assertIn("Initialization complete!", output)
+            mock_open.assert_called_once()
+
+    @patch('sys.argv', ['src/main.py'])
+    @patch('src.main.get_lib_version')
+    @patch('os.path.isdir')
+    @patch('os.makedirs')
+    @patch('builtins.open')
+    @patch('sys.stdin')
+    def test_interactive_onboarding_help_shortcut(self, mock_stdin, mock_open, mock_makedirs, mock_isdir, mock_get_lib_version):
+        """Test that typing 'h' in the onboarding prompt displays details and re-prompts."""
+        mock_get_lib_version.return_value = "1.2.3"  # All libs found
+        mock_isdir.return_value = False  # Data dir missing
+        mock_stdin.isatty.return_value = True
+
+        captured_output = io.StringIO()
+        sys.stdout = captured_output
+        # Mock side_effect to input 'H' then 'y' (to accept and initialize)
+        with patch('builtins.input', side_effect=['H', 'y']) as mock_input:
             main()
             output = captured_output.getvalue()
             self.assertEqual(mock_input.call_count, 2)
