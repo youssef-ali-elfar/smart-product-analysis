@@ -121,16 +121,19 @@ def main():
                 while True:
                     try:
                         response = input(f"{EMOJI_WARN}{BOLD}{YELLOW}Warning:{RESET} {BOLD}{csv_path}{RESET} already exists and contains data. Overwrite? [y/N/help]: ").strip().lower()
-                        if response in ("?", "help"):
+                        if response in ("?", "h", "help"):
                             print(f"\n{EMOJI_TIP}{CYAN}{BOLD}Help - Overwriting Data:{RESET}")
                             print(f"  An existing products dataset already resides in {BOLD}{csv_path}{RESET}.")
                             print("  - If you overwrite it, the file will be replaced with clean sample mock data (5 products).")
                             print("  - If you abort, your current data and custom changes will remain intact.\n")
                             continue
-                        if response not in ("y", "yes"):
+                        elif response in ("y", "yes"):
+                            break
+                        elif response in ("n", "no", ""):
                             print(f"\n{BOLD}Initialization aborted.{RESET}\n")
                             return
-                        break
+                        else:
+                            print(f"{RED}{BOLD}Error:{RESET} Invalid option '{response}'. Please enter y, n, or help.\n")
                     except (KeyboardInterrupt, EOFError):
                         print(f"\n\n👋 Initialization interrupted. Exiting gracefully...\n")
                         sys.exit(0)
@@ -415,14 +418,14 @@ def main():
                 while True:
                     try:
                         response = input(f"\n{EMOJI_SPARKLES}{BOLD}{CYAN}Would you like to initialize the workspace with sample data now? [y/N/help]:{RESET} ").strip().lower()
-                        if response in ("?", "help"):
+                        if response in ("?", "h", "help"):
                             print(f"\n{EMOJI_TIP}{CYAN}{BOLD}Help - Workspace Onboarding:{RESET}")
                             print("  Your workspace currently lacks sample product files in the data directory,")
                             print("  preventing data analysis stages (like Cleaning, EDA, etc.) from running.")
                             print("  - If you choose 'yes', we will automatically generate a mock dataset (`data/products.csv`).")
                             print("  - If you choose 'no', you can manually set up the directory or run initialization later using `--init`.\n")
                             continue
-                        if response in ("y", "yes"):
+                        elif response in ("y", "yes"):
                             csv_path = os.path.join("data", "products.csv")
                             os.makedirs("data", exist_ok=True)
                             sample_data = (
@@ -442,9 +445,11 @@ def main():
                             print(f"{BULLET} Refreshing workspace status...\n")
                             refreshed = True
                             break
-                        else:
+                        elif response in ("n", "no", ""):
                             print(f"\n{BOLD}Onboarding declined.{RESET} To start later, you can manually create the {BOLD}data/{RESET} directory or run {BOLD}python src/main.py --init{RESET}!\n")
                             break
+                        else:
+                            print(f"{RED}{BOLD}Error:{RESET} Invalid option '{response}'. Please enter y, n, or help.\n")
                     except (KeyboardInterrupt, EOFError):
                         print(f"\n\n👋 Onboarding interrupted. Exiting gracefully...\n")
                         sys.exit(0)

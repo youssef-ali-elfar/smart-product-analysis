@@ -105,3 +105,7 @@
 ## 2026-07-31 - On-Demand Interactive Prompt Help
 **Learning:** Standard interactive prompts (like `y/N` for confirmation or onboarding) can cause anxiety or confusion if users do not fully understand the consequences of their action. Incorporating inline, non-blocking help triggers (like `?` or `help`) that print concise descriptions and gracefully loop back to the same prompt significantly boosts confidence and prevents destructive mistakes without interrupting the session.
 **Action:** In interactive TTY-guarded CLI prompts, wrap the input capture in a retry loop that detects `help` or `?` inputs, displays contextual guidance, and re-prompts the user inline.
+
+## 2026-08-02 - Strict Interactive Prompt Option Validation
+**Learning:** Users can easily make typos when responding to interactive command-line prompts. Silently treating any invalid option as a "No" (abort/decline) can lead to unexpected aborts and confusion. Implementing strict validation with colorized feedback ensures that users are guided back to valid options, while still cleanly mapping a simple Enter (empty string) to the default "No" action.
+**Action:** Validate interactive prompt responses strictly; display a warning and re-prompt on invalid choices, while cleanly mapping empty inputs to the default option.
