@@ -184,5 +184,49 @@ class TestBasic(unittest.TestCase):
             self.assertIn("Initialization complete!", output)
             mock_open.assert_called_once()
 
+    @patch('sys.argv', ['src/main.py', '--init'])
+    @patch('os.makedirs')
+    @patch('builtins.open')
+    @patch('os.path.isfile')
+    @patch('os.path.getsize')
+    @patch('sys.stdin')
+    def test_init_overwrite_invalid_input_reprompt(self, mock_stdin, mock_getsize, mock_isfile, mock_open, mock_makedirs):
+        """Test that typing an invalid choice in the --init prompt displays error and re-prompts."""
+        mock_isfile.return_value = True
+        mock_getsize.return_value = 100
+        mock_stdin.isatty.return_value = True
+
+        captured_output = io.StringIO()
+        sys.stdout = captured_output
+        with patch('builtins.input', side_effect=['invalid_choice', 'n']) as mock_input:
+            main()
+            output = captured_output.getvalue()
+            self.assertEqual(mock_input.call_count, 2)
+            self.assertIn("Unrecognized option: 'invalid_choice'", output)
+            self.assertIn("Initialization aborted.", output)
+            mock_open.assert_not_called()
+
+    @patch('sys.argv', ['src/main.py'])
+    @patch('src.main.get_lib_version')
+    @patch('os.path.isdir')
+    @patch('os.makedirs')
+    @patch('builtins.open')
+    @patch('sys.stdin')
+    def test_onboarding_invalid_input_reprompt(self, mock_stdin, mock_open, mock_makedirs, mock_isdir, mock_get_lib_version):
+        """Test that typing an invalid choice in the onboarding prompt displays error and re-prompts."""
+        mock_get_lib_version.return_value = "1.2.3"  # All libs found
+        mock_isdir.return_value = False  # Data dir missing
+        mock_stdin.isatty.return_value = True
+
+        captured_output = io.StringIO()
+        sys.stdout = captured_output
+        with patch('builtins.input', side_effect=['typo', 'n']) as mock_input:
+            main()
+            output = captured_output.getvalue()
+            self.assertEqual(mock_input.call_count, 2)
+            self.assertIn("Unrecognized option: 'typo'", output)
+            self.assertIn("Onboarding declined.", output)
+            mock_open.assert_not_called()
+
 if __name__ == '__main__':
     unittest.main()
