@@ -105,3 +105,7 @@
 ## 2026-07-31 - On-Demand Interactive Prompt Help
 **Learning:** Standard interactive prompts (like `y/N` for confirmation or onboarding) can cause anxiety or confusion if users do not fully understand the consequences of their action. Incorporating inline, non-blocking help triggers (like `?` or `help`) that print concise descriptions and gracefully loop back to the same prompt significantly boosts confidence and prevents destructive mistakes without interrupting the session.
 **Action:** In interactive TTY-guarded CLI prompts, wrap the input capture in a retry loop that detects `help` or `?` inputs, displays contextual guidance, and re-prompts the user inline.
+
+## 2026-08-04 - Targeted Command Line Onboarding Guidance
+**Learning:** When exactly 1 or 2 dependencies are missing, recommending a generic `pip install -r requirements.txt` can feel unnecessarily heavy or slow down a user's flow. Recommending a specific, targeted `pip install` command (with proper mapping from imports to pip package names, such as `sklearn` to `scikit-learn`) is highly specific, delightful, and respects the user's time.
+**Action:** In CLI status and onboarding messages, suggest specific and targeted commands for low counts of missing elements instead of generic catch-all commands.

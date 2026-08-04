@@ -106,6 +106,7 @@ def main():
     EMOJI_TIME = "" if args.plain else "🕒 "
     EMOJI_VENV = "" if args.plain else "📦 "
     EMOJI_GLOBAL = "" if args.plain else "🌐 "
+    EMOJI_PYTHON = "" if args.plain else "🐍 "
     EMOJI_TIP = "" if args.plain else "💡 "
     EMOJI_ROCKET = "" if args.plain else "🚀 "
     EMOJI_SPARKLES = "" if args.plain else "✨ "
@@ -180,12 +181,12 @@ def main():
 
         # Consolidated Checks
         libs = {
-            "Pandas": {"pkg": "pandas", "purpose": "Data manipulation"},
-            "NumPy": {"pkg": "numpy", "purpose": "Numerical computing"},
-            "Matplotlib": {"pkg": "matplotlib", "purpose": "Static visualizations"},
-            "Seaborn": {"pkg": "seaborn", "purpose": "Statistical data visualization"},
-            "Scikit-Learn": {"pkg": "sklearn", "purpose": "Machine learning algorithms"},
-            "Jupyter": {"pkg": "jupyter", "purpose": "Interactive notebooks"}
+            "Pandas": {"pkg": "pandas", "pip_pkg": "pandas", "purpose": "Data manipulation"},
+            "NumPy": {"pkg": "numpy", "pip_pkg": "numpy", "purpose": "Numerical computing"},
+            "Matplotlib": {"pkg": "matplotlib", "pip_pkg": "matplotlib", "purpose": "Static visualizations"},
+            "Seaborn": {"pkg": "seaborn", "pip_pkg": "seaborn", "purpose": "Statistical data visualization"},
+            "Scikit-Learn": {"pkg": "sklearn", "pip_pkg": "scikit-learn", "purpose": "Machine learning algorithms"},
+            "Jupyter": {"pkg": "jupyter", "pip_pkg": "jupyter", "purpose": "Interactive notebooks"}
         }
 
         lib_results = {}
@@ -282,9 +283,9 @@ def main():
         now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         print(f"{BULLET} {'Session Start':<15}: {EMOJI_TIME}{now}")
         os_name = platform.system()
-        os_icon = "" if args.plain else ("🐧 " if os_name == "Linux" else "🍎 " if os_name == "Darwin" else "🪟 " if os_name == "Windows" else "")
+        os_icon = "" if args.plain else ("🐧 " if os_name == "Linux" else "🍎 " if os_name == "Darwin" else "🪟 " if os_name == "Windows" else "💻 ")
         print(f"{BULLET} {'System':<15}: {os_icon}{os_name} ({platform.machine()})")
-        print(f"{BULLET} {'Python':<15}: {platform.python_version()}")
+        print(f"{BULLET} {'Python':<15}: {EMOJI_PYTHON}{platform.python_version()}")
         env_type = f"{EMOJI_VENV}{BOLD}{GREEN}Virtual Env{RESET}" if is_venv() else f"{EMOJI_GLOBAL}{BOLD}{YELLOW}Global{RESET}"
         print(f"{BULLET} {'Environment':<15}: {env_type}")
 
@@ -327,7 +328,12 @@ def main():
 
         if not all_found:
             lib_suffix = "library" if len(missing_libs) == 1 else "libraries"
-            status_msg = f"{EMOJI_ERR}{BOLD}{RED}Incomplete{RESET} ({len(missing_libs)} {lib_suffix} missing) - Please run: {BOLD}pip install -r requirements.txt{RESET}"
+            if len(missing_libs) <= 2:
+                missing_pips = [libs[m]["pip_pkg"] for m in missing_libs]
+                missing_pips_str = " ".join(missing_pips)
+                status_msg = f"{EMOJI_ERR}{BOLD}{RED}Incomplete{RESET} ({len(missing_libs)} {lib_suffix} missing) - Please run: {BOLD}pip install {missing_pips_str}{RESET}"
+            else:
+                status_msg = f"{EMOJI_ERR}{BOLD}{RED}Incomplete{RESET} ({len(missing_libs)} {lib_suffix} missing) - Please run: {BOLD}pip install -r requirements.txt{RESET}"
         elif not data_dir_exists or data_count == 0:
             status_msg = f"{EMOJI_WARN}{BOLD}{YELLOW}Pending{RESET} - Data directory missing or empty"
         elif total_size == 0:
@@ -391,7 +397,9 @@ def main():
         if not all_found:
             if len(missing_libs) <= 2:
                 missing_list = natural_join([f"{BOLD}{m}{RESET}" for m in missing_libs])
-                tip_text = f"Missing {missing_list}? Run {BOLD}pip install -r requirements.txt{RESET} to complete your setup."
+                missing_pips = [libs[m]["pip_pkg"] for m in missing_libs]
+                missing_pips_str = " ".join(missing_pips)
+                tip_text = f"Missing {missing_list}? Run {BOLD}pip install {missing_pips_str}{RESET} to complete your setup."
             else:
                 tip_text = f"{len(missing_libs)} libraries missing? Run the {BOLD}pip install -r requirements.txt{RESET} command to set up your environment."
         elif not data_dir_exists:
