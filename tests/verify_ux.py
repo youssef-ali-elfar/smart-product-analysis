@@ -135,6 +135,12 @@ class TestUX(unittest.TestCase):
                 sys.stdout = sys.__stdout__
                 print(output)
 
+                if scenario['name'] == "One Missing Library Tip":
+                    self.assertIn("pip install pandas", output)
+
+                if scenario['name'] == "Two Missing Libraries Tip":
+                    self.assertIn("pip install pandas numpy", output)
+
                 if scenario['data_dir_exists'] and scenario['data_files']:
                     self.assertIn("Composition", output)
                     self.assertIn("Freshness", output)
