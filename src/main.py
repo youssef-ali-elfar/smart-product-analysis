@@ -203,6 +203,7 @@ def main():
         total_size = 0
         freshest_time = 0
         type_summary = ""
+        missing_val_count = 0
         if data_dir_exists:
             files = sorted([f for f in os.listdir("data") if os.path.isfile(os.path.join("data", f))])
             data_count = len(files)
@@ -240,6 +241,7 @@ def main():
 
             # Extract Dataset Preview from the first non-empty CSV file
             dataset_preview = ""
+            missing_val_count = 0
             csv_files = [f for f in files if f.lower().endswith(".csv")]
             for target_csv in csv_files:
                 csv_path = os.path.join("data", target_csv)
@@ -254,7 +256,24 @@ def main():
                                 col_preview = ", ".join(headers[:6]) + ", ..."
                             else:
                                 col_preview = ", ".join(headers)
-                            dataset_preview = f"{BOLD}{target_csv}{RESET} ({row_count} {'row' if row_count == 1 else 'rows'}) {SEP} {col_preview}"
+
+                            # Count missing values (empty or whitespace-only fields)
+                            for line in lines[1:]:
+                                fields = line.split(",")
+                                for field in fields:
+                                    if not field.strip():
+                                        missing_val_count += 1
+                                if len(fields) < len(headers):
+                                    missing_val_count += (len(headers) - len(fields))
+
+                            missing_warning = ""
+                            if missing_val_count > 0:
+                                if args.plain:
+                                    missing_warning = f" ({missing_val_count} missing values)"
+                                else:
+                                    missing_warning = f" ({EMOJI_WARN}{missing_val_count} missing values)"
+
+                            dataset_preview = f"{BOLD}{target_csv}{RESET} ({row_count} {'row' if row_count == 1 else 'rows'}){missing_warning} {SEP} {col_preview}"
                             break
                     except Exception:
                         pass
@@ -404,6 +423,8 @@ def main():
                 tip_text += f" (Tip: Use a {BOLD}Virtual Env{RESET} for better management!)"
         elif total_size == 0:
             tip_text = f"Data files found in {BOLD}data/{RESET} appear to be empty (0 bytes). Please ensure your datasets contain valid product data."
+        elif missing_val_count > 0:
+            tip_text = f"We detected {missing_val_count} missing value{'s' if missing_val_count > 1 else ''} in products.csv! Head over to Stage 2: {BOLD}Data Cleaning{RESET} to clean them up."
         elif not is_virtual:
             tip_text = f"Consider using a {BOLD}Virtual Environment{RESET} for better dependency management. Run {BOLD}python -m venv venv{RESET} to create one!"
         else:
