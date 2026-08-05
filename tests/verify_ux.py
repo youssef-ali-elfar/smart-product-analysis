@@ -97,6 +97,21 @@ class TestUX(unittest.TestCase):
                 "data_dir_exists": True,
                 "data_files": ["products.csv"],
                 "argv": ["src/main.py", "--no-color"]
+            },
+            {
+                "name": "Dataset with Missing Values Warning",
+                "libs": {lib: "1.2.3" for lib in ["pandas", "numpy", "matplotlib", "seaborn", "sklearn", "jupyter"]},
+                "data_dir_exists": True,
+                "data_files": ["products.csv"],
+                "csv_data": "id,name,category,price,stock\n1,,Electronics,199.99,\n2,Wireless Earbuds,,79.99,120\n3,Running Shoes,Apparel,,85"
+            },
+            {
+                "name": "Dataset with Missing Values Warning (Plain Mode)",
+                "libs": {lib: "1.2.3" for lib in ["pandas", "numpy", "matplotlib", "seaborn", "sklearn", "jupyter"]},
+                "data_dir_exists": True,
+                "data_files": ["products.csv"],
+                "argv": ["src/main.py", "--plain"],
+                "csv_data": "id,name,category,price,stock\n1,,Electronics,199.99,\n2,Wireless Earbuds,,79.99,120\n3,Running Shoes,Apparel,,85"
             }
         ]
 
@@ -128,7 +143,7 @@ class TestUX(unittest.TestCase):
             try:
                 argv = scenario.get("argv", ["src/main.py"])
                 # We mock `open` to return a predefined CSV contents when products.csv or similar is read
-                mock_csv_data = "id,name,category,price,stock\n1,Smart Watch,Electronics,199.99,50"
+                mock_csv_data = scenario.get("csv_data", "id,name,category,price,stock\n1,Smart Watch,Electronics,199.99,50")
                 with patch("sys.argv", argv), patch("builtins.open", unittest.mock.mock_open(read_data=mock_csv_data)) as mock_file:
                     main()
                 output = captured_output.getvalue()
@@ -141,7 +156,10 @@ class TestUX(unittest.TestCase):
                     # Verify our new Dataset sub-bullet if csv file is present and not empty
                     if any(f.lower().endswith(".csv") for f in scenario['data_files']) and scenario.get("file_size", 1024) > 0:
                         self.assertIn("Dataset", output)
-                        self.assertIn("1 row", output)
+                        if "csv_data" in scenario:
+                            self.assertIn("3 rows", output)
+                        else:
+                            self.assertIn("1 row", output)
                         self.assertIn("id, name, category, price, stock", output)
 
                     # Verify individual file size output
@@ -196,6 +214,14 @@ class TestUX(unittest.TestCase):
                     self.assertNotIn("\033[", output)
                     # Retains emojis
                     self.assertIn("✅", output)
+
+                if scenario['name'] == "Dataset with Missing Values Warning":
+                    self.assertIn("(⚠️ 4 missing values)", output)
+                    self.assertIn("We detected 4 missing values in products.csv!", output)
+
+                if scenario['name'] == "Dataset with Missing Values Warning (Plain Mode)":
+                    self.assertIn("(4 missing values)", output)
+                    self.assertIn("We detected 4 missing values in products.csv!", output)
 
             except Exception as e:
                 sys.stdout = sys.__stdout__

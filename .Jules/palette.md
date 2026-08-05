@@ -105,3 +105,7 @@
 ## 2026-07-31 - On-Demand Interactive Prompt Help
 **Learning:** Standard interactive prompts (like `y/N` for confirmation or onboarding) can cause anxiety or confusion if users do not fully understand the consequences of their action. Incorporating inline, non-blocking help triggers (like `?` or `help`) that print concise descriptions and gracefully loop back to the same prompt significantly boosts confidence and prevents destructive mistakes without interrupting the session.
 **Action:** In interactive TTY-guarded CLI prompts, wrap the input capture in a retry loop that detects `help` or `?` inputs, displays contextual guidance, and re-prompts the user inline.
+
+## 2026-08-05 - Proactive Data Integrity Feedback
+**Learning:** In data pipeline dashboards, checking for directory existence and file presence is useful, but checking data completeness (e.g., detecting missing/null values) directly in the dataset preview bridges the gap between different pipeline stages and guides the user directly to the next appropriate actions.
+**Action:** Implement proactive data integrity checks (like counting missing cells in CSVs) in CLI previews and tie them to context-aware user tips.
