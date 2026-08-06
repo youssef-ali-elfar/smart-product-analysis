@@ -105,3 +105,7 @@
 ## 2026-07-31 - On-Demand Interactive Prompt Help
 **Learning:** Standard interactive prompts (like `y/N` for confirmation or onboarding) can cause anxiety or confusion if users do not fully understand the consequences of their action. Incorporating inline, non-blocking help triggers (like `?` or `help`) that print concise descriptions and gracefully loop back to the same prompt significantly boosts confidence and prevents destructive mistakes without interrupting the session.
 **Action:** In interactive TTY-guarded CLI prompts, wrap the input capture in a retry loop that detects `help` or `?` inputs, displays contextual guidance, and re-prompts the user inline.
+
+## 2026-08-06 - CLI Dataset Missing Value Warnings and Guidance
+**Learning:** Checking dataset rows and headers is a great start, but dirty datasets containing missing values are incredibly common in data pipelines. Showing a clear missing-value warning next to the dataset preview and suggesting "Stage 2: Data Cleaning" in the help tips guides users gracefully to the cleaning step.
+**Action:** Scan CSV rows for empty/whitespace values, report a dynamic missing count (with `EMOJI_WARN` wrapper if not `--plain`), and dynamically update the troubleshooting tips if missing values are detected.

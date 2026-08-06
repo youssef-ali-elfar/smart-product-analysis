@@ -228,5 +228,31 @@ class TestBasic(unittest.TestCase):
             self.assertIn("Onboarding declined.", output)
             mock_open.assert_not_called()
 
+    @patch('sys.argv', ['src/main.py'])
+    @patch('src.main.get_lib_version')
+    @patch('os.path.isdir')
+    @patch('os.listdir')
+    @patch('os.path.isfile')
+    @patch('os.path.getsize')
+    @patch('os.path.getmtime')
+    def test_missing_values_detection(self, mock_getmtime, mock_getsize, mock_isfile, mock_listdir, mock_isdir, mock_get_lib_version):
+        """Test that files with missing CSV values are properly parsed and warning is shown."""
+        mock_get_lib_version.return_value = "1.2.3"
+        mock_isdir.return_value = True
+        mock_listdir.return_value = ["products.csv"]
+        mock_isfile.return_value = True
+        mock_getsize.return_value = 100
+        mock_getmtime.return_value = 100000
+
+        mock_csv_data = "id,name,category,price,stock\n1,Smart Watch,,199.99,50"
+
+        captured_output = io.StringIO()
+        sys.stdout = captured_output
+        with patch('builtins.open', unittest.mock.mock_open(read_data=mock_csv_data)):
+            main()
+            output = captured_output.getvalue()
+            self.assertIn("products.csv (1 row (⚠️ 1 missing values))", output)
+            self.assertIn("Datasets contain missing values. Proceed to Stage 2: Data Cleaning to handle them.", output)
+
 if __name__ == '__main__':
     unittest.main()
