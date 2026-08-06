@@ -97,6 +97,21 @@ class TestUX(unittest.TestCase):
                 "data_dir_exists": True,
                 "data_files": ["products.csv"],
                 "argv": ["src/main.py", "--no-color"]
+            },
+            {
+                "name": "Missing Values Warning normal",
+                "libs": {lib: "1.2.3" for lib in ["pandas", "numpy", "matplotlib", "seaborn", "sklearn", "jupyter"]},
+                "data_dir_exists": True,
+                "data_files": ["missing.csv"],
+                "csv_content": "id,name,category,price,stock\n1,Smart Watch,,199.99,50"
+            },
+            {
+                "name": "Missing Values Warning plain",
+                "libs": {lib: "1.2.3" for lib in ["pandas", "numpy", "matplotlib", "seaborn", "sklearn", "jupyter"]},
+                "data_dir_exists": True,
+                "data_files": ["missing.csv"],
+                "csv_content": "id,name,category,price,stock\n1,Smart Watch,,199.99,50",
+                "argv": ["src/main.py", "--plain"]
             }
         ]
 
@@ -128,7 +143,7 @@ class TestUX(unittest.TestCase):
             try:
                 argv = scenario.get("argv", ["src/main.py"])
                 # We mock `open` to return a predefined CSV contents when products.csv or similar is read
-                mock_csv_data = "id,name,category,price,stock\n1,Smart Watch,Electronics,199.99,50"
+                mock_csv_data = scenario.get("csv_content", "id,name,category,price,stock\n1,Smart Watch,Electronics,199.99,50")
                 with patch("sys.argv", argv), patch("builtins.open", unittest.mock.mock_open(read_data=mock_csv_data)) as mock_file:
                     main()
                 output = captured_output.getvalue()
@@ -196,6 +211,20 @@ class TestUX(unittest.TestCase):
                     self.assertNotIn("\033[", output)
                     # Retains emojis
                     self.assertIn("✅", output)
+
+                if scenario['name'] == "Missing Values Warning normal":
+                    self.assertIn("missing.csv", output)
+                    self.assertIn("1 row", output)
+                    self.assertIn("1 missing values", output)
+                    self.assertIn("id, name, category, price, stock", output)
+                    self.assertIn("Datasets contain missing values. Proceed to", output)
+
+                if scenario['name'] == "Missing Values Warning plain":
+                    self.assertIn("missing.csv", output)
+                    self.assertIn("1 row", output)
+                    self.assertIn("1 missing values", output)
+                    self.assertIn("id, name, category, price, stock", output)
+                    self.assertIn("Datasets contain missing values. Proceed to", output)
 
             except Exception as e:
                 sys.stdout = sys.__stdout__

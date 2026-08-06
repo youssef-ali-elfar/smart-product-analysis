@@ -203,6 +203,7 @@ def main():
         total_size = 0
         freshest_time = 0
         type_summary = ""
+        has_missing_values = False
         if data_dir_exists:
             files = sorted([f for f in os.listdir("data") if os.path.isfile(os.path.join("data", f))])
             data_count = len(files)
@@ -254,7 +255,21 @@ def main():
                                 col_preview = ", ".join(headers[:6]) + ", ..."
                             else:
                                 col_preview = ", ".join(headers)
-                            dataset_preview = f"{BOLD}{target_csv}{RESET} ({row_count} {'row' if row_count == 1 else 'rows'}) {SEP} {col_preview}"
+
+                            # Count missing values
+                            missing_values = 0
+                            for line in lines[1:]:
+                                cells = line.split(",")
+                                for cell in cells:
+                                    if not cell.strip():
+                                        missing_values += 1
+
+                            warning_suffix = ""
+                            if missing_values > 0:
+                                has_missing_values = True
+                                warning_suffix = f" ({EMOJI_WARN}{missing_values} missing values)"
+
+                            dataset_preview = f"{BOLD}{target_csv}{RESET} ({row_count} {'row' if row_count == 1 else 'rows'}{warning_suffix}) {SEP} {col_preview}"
                             break
                     except Exception:
                         pass
@@ -336,7 +351,7 @@ def main():
             status_msg = f"{EMOJI_OK}{BOLD}{GREEN}Ready{RESET}"
         print(f"{BULLET} {'Status':<15}: {status_msg}")
 
-        print(f"\n{EMOJI_ROCKET}Welcome! This tool is designed to help you extract insights from product data.")
+        print(f"\n{EMOJI_ROCKET}{BOLD}Welcome!{RESET} This tool is designed to help you extract insights from product data.")
 
         print(f"\n{GREEN}{BOLD}Analysis Roadmap:{RESET}")
         stages = [
@@ -404,6 +419,8 @@ def main():
                 tip_text += f" (Tip: Use a {BOLD}Virtual Env{RESET} for better management!)"
         elif total_size == 0:
             tip_text = f"Data files found in {BOLD}data/{RESET} appear to be empty (0 bytes). Please ensure your datasets contain valid product data."
+        elif has_missing_values:
+            tip_text = f"Datasets contain missing values. Proceed to {BOLD}Stage 2: Data Cleaning{RESET} to handle them."
         elif not is_virtual:
             tip_text = f"Consider using a {BOLD}Virtual Environment{RESET} for better dependency management. Run {BOLD}python -m venv venv{RESET} to create one!"
         else:
