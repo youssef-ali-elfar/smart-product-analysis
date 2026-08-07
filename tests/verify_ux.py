@@ -149,6 +149,14 @@ class TestUX(unittest.TestCase):
                         for f in scenario['data_files']:
                             self.assertIn(f"({format_size(scenario.get('file_size', 1024))})", output)
 
+                if scenario['name'] == "One Missing Library Tip":
+                    self.assertIn("Please run: \033[1mpip install pandas\033[0m", output)
+                    self.assertIn("Missing \033[1mPandas\033[0m? Run \033[1mpip install pandas\033[0m to complete your setup.", output)
+
+                if scenario['name'] == "Two Missing Libraries Tip":
+                    self.assertIn("Please run: \033[1mpip install pandas numpy\033[0m", output)
+                    self.assertIn("Missing \033[1mPandas\033[0m and \033[1mNumPy\033[0m? Run \033[1mpip install pandas numpy\033[0m to complete your setup.", output)
+
                 if scenario['name'] == "Many File Types Capping":
                     self.assertIn("2 other files", output)
                     self.assertIn("Latest", output)

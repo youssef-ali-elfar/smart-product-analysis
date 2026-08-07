@@ -325,9 +325,26 @@ def main():
             data_status = f"{EMOJI_ERR}{BOLD}{RED}Not Found{RESET}"
             print(f"{BULLET} {'Data Source':<15}: {data_status}")
 
+        pip_mappings = {
+            "Pandas": "pandas",
+            "NumPy": "numpy",
+            "Matplotlib": "matplotlib",
+            "Seaborn": "seaborn",
+            "Scikit-Learn": "scikit-learn",
+            "Jupyter": "jupyter"
+        }
+
         if not all_found:
             lib_suffix = "library" if len(missing_libs) == 1 else "libraries"
-            status_msg = f"{EMOJI_ERR}{BOLD}{RED}Incomplete{RESET} ({len(missing_libs)} {lib_suffix} missing) - Please run: {BOLD}pip install -r requirements.txt{RESET}"
+            if len(missing_libs) == 1:
+                pip_pkg = pip_mappings.get(missing_libs[0], missing_libs[0].lower())
+                status_msg = f"{EMOJI_ERR}{BOLD}{RED}Incomplete{RESET} (1 library missing) - Please run: {BOLD}pip install {pip_pkg}{RESET}"
+            elif len(missing_libs) == 2:
+                pip_pkg1 = pip_mappings.get(missing_libs[0], missing_libs[0].lower())
+                pip_pkg2 = pip_mappings.get(missing_libs[1], missing_libs[1].lower())
+                status_msg = f"{EMOJI_ERR}{BOLD}{RED}Incomplete{RESET} (2 libraries missing) - Please run: {BOLD}pip install {pip_pkg1} {pip_pkg2}{RESET}"
+            else:
+                status_msg = f"{EMOJI_ERR}{BOLD}{RED}Incomplete{RESET} ({len(missing_libs)} {lib_suffix} missing) - Please run: {BOLD}pip install -r requirements.txt{RESET}"
         elif not data_dir_exists or data_count == 0:
             status_msg = f"{EMOJI_WARN}{BOLD}{YELLOW}Pending{RESET} - Data directory missing or empty"
         elif total_size == 0:
@@ -389,9 +406,14 @@ def main():
 
         is_virtual = is_venv()
         if not all_found:
-            if len(missing_libs) <= 2:
+            if len(missing_libs) == 1:
+                pip_pkg = pip_mappings.get(missing_libs[0], missing_libs[0].lower())
+                tip_text = f"Missing {BOLD}{missing_libs[0]}{RESET}? Run {BOLD}pip install {pip_pkg}{RESET} to complete your setup."
+            elif len(missing_libs) == 2:
                 missing_list = natural_join([f"{BOLD}{m}{RESET}" for m in missing_libs])
-                tip_text = f"Missing {missing_list}? Run {BOLD}pip install -r requirements.txt{RESET} to complete your setup."
+                pip_pkg1 = pip_mappings.get(missing_libs[0], missing_libs[0].lower())
+                pip_pkg2 = pip_mappings.get(missing_libs[1], missing_libs[1].lower())
+                tip_text = f"Missing {missing_list}? Run {BOLD}pip install {pip_pkg1} {pip_pkg2}{RESET} to complete your setup."
             else:
                 tip_text = f"{len(missing_libs)} libraries missing? Run the {BOLD}pip install -r requirements.txt{RESET} command to set up your environment."
         elif not data_dir_exists:
