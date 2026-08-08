@@ -203,6 +203,7 @@ def main():
         total_size = 0
         freshest_time = 0
         type_summary = ""
+        missing_values_count = 0
         if data_dir_exists:
             files = sorted([f for f in os.listdir("data") if os.path.isfile(os.path.join("data", f))])
             data_count = len(files)
@@ -250,11 +251,28 @@ def main():
                         if lines:
                             headers = [col.strip() for col in lines[0].split(",") if col.strip()]
                             row_count = len(lines) - 1
+
+                            # Detect missing values
+                            for line in lines[1:]:
+                                fields = [f.strip() for f in line.split(",")]
+                                if len(fields) < len(headers):
+                                    missing_values_count += (len(headers) - len(fields))
+                                for f in fields[:len(headers)]:
+                                    if f == "":
+                                        missing_values_count += 1
+
+                            warning_suffix = ""
+                            if missing_values_count > 0:
+                                if args.plain:
+                                    warning_suffix = f" ({missing_values_count} missing values)"
+                                else:
+                                    warning_suffix = f" ({EMOJI_WARN}{missing_values_count} missing values)"
+
                             if len(headers) > 6:
                                 col_preview = ", ".join(headers[:6]) + ", ..."
                             else:
                                 col_preview = ", ".join(headers)
-                            dataset_preview = f"{BOLD}{target_csv}{RESET} ({row_count} {'row' if row_count == 1 else 'rows'}) {SEP} {col_preview}"
+                            dataset_preview = f"{BOLD}{target_csv}{RESET} ({row_count} {'row' if row_count == 1 else 'rows'}){warning_suffix} {SEP} {col_preview}"
                             break
                     except Exception:
                         pass
@@ -404,6 +422,8 @@ def main():
                 tip_text += f" (Tip: Use a {BOLD}Virtual Env{RESET} for better management!)"
         elif total_size == 0:
             tip_text = f"Data files found in {BOLD}data/{RESET} appear to be empty (0 bytes). Please ensure your datasets contain valid product data."
+        elif missing_values_count > 0:
+            tip_text = f"Detected {BOLD}{missing_values_count} missing values{RESET} in your dataset. Proceed to {BOLD}Stage 2: Data Cleaning{RESET} to handle them!"
         elif not is_virtual:
             tip_text = f"Consider using a {BOLD}Virtual Environment{RESET} for better dependency management. Run {BOLD}python -m venv venv{RESET} to create one!"
         else:
