@@ -228,5 +228,33 @@ class TestBasic(unittest.TestCase):
             self.assertIn("Onboarding declined.", output)
             mock_open.assert_not_called()
 
+    @patch('sys.argv', ['src/main.py'])
+    @patch('src.main.get_lib_version')
+    @patch('os.path.isdir')
+    @patch('os.listdir')
+    @patch('os.path.isfile')
+    @patch('os.path.getsize')
+    @patch('builtins.open')
+    def test_missing_values_detection_and_tip(self, mock_open, mock_getsize, mock_isfile, mock_listdir, mock_isdir, mock_get_lib_version):
+        """Test that missing values in CSV dataset are correctly detected and prompt corresponding warning and cleaning tip."""
+        mock_get_lib_version.return_value = "1.2.3"  # All libs found
+        mock_isdir.return_value = True
+        mock_listdir.return_value = ["dirty.csv"]
+        mock_isfile.return_value = True
+        mock_getsize.return_value = 120
+
+        # CSV data with 4 missing values
+        csv_content = "id,name,category,price,stock\n1,Smart Watch,,199.99,\n2,,Electronics,79.99,120\n3,Running Shoes,Apparel,,85"
+        mock_open.return_value = io.StringIO(csv_content)
+
+        captured_output = io.StringIO()
+        sys.stdout = captured_output
+        main()
+        output = captured_output.getvalue()
+
+        self.assertIn("dirty.csv", output)
+        self.assertIn("4 missing values", output)
+        self.assertIn("Detected 4 missing values in your dataset. Proceed to Stage 2: Data Cleaning to handle them!", output)
+
 if __name__ == '__main__':
     unittest.main()
