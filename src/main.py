@@ -68,6 +68,89 @@ def supports_color():
         return False
     return True
 
+def format_dataset_table(headers, rows, plain=False, use_color=False, BLUE="", BOLD="", RESET=""):
+    """Format the dataset records as a beautiful aligned table preview."""
+    if not headers or not rows:
+        return ""
+    # Limit columns to at most 6 to prevent horizontal overflow
+    max_cols = 6
+    has_more_cols = len(headers) > max_cols
+    if has_more_cols:
+        display_headers = headers[:max_cols - 1] + ["..."]
+        display_rows = []
+        for r in rows:
+            display_rows.append(r[:max_cols - 1] + ["..."])
+    else:
+        display_headers = headers
+        display_rows = rows
+
+    # Calculate column widths based on displayed headers and rows
+    col_widths = []
+    for i, h in enumerate(display_headers):
+        w = len(h)
+        for r in display_rows:
+            if i < len(r):
+                w = max(w, len(str(r[i])))
+        col_widths.append(w)
+
+    # Borders and separators
+    if plain:
+        corner_tl = "+"
+        corner_tr = "+"
+        corner_bl = "+"
+        corner_br = "+"
+        sep_t = "+"
+        sep_b = "+"
+        sep_m = "+"
+        border_h = "-"
+        border_v = "|"
+        mid_l = "+"
+        mid_r = "+"
+        b_color = ""
+        h_color = ""
+        r_color = ""
+    else:
+        corner_tl = "┌"
+        corner_tr = "┐"
+        corner_bl = "└"
+        corner_br = "┘"
+        sep_t = "┬"
+        sep_b = "┴"
+        sep_m = "┼"
+        border_h = "─"
+        border_v = "│"
+        mid_l = "├"
+        mid_r = "┤"
+        b_color = BLUE
+        h_color = BOLD
+        r_color = RESET
+
+    # Build top border
+    top_border = b_color + corner_tl + sep_t.join(border_h * (w + 2) for w in col_widths) + corner_tr + r_color
+    # Build header row
+    header_cells = []
+    for h, w in zip(display_headers, col_widths):
+        header_cells.append(f" {h_color}{h:<{w}}{r_color} ")
+    header_row = b_color + border_v + r_color + (b_color + border_v + r_color).join(header_cells) + b_color + border_v + r_color
+    # Build mid border
+    mid_border = b_color + mid_l + sep_m.join(border_h * (w + 2) for w in col_widths) + mid_r + r_color
+    # Build data rows
+    data_rows = []
+    for row in display_rows:
+        cells = []
+        for i, w in enumerate(col_widths):
+            val = str(row[i]) if i < len(row) else ""
+            cells.append(f" {val:<{w}} ")
+        row_str = b_color + border_v + r_color + (b_color + border_v + r_color).join(cells) + b_color + border_v + r_color
+        data_rows.append(row_str)
+    # Build bottom border
+    bottom_border = b_color + corner_bl + sep_b.join(border_h * (w + 2) for w in col_widths) + corner_br + r_color
+
+    lines = [top_border, header_row, mid_border] + data_rows + [bottom_border]
+    # Indent the table rows by 19 spaces so they align perfectly under the Dataset filename
+    indent = " " * 19
+    return "\n" + "\n".join(indent + line for line in lines)
+
 def main():
     version = "1.0.0"
     parser = argparse.ArgumentParser(
@@ -272,7 +355,23 @@ def main():
                                 col_preview = ", ".join(headers[:6]) + ", ..."
                             else:
                                 col_preview = ", ".join(headers)
-                            dataset_preview = f"{BOLD}{target_csv}{RESET} ({row_count} {'row' if row_count == 1 else 'rows'}){warning_suffix} {SEP} {col_preview}"
+
+                            rows_data = []
+                            for line in lines[1:4]:
+                                fields = [f.strip() for f in line.split(",")]
+                                if len(fields) < len(headers):
+                                    fields += [""] * (len(headers) - len(fields))
+                                else:
+                                    fields = fields[:len(headers)]
+                                rows_data.append(fields)
+
+                            table_str = format_dataset_table(
+                                headers, rows_data,
+                                plain=args.plain,
+                                use_color=use_color,
+                                BLUE=BLUE, BOLD=BOLD, RESET=RESET
+                            )
+                            dataset_preview = f"{BOLD}{target_csv}{RESET} ({row_count} {'row' if row_count == 1 else 'rows'}){warning_suffix} {SEP} {col_preview}{table_str}"
                             break
                     except Exception:
                         pass

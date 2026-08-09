@@ -109,3 +109,7 @@
 ## 2026-08-08 - Empty/Whitespace Missing Values Detection
 **Learning:** In data-centric CLI tools, checking for file count and empty files is crucial, but datasets containing missing or whitespace-only values can still cause silent failures or misleading "Ready" states in downstream analysis. Displaying the count of missing values in the dataset preview and suggesting Stage 2: Data Cleaning in guidance tips increases data integrity awareness and prevents user frustration.
 **Action:** Detect and count missing/whitespace-only values in CSV file parsing and reflect this warning dynamically in the CLI's dataset status section and corresponding setup guidance tips.
+
+## 2026-08-09 - Accessible Multi-Mode Dataset Table Preview
+**Learning:** In data science CLI dashboards, showing raw column names isn't enough to give users immediate feedback on data structure and content. A compact, aligned table preview of the first few records reduces cognitive load. Furthermore, aligning the table dynamically to the sub-bullet indentation, styling table borders with theme colors (BLUE), and providing a clean ASCII-only fallback in `--plain` accessibility mode preserves readability for screen readers and legacy terminals alike.
+**Action:** Implement a dynamic table formatter with column-width calculation, a hard column-cap (e.g. 6 columns with an ellipsis suffix) to prevent horizontal overflow, and fully custom border styles that adapt automatically to the terminal's plain-text or TTY mode.
