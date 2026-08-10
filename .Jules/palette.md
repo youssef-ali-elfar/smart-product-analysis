@@ -52,7 +52,7 @@
 
 ## 2026-06-23 - Progressive Pipeline Visualization and Information Density
 **Learning:** Visualizing pipeline progress through color-coded connectors (e.g., GREEN for completed transitions) provides a strong intuitive sense of flow. Additionally, in high-density status reports, capping extensive lists (like file types) to the top 3 items and appending a natural "others" indicator prevents visual overwhelm while maintaining transparency.
-**Action:** Use look-behind logic in roadmap loops to color stage connectors and implement capping for collection summaries in CLI tools to balance detail with scannability.
+**Action:** Use look-behind logic in roadmap loops and implement capping for collection summaries in CLI tools to balance detail with scannability.
 
 ## 2026-06-25 - Contextual Dependency Feedback
 **Learning:** Listing the "purpose" of a missing dependency next to its error status (e.g., "Not Found (Data manipulation)") provides immediate context on the impact of the missing package. Furthermore, providing a specific installation tip that names the missing libraries when only a few are absent makes the onboarding path more direct and less generic.
@@ -109,3 +109,7 @@
 ## 2026-08-08 - Empty/Whitespace Missing Values Detection
 **Learning:** In data-centric CLI tools, checking for file count and empty files is crucial, but datasets containing missing or whitespace-only values can still cause silent failures or misleading "Ready" states in downstream analysis. Displaying the count of missing values in the dataset preview and suggesting Stage 2: Data Cleaning in guidance tips increases data integrity awareness and prevents user frustration.
 **Action:** Detect and count missing/whitespace-only values in CSV file parsing and reflect this warning dynamically in the CLI's dataset status section and corresponding setup guidance tips.
+
+## 2026-08-10 - Beautifully Framed Dataset Previews
+**Learning:** In data CLI dashboards, showing a raw comma-separated list of columns is helpful but doesn't feel like a natural dataset. Wrapping the first 3 rows of data in a beautifully framed, aligned, and indented tabular preview immediately elevates the UI and makes data structure feel tangible.
+**Action:** Parse the first 3 rows of the main dataset and display them inside a cleanly aligned ASCII/Unicode table nested neatly inside the CLI status.

@@ -273,6 +273,95 @@ def main():
                             else:
                                 col_preview = ", ".join(headers)
                             dataset_preview = f"{BOLD}{target_csv}{RESET} ({row_count} {'row' if row_count == 1 else 'rows'}){warning_suffix} {SEP} {col_preview}"
+
+                            # Generate beautiful tabular preview of up to 3 rows of data
+                            num_cols = min(len(headers), 6)
+                            has_ellipsis = len(headers) > 6
+
+                            table_headers = headers[:num_cols]
+                            if has_ellipsis:
+                                table_headers.append("...")
+
+                            table_rows = []
+                            for line in lines[1:4]:
+                                fields = [f.strip() for f in line.split(",")]
+                                row_cells = fields[:num_cols]
+                                while len(row_cells) < num_cols:
+                                    row_cells.append("")
+                                if has_ellipsis:
+                                    row_cells.append("...")
+                                table_rows.append(row_cells)
+
+                            col_widths = []
+                            for col_idx in range(len(table_headers)):
+                                max_w = len(table_headers[col_idx])
+                                for r in table_rows:
+                                    if col_idx < len(r):
+                                        max_w = max(max_w, len(r[col_idx]))
+                                    else:
+                                        max_w = max(max_w, 0)
+                                col_widths.append(max_w)
+
+                            b_color = BLUE + BOLD if use_color else ""
+                            r_color = RESET if use_color else ""
+
+                            if not args.plain:
+                                char_top_left = "┌"
+                                char_top_mid = "┬"
+                                char_top_right = "┐"
+                                char_mid_left = "├"
+                                char_mid_mid = "┼"
+                                char_mid_right = "┤"
+                                char_bot_left = "└"
+                                char_bot_mid = "┴"
+                                char_bot_right = "┘"
+                                char_horiz = "─"
+                                char_vert = "│"
+                            else:
+                                char_top_left = "+"
+                                char_top_mid = "+"
+                                char_top_right = "+"
+                                char_mid_left = "+"
+                                char_mid_mid = "+"
+                                char_mid_right = "+"
+                                char_bot_left = "+"
+                                char_bot_mid = "+"
+                                char_bot_right = "+"
+                                char_horiz = "-"
+                                char_vert = "|"
+
+                            top_border = char_top_left + char_top_mid.join(char_horiz * (w + 2) for w in col_widths) + char_top_right
+                            if b_color:
+                                top_border = f"{b_color}{top_border}{r_color}"
+
+                            mid_border = char_mid_left + char_mid_mid.join(char_horiz * (w + 2) for w in col_widths) + char_mid_right
+                            if b_color:
+                                mid_border = f"{b_color}{mid_border}{r_color}"
+
+                            bot_border = char_bot_left + char_bot_mid.join(char_horiz * (w + 2) for w in col_widths) + char_bot_right
+                            if b_color:
+                                bot_border = f"{b_color}{bot_border}{r_color}"
+
+                            def format_table_row(cells, c_widths, border_col, r_col, vert_c):
+                                parts = []
+                                for idx, cell in enumerate(cells):
+                                    parts.append(f" {cell:<{c_widths[idx]}} ")
+                                if border_col:
+                                    sep_str = f"{border_col}{vert_c}{r_col}"
+                                    return sep_str + sep_str.join(parts) + sep_str
+                                else:
+                                    return vert_c + vert_c.join(parts) + vert_c
+
+                            table_lines = []
+                            table_lines.append(top_border)
+                            table_lines.append(format_table_row(table_headers, col_widths, b_color, r_color, char_vert))
+                            table_lines.append(mid_border)
+                            for r_row in table_rows:
+                                table_lines.append(format_table_row(r_row, col_widths, b_color, r_color, char_vert))
+                            table_lines.append(bot_border)
+
+                            indented_table = "\n" + "\n".join(" " * 19 + l for l in table_lines)
+                            dataset_preview += indented_table
                             break
                     except Exception:
                         pass
