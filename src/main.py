@@ -121,7 +121,7 @@ def main():
                 while True:
                     try:
                         response = input(f"{EMOJI_WARN}{BOLD}{YELLOW}Warning:{RESET} {BOLD}{csv_path}{RESET} already exists and contains data. Overwrite? [y/N/help]: ").strip().lower()
-                        if response in ("?", "help"):
+                        if response in ("?", "h", "help"):
                             print(f"\n{EMOJI_TIP}{CYAN}{BOLD}Help - Overwriting Data:{RESET}")
                             print(f"  An existing products dataset already resides in {BOLD}{csv_path}{RESET}.")
                             print("  - If you overwrite it, the file will be replaced with clean sample mock data (5 products).")
@@ -345,7 +345,19 @@ def main():
 
         if not all_found:
             lib_suffix = "library" if len(missing_libs) == 1 else "libraries"
-            status_msg = f"{EMOJI_ERR}{BOLD}{RED}Incomplete{RESET} ({len(missing_libs)} {lib_suffix} missing) - Please run: {BOLD}pip install -r requirements.txt{RESET}"
+            if len(missing_libs) <= 2:
+                pip_packages = {
+                    "Pandas": "pandas",
+                    "NumPy": "numpy",
+                    "Matplotlib": "matplotlib",
+                    "Seaborn": "seaborn",
+                    "Scikit-Learn": "scikit-learn",
+                    "Jupyter": "jupyter"
+                }
+                pip_install_cmd = "pip install " + " ".join([pip_packages.get(lib, lib.lower()) for lib in missing_libs])
+                status_msg = f"{EMOJI_ERR}{BOLD}{RED}Incomplete{RESET} ({len(missing_libs)} {lib_suffix} missing) - Please run: {BOLD}{pip_install_cmd}{RESET}"
+            else:
+                status_msg = f"{EMOJI_ERR}{BOLD}{RED}Incomplete{RESET} ({len(missing_libs)} {lib_suffix} missing) - Please run: {BOLD}pip install -r requirements.txt{RESET}"
         elif not data_dir_exists or data_count == 0:
             status_msg = f"{EMOJI_WARN}{BOLD}{YELLOW}Pending{RESET} - Data directory missing or empty"
         elif total_size == 0:
@@ -409,7 +421,16 @@ def main():
         if not all_found:
             if len(missing_libs) <= 2:
                 missing_list = natural_join([f"{BOLD}{m}{RESET}" for m in missing_libs])
-                tip_text = f"Missing {missing_list}? Run {BOLD}pip install -r requirements.txt{RESET} to complete your setup."
+                pip_packages = {
+                    "Pandas": "pandas",
+                    "NumPy": "numpy",
+                    "Matplotlib": "matplotlib",
+                    "Seaborn": "seaborn",
+                    "Scikit-Learn": "scikit-learn",
+                    "Jupyter": "jupyter"
+                }
+                pip_install_cmd = "pip install " + " ".join([pip_packages.get(lib, lib.lower()) for lib in missing_libs])
+                tip_text = f"Missing {missing_list}? Run {BOLD}{pip_install_cmd}{RESET} to complete your setup."
             else:
                 tip_text = f"{len(missing_libs)} libraries missing? Run the {BOLD}pip install -r requirements.txt{RESET} command to set up your environment."
         elif not data_dir_exists:
@@ -439,7 +460,7 @@ def main():
                 while True:
                     try:
                         response = input(f"\n{EMOJI_SPARKLES}{BOLD}{CYAN}Would you like to initialize the workspace with sample data now? [y/N/help]:{RESET} ").strip().lower()
-                        if response in ("?", "help"):
+                        if response in ("?", "h", "help"):
                             print(f"\n{EMOJI_TIP}{CYAN}{BOLD}Help - Workspace Onboarding:{RESET}")
                             print("  Your workspace currently lacks sample product files in the data directory,")
                             print("  preventing data analysis stages (like Cleaning, EDA, etc.) from running.")
