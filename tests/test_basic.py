@@ -160,6 +160,30 @@ class TestBasic(unittest.TestCase):
             self.assertIn("Initialization aborted.", output)
             mock_open.assert_not_called()
 
+    @patch('sys.argv', ['src/main.py', '--init'])
+    @patch('os.makedirs')
+    @patch('builtins.open')
+    @patch('os.path.isfile')
+    @patch('os.path.getsize')
+    @patch('sys.stdin')
+    def test_init_overwrite_help_h_option(self, mock_stdin, mock_getsize, mock_isfile, mock_open, mock_makedirs):
+        """Test that typing 'h' in the --init overwrite prompt displays details and re-prompts."""
+        mock_isfile.return_value = True
+        mock_getsize.return_value = 100
+        mock_stdin.isatty.return_value = True
+
+        captured_output = io.StringIO()
+        sys.stdout = captured_output
+        # Mock side_effect to input 'h' (which should re-prompt) then 'n' (to abort)
+        with patch('builtins.input', side_effect=['h', 'n']) as mock_input:
+            main()
+            output = captured_output.getvalue()
+            self.assertEqual(mock_input.call_count, 2)
+            self.assertIn("Help - Overwriting Data:", output)
+            self.assertIn("clean sample mock data", output)
+            self.assertIn("Initialization aborted.", output)
+            mock_open.assert_not_called()
+
     @patch('sys.argv', ['src/main.py'])
     @patch('src.main.get_lib_version')
     @patch('os.path.isdir')
@@ -176,6 +200,30 @@ class TestBasic(unittest.TestCase):
         sys.stdout = captured_output
         # Mock side_effect to input '?' (which should re-prompt) then 'y' (to accept and initialize)
         with patch('builtins.input', side_effect=['?', 'y']) as mock_input:
+            main()
+            output = captured_output.getvalue()
+            self.assertEqual(mock_input.call_count, 2)
+            self.assertIn("Help - Workspace Onboarding:", output)
+            self.assertIn("lacks sample product files in the data directory", output)
+            self.assertIn("Initialization complete!", output)
+            mock_open.assert_called_once()
+
+    @patch('sys.argv', ['src/main.py'])
+    @patch('src.main.get_lib_version')
+    @patch('os.path.isdir')
+    @patch('os.makedirs')
+    @patch('builtins.open')
+    @patch('sys.stdin')
+    def test_interactive_onboarding_help_h_option(self, mock_stdin, mock_open, mock_makedirs, mock_isdir, mock_get_lib_version):
+        """Test that typing 'h' in the onboarding prompt displays details and re-prompts."""
+        mock_get_lib_version.return_value = "1.2.3"  # All libs found
+        mock_isdir.return_value = False  # Data dir missing
+        mock_stdin.isatty.return_value = True
+
+        captured_output = io.StringIO()
+        sys.stdout = captured_output
+        # Mock side_effect to input 'h' (which should re-prompt) then 'y' (to accept and initialize)
+        with patch('builtins.input', side_effect=['h', 'y']) as mock_input:
             main()
             output = captured_output.getvalue()
             self.assertEqual(mock_input.call_count, 2)
@@ -255,6 +303,44 @@ class TestBasic(unittest.TestCase):
         self.assertIn("dirty.csv", output)
         self.assertIn("4 missing values", output)
         self.assertIn("Detected 4 missing values in your dataset. Proceed to Stage 2: Data Cleaning to handle them!", output)
+
+    @patch('sys.argv', ['src/main.py'])
+    @patch('src.main.get_lib_version')
+    @patch('os.path.isdir')
+    @patch('os.listdir')
+    def test_one_missing_dependency_recommends_targeted_install(self, mock_listdir, mock_isdir, mock_get_lib_version):
+        """Test that if exactly 1 dependency is missing, we recommend targeted pip install."""
+        # Pandas is missing
+        mock_get_lib_version.side_effect = lambda name: None if name == "pandas" else "1.2.3"
+        mock_isdir.return_value = True
+        mock_listdir.return_value = ["products.csv"]
+
+        captured_output = io.StringIO()
+        sys.stdout = captured_output
+        main()
+        output = captured_output.getvalue()
+
+        self.assertIn("pip install pandas", output)
+        self.assertNotIn("pip install -r requirements.txt", output)
+
+    @patch('sys.argv', ['src/main.py'])
+    @patch('src.main.get_lib_version')
+    @patch('os.path.isdir')
+    @patch('os.listdir')
+    def test_two_missing_dependencies_recommends_targeted_install(self, mock_listdir, mock_isdir, mock_get_lib_version):
+        """Test that if exactly 2 dependencies are missing, we recommend targeted pip install."""
+        # Pandas and NumPy are missing
+        mock_get_lib_version.side_effect = lambda name: None if name in ["pandas", "numpy"] else "1.2.3"
+        mock_isdir.return_value = True
+        mock_listdir.return_value = ["products.csv"]
+
+        captured_output = io.StringIO()
+        sys.stdout = captured_output
+        main()
+        output = captured_output.getvalue()
+
+        self.assertIn("pip install pandas numpy", output)
+        self.assertNotIn("pip install -r requirements.txt", output)
 
 if __name__ == '__main__':
     unittest.main()
