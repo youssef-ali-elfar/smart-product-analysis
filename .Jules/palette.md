@@ -109,3 +109,7 @@
 ## 2026-08-08 - Empty/Whitespace Missing Values Detection
 **Learning:** In data-centric CLI tools, checking for file count and empty files is crucial, but datasets containing missing or whitespace-only values can still cause silent failures or misleading "Ready" states in downstream analysis. Displaying the count of missing values in the dataset preview and suggesting Stage 2: Data Cleaning in guidance tips increases data integrity awareness and prevents user frustration.
 **Action:** Detect and count missing/whitespace-only values in CSV file parsing and reflect this warning dynamically in the CLI's dataset status section and corresponding setup guidance tips.
+
+## 2026-08-12 - Actionable Column-Specific Missing Values Context
+**Learning:** Simply displaying a generic count of missing values in dataset checks provides incomplete guidance, forcing users to manually inspect or run extra diagnostics to locate the issues. Supplementing the warning count with the exact, sorted list of columns containing missing values in both the dataset status preview and the actionable cleaning tip dramatically reduces diagnostic overhead and guides users directly to their corrective actions.
+**Action:** Track column-specific missing fields during CSV parsing and append a list of affected headers in natural language to dataset status previews and data-cleaning guidance tips.
