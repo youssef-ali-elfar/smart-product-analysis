@@ -204,6 +204,7 @@ def main():
         freshest_time = 0
         type_summary = ""
         missing_values_count = 0
+        missing_cols = []
         if data_dir_exists:
             files = sorted([f for f in os.listdir("data") if os.path.isfile(os.path.join("data", f))])
             data_count = len(files)
@@ -253,20 +254,27 @@ def main():
                             row_count = len(lines) - 1
 
                             # Detect missing values
+                            missing_cols_set = set()
                             for line in lines[1:]:
                                 fields = [f.strip() for f in line.split(",")]
                                 if len(fields) < len(headers):
                                     missing_values_count += (len(headers) - len(fields))
-                                for f in fields[:len(headers)]:
+                                    for idx in range(len(fields), len(headers)):
+                                        missing_cols_set.add(headers[idx])
+                                for idx, f in enumerate(fields[:len(headers)]):
                                     if f == "":
                                         missing_values_count += 1
+                                        missing_cols_set.add(headers[idx])
+
+                            missing_cols = [h for h in headers if h in missing_cols_set]
 
                             warning_suffix = ""
                             if missing_values_count > 0:
+                                cols_detail = f" in {', '.join(missing_cols)}" if missing_cols else ""
                                 if args.plain:
-                                    warning_suffix = f" ({missing_values_count} missing values)"
+                                    warning_suffix = f" ({missing_values_count} missing values{cols_detail})"
                                 else:
-                                    warning_suffix = f" ({EMOJI_WARN}{missing_values_count} missing values)"
+                                    warning_suffix = f" ({EMOJI_WARN}{missing_values_count} missing values{cols_detail})"
 
                             if len(headers) > 6:
                                 col_preview = ", ".join(headers[:6]) + ", ..."
@@ -423,7 +431,11 @@ def main():
         elif total_size == 0:
             tip_text = f"Data files found in {BOLD}data/{RESET} appear to be empty (0 bytes). Please ensure your datasets contain valid product data."
         elif missing_values_count > 0:
-            tip_text = f"Detected {BOLD}{missing_values_count} missing values{RESET} in your dataset. Proceed to {BOLD}Stage 2: Data Cleaning{RESET} to handle them!"
+            if missing_cols:
+                cols_joined = natural_join(missing_cols)
+                tip_text = f"Detected {BOLD}{missing_values_count} missing values{RESET} in {BOLD}{cols_joined}{RESET} in your dataset. Proceed to {BOLD}Stage 2: Data Cleaning{RESET} to handle them!"
+            else:
+                tip_text = f"Detected {BOLD}{missing_values_count} missing values{RESET} in your dataset. Proceed to {BOLD}Stage 2: Data Cleaning{RESET} to handle them!"
         elif not is_virtual:
             tip_text = f"Consider using a {BOLD}Virtual Environment{RESET} for better dependency management. Run {BOLD}python -m venv venv{RESET} to create one!"
         else:
