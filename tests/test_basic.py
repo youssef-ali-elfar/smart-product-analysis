@@ -253,8 +253,8 @@ class TestBasic(unittest.TestCase):
         output = captured_output.getvalue()
 
         self.assertIn("dirty.csv", output)
-        self.assertIn("4 missing values", output)
-        self.assertIn("Detected 4 missing values in your dataset. Proceed to Stage 2: Data Cleaning to handle them!", output)
+        self.assertIn("4 missing values in name, category, price, stock", output)
+        self.assertIn("Detected 4 missing values in name, category, price, and stock in your dataset. Proceed to Stage 2: Data Cleaning to handle them!", output)
 
 if __name__ == '__main__':
     unittest.main()
