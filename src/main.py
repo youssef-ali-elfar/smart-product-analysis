@@ -4,6 +4,7 @@ import platform
 import os
 import math
 import time
+import csv
 from datetime import datetime
 from collections import Counter
 
@@ -242,21 +243,22 @@ def main():
 
             # Extract Dataset Preview from the first non-empty CSV file
             dataset_preview = ""
+            dataset_table_lines = []
             csv_files = [f for f in files if f.lower().endswith(".csv")]
             for target_csv in csv_files:
                 csv_path = os.path.join("data", target_csv)
                 if os.path.isfile(csv_path) and os.path.getsize(csv_path) > 0:
                     try:
                         with open(csv_path, "r", encoding="utf-8") as f_csv:
-                            lines = [line.strip() for line in f_csv if line.strip()]
-                        if lines:
-                            headers = [col.strip() for col in lines[0].split(",") if col.strip()]
-                            row_count = len(lines) - 1
+                            csv_rows = [row for row in csv.reader(f_csv) if row and any(cell.strip() for cell in row)]
+                        if csv_rows:
+                            headers = [col.strip() for col in csv_rows[0] if col.strip()]
+                            row_count = len(csv_rows) - 1
 
                             missing_col_set = set()
                             # Detect missing values
-                            for line in lines[1:]:
-                                fields = [f.strip() for f in line.split(",")]
+                            for row in csv_rows[1:]:
+                                fields = [f.strip() for f in row]
                                 if len(fields) < len(headers):
                                     missing_values_count += (len(headers) - len(fields))
                                     for idx in range(len(fields), len(headers)):
@@ -281,6 +283,23 @@ def main():
                             else:
                                 col_preview = ", ".join(headers)
                             dataset_preview = f"{BOLD}{target_csv}{RESET} ({row_count} {'row' if row_count == 1 else 'rows'}){warning_suffix} {SEP} {col_preview}"
+
+                            # Build tabular preview for up to 3 data rows
+                            if row_count > 0:
+                                table_rows = csv_rows[1:4]
+                                disp_headers = headers[:6] + (["..."] if len(headers) > 6 else [])
+                                widths = [max(len(h), max((3 if i == 6 and len(headers) > 6 else len(r[i].strip())) if i < len(r) else 0 for r in table_rows)) for i, h in enumerate(disp_headers)]
+                                c_tl, c_tm, c_tr, c_ml, c_mm, c_mr, c_bl, c_bm, c_br, c_v, c_h = ("+", "+", "+", "+", "+", "+", "+", "+", "+", "|", "-") if args.plain else ("┌", "┬", "┐", "├", "┼", "┤", "└", "┴", "┘", "│", "─")
+                                b_color = "" if args.plain else BLUE
+
+                                dataset_table_lines.append(f"{b_color}{c_tl}" + f"{c_tm}".join(c_h * (w + 2) for w in widths) + f"{c_tr}{RESET}")
+                                h_cells = [f" {BOLD}{h:<{widths[i]}}{RESET} " if not args.plain else f" {h:<{widths[i]}} " for i, h in enumerate(disp_headers)]
+                                dataset_table_lines.append(f"{b_color}{c_v}{RESET}" + f"{b_color}{c_v}{RESET}".join(h_cells) + f"{b_color}{c_v}{RESET}")
+                                dataset_table_lines.append(f"{b_color}{c_ml}" + f"{c_mm}".join(c_h * (w + 2) for w in widths) + f"{c_mr}{RESET}")
+                                for r in table_rows:
+                                    r_cells = [f" {('...' if i == 6 and len(headers) > 6 else (r[i].strip() if i < len(r) else '')):<{widths[i]}} " for i in range(len(disp_headers))]
+                                    dataset_table_lines.append(f"{b_color}{c_v}{RESET}" + f"{b_color}{c_v}{RESET}".join(r_cells) + f"{b_color}{c_v}{RESET}")
+                                dataset_table_lines.append(f"{b_color}{c_bl}" + f"{c_bm}".join(c_h * (w + 2) for w in widths) + f"{c_br}{RESET}")
                             break
                     except Exception:
                         pass
@@ -342,6 +361,9 @@ def main():
                 print(f"  - {'Latest':<13}: {BOLD}{latest_file}{RESET} ({format_size(latest_size)})")
             if dataset_preview:
                 print(f"  - {'Dataset':<13}: {dataset_preview}")
+                if dataset_table_lines:
+                    for t_line in dataset_table_lines:
+                        print(f"    {t_line}")
             print(f"  - {'Composition':<13}: {type_summary}")
             print(f"  - {'Freshness':<13}: {freshness}")
         elif data_dir_exists:
