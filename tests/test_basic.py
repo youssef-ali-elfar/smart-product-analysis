@@ -254,7 +254,36 @@ class TestBasic(unittest.TestCase):
 
         self.assertIn("dirty.csv", output)
         self.assertIn("4 missing values", output)
-        self.assertIn("Detected 4 missing values in your dataset. Proceed to Stage 2: Data Cleaning to handle them!", output)
+        self.assertIn("Detected 4 missing values in name, category, price, and stock in your dataset. Proceed to Stage 2: Data Cleaning to handle them!", output)
+
+    @patch('sys.argv', ['src/main.py'])
+    @patch('src.main.get_lib_version')
+    @patch('os.path.isdir')
+    @patch('os.listdir')
+    @patch('os.path.isfile')
+    @patch('os.path.getsize')
+    @patch('builtins.open')
+    def test_zero_row_csv_detection_and_tip(self, mock_open, mock_getsize, mock_isfile, mock_listdir, mock_isdir, mock_get_lib_version):
+        """Test that CSV datasets with headers but 0 data rows display warning badge and tip."""
+        mock_get_lib_version.return_value = "1.2.3"
+        mock_isdir.return_value = True
+        mock_listdir.return_value = ["empty_header.csv"]
+        mock_isfile.return_value = True
+        mock_getsize.return_value = 50
+
+        # CSV with header only (0 data rows)
+        csv_content = "id,name,category,price,stock\n"
+        mock_open.return_value = io.StringIO(csv_content)
+
+        captured_output = io.StringIO()
+        sys.stdout = captured_output
+        main()
+        output = captured_output.getvalue()
+
+        self.assertIn("empty_header.csv", output)
+        self.assertIn("0 data rows", output)
+        self.assertIn("[PEND]", output)
+        self.assertIn("Your dataset contains header columns but 0 data rows.", output)
 
 if __name__ == '__main__':
     unittest.main()

@@ -205,6 +205,7 @@ def main():
         type_summary = ""
         missing_values_count = 0
         missing_val_cols = []
+        zero_row_csv = False
         if data_dir_exists:
             files = sorted([f for f in os.listdir("data") if os.path.isfile(os.path.join("data", f))])
             data_count = len(files)
@@ -269,7 +270,13 @@ def main():
                             missing_val_cols = [h for h in headers if h in missing_col_set]
 
                             warning_suffix = ""
-                            if missing_values_count > 0:
+                            if row_count == 0:
+                                zero_row_csv = True
+                                if args.plain:
+                                    warning_suffix = " (0 data rows)"
+                                else:
+                                    warning_suffix = f" ({EMOJI_WARN}0 data rows)"
+                            elif missing_values_count > 0:
                                 cols_str = f" in {', '.join(missing_val_cols)}" if missing_val_cols else ""
                                 if args.plain:
                                     warning_suffix = f" ({missing_values_count} missing values{cols_str})"
@@ -277,7 +284,8 @@ def main():
                                     warning_suffix = f" ({EMOJI_WARN}{missing_values_count} missing values{cols_str})"
 
                             if len(headers) > 6:
-                                col_preview = ", ".join(headers[:6]) + ", ..."
+                                remaining = len(headers) - 6
+                                col_preview = ", ".join(headers[:6]) + f", ... (+{remaining} more)"
                             else:
                                 col_preview = ", ".join(headers)
                             dataset_preview = f"{BOLD}{target_csv}{RESET} ({row_count} {'row' if row_count == 1 else 'rows'}){warning_suffix} {SEP} {col_preview}"
@@ -289,7 +297,7 @@ def main():
         if not all_found:
             badge_text = f"[INC:{len(missing_libs)}]"
             badge_color = RED
-        elif not data_dir_exists or data_count == 0 or total_size == 0:
+        elif not data_dir_exists or data_count == 0 or total_size == 0 or zero_row_csv:
             badge_text = "[PEND]"
             badge_color = YELLOW
         else:
@@ -358,6 +366,8 @@ def main():
             status_msg = f"{EMOJI_WARN}{BOLD}{YELLOW}Pending{RESET} - Data directory missing or empty"
         elif total_size == 0:
             status_msg = f"{EMOJI_WARN}{BOLD}{YELLOW}Pending{RESET} - Data files appear empty"
+        elif zero_row_csv:
+            status_msg = f"{EMOJI_WARN}{BOLD}{YELLOW}Pending{RESET} - CSV dataset contains 0 data rows"
         else:
             status_msg = f"{EMOJI_OK}{BOLD}{GREEN}Ready{RESET}"
         print(f"{BULLET} {'Status':<15}: {status_msg}")
@@ -382,7 +392,7 @@ def main():
             is_current = False
             this_stage_done = False
             if i == 1:
-                if data_count > 0 and total_size > 0:
+                if data_count > 0 and total_size > 0 and not zero_row_csv:
                     status_tag = f"{BOLD}{GREEN}[DONE]{RESET}"
                     stage_color = GREEN
                     this_stage_done = True
@@ -397,7 +407,7 @@ def main():
                     status_tag = f"{BOLD}{YELLOW}[PEND]{RESET}"
                     stage_color = RESET
             elif i == 2:
-                if data_count > 0 and total_size > 0 and all_found:
+                if data_count > 0 and total_size > 0 and not zero_row_csv and all_found:
                     status_tag = f"{BOLD}{CYAN}[NEXT]{RESET}"
                     stage_color = CYAN
                     is_current = True
@@ -430,6 +440,8 @@ def main():
                 tip_text += f" (Tip: Use a {BOLD}Virtual Env{RESET} for better management!)"
         elif total_size == 0:
             tip_text = f"Data files found in {BOLD}data/{RESET} appear to be empty (0 bytes). Please ensure your datasets contain valid product data."
+        elif zero_row_csv:
+            tip_text = f"Your dataset contains header columns but {BOLD}0 data rows{RESET}. Please populate data records or run {BOLD}python src/main.py --init{RESET} to generate sample data!"
         elif missing_values_count > 0:
             cols_joined = natural_join([f"{BOLD}{c}{RESET}" for c in missing_val_cols]) if missing_val_cols else ""
             in_cols_str = f" in {cols_joined}" if cols_joined else ""
