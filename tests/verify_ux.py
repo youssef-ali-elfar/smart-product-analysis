@@ -221,13 +221,13 @@ class TestUX(unittest.TestCase):
                     self.assertIn("✅", output)
 
                 if scenario['name'] == "Dataset with Missing Values":
-                    self.assertIn("⚠️ 4 missing values in name, category, price, stock", stripped_output)
-                    self.assertIn("Detected 4 missing values in name, category, price, and stock in your dataset. Proceed to Stage 2: Data Cleaning to handle them!", stripped_output)
+                    self.assertIn("⚠️ 4 missing values in name, category, price, and 1 other column", stripped_output)
+                    self.assertIn("Detected 4 missing values in name, category, price, and 1 other column in your dataset. Proceed to Stage 2: Data Cleaning to handle them!", stripped_output)
 
                 if scenario['name'] == "Dataset with Missing Values Plain Mode":
-                    self.assertIn("4 missing values in name, category, price, stock", stripped_output)
+                    self.assertIn("4 missing values in name, category, price, and 1 other column", stripped_output)
                     self.assertNotIn("⚠️", stripped_output)
-                    self.assertIn("Detected 4 missing values in name, category, price, and stock in your dataset. Proceed to Stage 2: Data Cleaning to handle them!", stripped_output)
+                    self.assertIn("Detected 4 missing values in name, category, price, and 1 other column in your dataset. Proceed to Stage 2: Data Cleaning to handle them!", stripped_output)
 
             except Exception as e:
                 sys.stdout = sys.__stdout__

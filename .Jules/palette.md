@@ -109,3 +109,7 @@
 ## 2026-08-08 - Empty/Whitespace Missing Values Detection
 **Learning:** In data-centric CLI tools, checking for file count and empty files is crucial, but datasets containing missing or whitespace-only values can still cause silent failures or misleading "Ready" states in downstream analysis. Displaying the count of missing values in the dataset preview and suggesting Stage 2: Data Cleaning in guidance tips increases data integrity awareness and prevents user frustration.
 **Action:** Detect and count missing/whitespace-only values in CSV file parsing and reflect this warning dynamically in the CLI's dataset status section and corresponding setup guidance tips.
+
+## 2026-08-25 - Capped Column Reporting for Wide Datasets
+**Learning:** In datasets with missing values across many columns (>3 columns), listing every affected column in status badges or onboarding tips causes severe text clutter and line wrapping in CLI reports. Capping the list to the top 3 items and appending a natural language "and N other columns" summary maintains high scannability while providing actionable data integrity feedback.
+**Action:** Cap inline list representations in CLI warning strings to 3 items when dealing with high-cardinality collections (e.g. columns with missing values) and append a quantified "others" summary.
