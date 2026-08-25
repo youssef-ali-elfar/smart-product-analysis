@@ -270,7 +270,16 @@ def main():
 
                             warning_suffix = ""
                             if missing_values_count > 0:
-                                cols_str = f" in {', '.join(missing_val_cols)}" if missing_val_cols else ""
+                                if len(missing_val_cols) > 3:
+                                    other_count = len(missing_val_cols) - 3
+                                    col_suffix = "column" if other_count == 1 else "columns"
+                                    preview_cols = missing_val_cols[:3] + [f"{other_count} other {col_suffix}"]
+                                    cols_str = f" in {natural_join(preview_cols)}"
+                                elif missing_val_cols:
+                                    cols_str = f" in {', '.join(missing_val_cols)}"
+                                else:
+                                    cols_str = ""
+
                                 if args.plain:
                                     warning_suffix = f" ({missing_values_count} missing values{cols_str})"
                                 else:
@@ -431,7 +440,15 @@ def main():
         elif total_size == 0:
             tip_text = f"Data files found in {BOLD}data/{RESET} appear to be empty (0 bytes). Please ensure your datasets contain valid product data."
         elif missing_values_count > 0:
-            cols_joined = natural_join([f"{BOLD}{c}{RESET}" for c in missing_val_cols]) if missing_val_cols else ""
+            if len(missing_val_cols) > 3:
+                other_count = len(missing_val_cols) - 3
+                col_suffix = "column" if other_count == 1 else "columns"
+                tip_cols = [f"{BOLD}{c}{RESET}" for c in missing_val_cols[:3]] + [f"{other_count} other {col_suffix}"]
+                cols_joined = natural_join(tip_cols)
+            elif missing_val_cols:
+                cols_joined = natural_join([f"{BOLD}{c}{RESET}" for c in missing_val_cols])
+            else:
+                cols_joined = ""
             in_cols_str = f" in {cols_joined}" if cols_joined else ""
             tip_text = f"Detected {BOLD}{missing_values_count} missing values{RESET}{in_cols_str} in your dataset. Proceed to {BOLD}Stage 2: Data Cleaning{RESET} to handle them!"
         elif not is_virtual:
