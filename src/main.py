@@ -71,7 +71,13 @@ def supports_color():
 def main():
     version = "1.0.0"
     parser = argparse.ArgumentParser(
-        description="Smart Product Analysis - A tool for analyzing product data."
+        description="Smart Product Analysis - A tool for analyzing product data.",
+        epilog="""Examples:
+  python src/main.py               # Run workspace status check and analysis roadmap
+  python src/main.py --init        # Initialize data/ directory with sample products.csv
+  python src/main.py --plain       # Plain text mode for screen readers / basic terminals
+  python src/main.py --no-color    # Disable ANSI escape sequences while preserving icons""",
+        formatter_class=argparse.RawDescriptionHelpFormatter
     )
     parser.add_argument(
         "--version", action="version", version=f"Smart Product Analysis {version}"
@@ -129,11 +135,11 @@ def main():
                             continue
                         elif response in ("y", "yes"):
                             break
-                        elif response in ("n", "no", ""):
+                        elif response in ("n", "no", "", "q", "quit", "exit"):
                             print(f"\n{BOLD}Initialization aborted.{RESET}\n")
                             return
                         else:
-                            print(f"\n{EMOJI_WARN}{BOLD}{YELLOW}Unrecognized option:{RESET} {BOLD}'{response}'{RESET}. Please enter y, yes, n, no, help, or press Enter to decline.\n")
+                            print(f"\n{EMOJI_WARN}{BOLD}{YELLOW}Unrecognized option:{RESET} {BOLD}'{response}'{RESET}. Please enter y, yes, n, no, q, quit, exit, help, or press Enter to decline.\n")
                             continue
                     except (KeyboardInterrupt, EOFError):
                         print(f"\n\n👋 Initialization interrupted. Exiting gracefully...\n")
@@ -277,7 +283,8 @@ def main():
                                     warning_suffix = f" ({EMOJI_WARN}{missing_values_count} missing values{cols_str})"
 
                             if len(headers) > 6:
-                                col_preview = ", ".join(headers[:6]) + ", ..."
+                                remaining_cols = len(headers) - 6
+                                col_preview = ", ".join(headers[:6]) + f", ... (+{remaining_cols} more)"
                             else:
                                 col_preview = ", ".join(headers)
                             dataset_preview = f"{BOLD}{target_csv}{RESET} ({row_count} {'row' if row_count == 1 else 'rows'}){warning_suffix} {SEP} {col_preview}"
@@ -476,11 +483,11 @@ def main():
                             print(f"{BULLET} Refreshing workspace status...\n")
                             refreshed = True
                             break
-                        elif response in ("n", "no", ""):
+                        elif response in ("n", "no", "", "q", "quit", "exit"):
                             print(f"\n{BOLD}Onboarding declined.{RESET} To start later, you can manually create the {BOLD}data/{RESET} directory or run {BOLD}python src/main.py --init{RESET}!\n")
                             break
                         else:
-                            print(f"\n{EMOJI_WARN}{BOLD}{YELLOW}Unrecognized option:{RESET} {BOLD}'{response}'{RESET}. Please enter y, yes, n, no, help, or press Enter to decline.\n")
+                            print(f"\n{EMOJI_WARN}{BOLD}{YELLOW}Unrecognized option:{RESET} {BOLD}'{response}'{RESET}. Please enter y, yes, n, no, q, quit, exit, help, or press Enter to decline.\n")
                             continue
                     except (KeyboardInterrupt, EOFError):
                         print(f"\n\n👋 Onboarding interrupted. Exiting gracefully...\n")
