@@ -112,6 +112,13 @@ class TestUX(unittest.TestCase):
                 "data_files": ["dirty_data.csv"],
                 "csv_data": "id,name,category,price,stock\n1,Smart Watch,,199.99,\n2,,Electronics,79.99,120\n3,Running Shoes,Apparel,,85",
                 "argv": ["src/main.py", "--plain"]
+            },
+            {
+                "name": "Dataset with Many Columns Truncation",
+                "libs": {lib: "1.2.3" for lib in ["pandas", "numpy", "matplotlib", "seaborn", "sklearn", "jupyter"]},
+                "data_dir_exists": True,
+                "data_files": ["wide_dataset.csv"],
+                "csv_data": "col1,col2,col3,col4,col5,col6,col7,col8,col9\n1,2,3,4,5,6,7,8,9"
             }
         ]
 
@@ -156,16 +163,18 @@ class TestUX(unittest.TestCase):
                     # Verify our new Dataset sub-bullet if csv file is present and not empty
                     if any(f.lower().endswith(".csv") for f in scenario['data_files']) and scenario.get("file_size", 1024) > 0:
                         self.assertIn("Dataset", output)
-                        if "csv_data" in scenario:
-                            self.assertIn("3 rows", output)
-                        else:
-                            self.assertIn("1 row", output)
-                        # We strip any ansi sequence or escape in check
                         import re
                         def strip_ansi(text):
                             return re.sub(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])', '', text)
                         stripped_output = strip_ansi(output)
-                        self.assertIn("id, name, category, price, stock", stripped_output)
+                        if scenario['name'] == "Dataset with Many Columns Truncation":
+                            self.assertIn("1 row", stripped_output)
+                        elif "csv_data" in scenario:
+                            self.assertIn("3 rows", stripped_output)
+                            self.assertIn("id, name, category, price, stock", stripped_output)
+                        else:
+                            self.assertIn("1 row", stripped_output)
+                            self.assertIn("id, name, category, price, stock", stripped_output)
 
                     # Verify individual file size output
                     if len(scenario['data_files']) <= 3:
@@ -228,6 +237,9 @@ class TestUX(unittest.TestCase):
                     self.assertIn("4 missing values in name, category, price, stock", stripped_output)
                     self.assertNotIn("⚠️", stripped_output)
                     self.assertIn("Detected 4 missing values in name, category, price, and stock in your dataset. Proceed to Stage 2: Data Cleaning to handle them!", stripped_output)
+
+                if scenario['name'] == "Dataset with Many Columns Truncation":
+                    self.assertIn("col1, col2, col3, col4, col5, col6, ... (+3 more)", stripped_output)
 
             except Exception as e:
                 sys.stdout = sys.__stdout__

@@ -254,7 +254,41 @@ class TestBasic(unittest.TestCase):
 
         self.assertIn("dirty.csv", output)
         self.assertIn("4 missing values", output)
-        self.assertIn("Detected 4 missing values in your dataset. Proceed to Stage 2: Data Cleaning to handle them!", output)
+        self.assertIn("Detected 4 missing values in name, category, price, and stock in your dataset. Proceed to Stage 2: Data Cleaning to handle them!", output)
+
+    @patch('sys.argv', ['src/main.py'])
+    @patch('src.main.get_lib_version')
+    @patch('os.path.isdir')
+    @patch('os.makedirs')
+    @patch('builtins.open')
+    @patch('sys.stdin')
+    def test_onboarding_quit_exit_aliases(self, mock_stdin, mock_open, mock_makedirs, mock_isdir, mock_get_lib_version):
+        """Test that typing 'q', 'quit', or 'exit' in onboarding prompt declines onboarding gracefully."""
+        mock_get_lib_version.return_value = "1.2.3"
+        mock_isdir.return_value = False
+        mock_stdin.isatty.return_value = True
+
+        for alias in ['q', 'quit', 'exit']:
+            captured_output = io.StringIO()
+            sys.stdout = captured_output
+            with patch('builtins.input', return_value=alias):
+                main()
+                output = captured_output.getvalue()
+                self.assertIn("Onboarding declined.", output)
+                mock_open.assert_not_called()
+
+    @patch('sys.argv', ['src/main.py', '--help'])
+    def test_cli_help_epilog_examples(self):
+        """Test that --help includes usage examples in the epilog."""
+        captured_output = io.StringIO()
+        sys.stdout = captured_output
+        with self.assertRaises(SystemExit) as cm:
+            main()
+        self.assertEqual(cm.exception.code, 0)
+        output = captured_output.getvalue()
+        self.assertIn("Examples:", output)
+        self.assertIn("python src/main.py --init", output)
+        self.assertIn("python src/main.py --plain", output)
 
 if __name__ == '__main__':
     unittest.main()

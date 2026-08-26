@@ -109,3 +109,7 @@
 ## 2026-08-08 - Empty/Whitespace Missing Values Detection
 **Learning:** In data-centric CLI tools, checking for file count and empty files is crucial, but datasets containing missing or whitespace-only values can still cause silent failures or misleading "Ready" states in downstream analysis. Displaying the count of missing values in the dataset preview and suggesting Stage 2: Data Cleaning in guidance tips increases data integrity awareness and prevents user frustration.
 **Action:** Detect and count missing/whitespace-only values in CSV file parsing and reflect this warning dynamically in the CLI's dataset status section and corresponding setup guidance tips.
+
+## 2026-08-26 - Explicit Column Truncation and Natural Prompt Exits
+**Learning:** In CLI dataset previews with wide schema counts (>6 columns), presenting simple generic ellipses (`...`) leaves users guessing how much data remains hidden. Appending an explicit remaining column count (e.g., `... (+3 more)`) offers immediate clarity on schema scale. Additionally, supporting standard exit keywords (`q`, `quit`, `exit`) alongside standard `n`/`no` choices in interactive onboarding and overwrite prompts prevents friction for terminal power users.
+**Action:** Include exact counts in truncated CLI previews and support standard terminal exit aliases (`q`, `quit`, `exit`) across all interactive confirmation prompts.
