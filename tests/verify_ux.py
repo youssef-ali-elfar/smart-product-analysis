@@ -165,7 +165,17 @@ class TestUX(unittest.TestCase):
                         def strip_ansi(text):
                             return re.sub(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])', '', text)
                         stripped_output = strip_ansi(output)
-                        self.assertIn("id, name, category, price, stock", stripped_output)
+                        self.assertIn("id", stripped_output)
+                        self.assertIn("name", stripped_output)
+                        self.assertIn("category", stripped_output)
+                        self.assertIn("price", stripped_output)
+                        self.assertIn("stock", stripped_output)
+
+                        # Verify beautiful table layout border exists
+                        if "argv" in scenario and "--plain" in scenario["argv"]:
+                            self.assertIn("+----+", stripped_output)
+                        else:
+                            self.assertIn("┌────┬", stripped_output)
 
                     # Verify individual file size output
                     if len(scenario['data_files']) <= 3:
