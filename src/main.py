@@ -4,6 +4,7 @@ import platform
 import os
 import math
 import time
+import csv
 from datetime import datetime
 from collections import Counter
 
@@ -242,27 +243,28 @@ def main():
 
             # Extract Dataset Preview from the first non-empty CSV file
             dataset_preview = ""
+            table_preview_lines = []
             csv_files = [f for f in files if f.lower().endswith(".csv")]
             for target_csv in csv_files:
                 csv_path = os.path.join("data", target_csv)
                 if os.path.isfile(csv_path) and os.path.getsize(csv_path) > 0:
                     try:
                         with open(csv_path, "r", encoding="utf-8") as f_csv:
-                            lines = [line.strip() for line in f_csv if line.strip()]
-                        if lines:
-                            headers = [col.strip() for col in lines[0].split(",") if col.strip()]
-                            row_count = len(lines) - 1
+                            reader = [row for row in csv.reader(f_csv) if row and any(field.strip() for field in row)]
+                        if reader:
+                            headers = [col.strip() for col in reader[0]]
+                            data_rows = [[field.strip() for field in row] for row in reader[1:]]
+                            row_count = len(data_rows)
 
                             missing_col_set = set()
                             # Detect missing values
-                            for line in lines[1:]:
-                                fields = [f.strip() for f in line.split(",")]
-                                if len(fields) < len(headers):
-                                    missing_values_count += (len(headers) - len(fields))
-                                    for idx in range(len(fields), len(headers)):
+                            for row in data_rows:
+                                if len(row) < len(headers):
+                                    missing_values_count += (len(headers) - len(row))
+                                    for idx in range(len(row), len(headers)):
                                         missing_col_set.add(headers[idx])
-                                for idx, f in enumerate(fields[:len(headers)]):
-                                    if f == "":
+                                for idx, field in enumerate(row[:len(headers)]):
+                                    if field == "":
                                         missing_values_count += 1
                                         missing_col_set.add(headers[idx])
 
@@ -281,6 +283,63 @@ def main():
                             else:
                                 col_preview = ", ".join(headers)
                             dataset_preview = f"{BOLD}{target_csv}{RESET} ({row_count} {'row' if row_count == 1 else 'rows'}){warning_suffix} {SEP} {col_preview}"
+
+                            # Generate tabular preview lines for first 3 rows
+                            if headers and data_rows:
+                                max_cols = 6
+                                has_more = len(headers) > max_cols
+                                disp_headers = headers[:max_cols] + (["..."] if has_more else [])
+
+                                disp_data = []
+                                for r in data_rows[:3]:
+                                    r_disp = []
+                                    for idx in range(min(len(r), max_cols)):
+                                        val = r[idx]
+                                        if len(val) > 12:
+                                            val = val[:9] + "..."
+                                        r_disp.append(val)
+                                    while len(r_disp) < min(len(headers), max_cols):
+                                        r_disp.append("")
+                                    if has_more:
+                                        r_disp.append("...")
+                                    disp_data.append(r_disp)
+
+                                col_widths = []
+                                for c_idx in range(len(disp_headers)):
+                                    header_w = len(disp_headers[c_idx])
+                                    cell_w = max((len(row[c_idx]) for row in disp_data), default=0)
+                                    col_widths.append(max(header_w, cell_w, 1))
+
+                                if args.plain:
+                                    tl, tm, tr = "+", "+", "+"
+                                    ml, mm, mr = "+", "+", "+"
+                                    bl, bm, br = "+", "+", "+"
+                                    v, h = "|", "-"
+                                    c_blue, c_bold, c_reset = "", "", ""
+                                else:
+                                    tl, tm, tr = "┌", "┬", "┐"
+                                    ml, mm, mr = "├", "┼", "┤"
+                                    bl, bm, br = "└", "┴", "┘"
+                                    v, h = "│", "─"
+                                    c_blue, c_bold, c_reset = BLUE, BOLD, RESET
+
+                                top_border = "    " + c_blue + tl + tm.join(h * (w + 2) for w in col_widths) + tr + c_reset
+                                table_preview_lines.append(top_border)
+
+                                hdr_cells = [f" {c_bold}{disp_headers[i]:<{col_widths[i]}}{c_reset} " for i in range(len(disp_headers))]
+                                hdr_row = "    " + c_blue + v + c_reset + (c_blue + v + c_reset).join(hdr_cells) + c_blue + v + c_reset
+                                table_preview_lines.append(hdr_row)
+
+                                mid_border = "    " + c_blue + ml + mm.join(h * (w + 2) for w in col_widths) + mr + c_reset
+                                table_preview_lines.append(mid_border)
+
+                                for r_disp in disp_data:
+                                    r_cells = [f" {r_disp[i]:<{col_widths[i]}} " for i in range(len(r_disp))]
+                                    row_str = "    " + c_blue + v + c_reset + (c_blue + v + c_reset).join(r_cells) + c_blue + v + c_reset
+                                    table_preview_lines.append(row_str)
+
+                                bot_border = "    " + c_blue + bl + bm.join(h * (w + 2) for w in col_widths) + br + c_reset
+                                table_preview_lines.append(bot_border)
                             break
                     except Exception:
                         pass
@@ -342,6 +401,8 @@ def main():
                 print(f"  - {'Latest':<13}: {BOLD}{latest_file}{RESET} ({format_size(latest_size)})")
             if dataset_preview:
                 print(f"  - {'Dataset':<13}: {dataset_preview}")
+                for line in table_preview_lines:
+                    print(line)
             print(f"  - {'Composition':<13}: {type_summary}")
             print(f"  - {'Freshness':<13}: {freshness}")
         elif data_dir_exists:
