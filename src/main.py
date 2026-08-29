@@ -71,7 +71,14 @@ def supports_color():
 def main():
     version = "1.0.0"
     parser = argparse.ArgumentParser(
-        description="Smart Product Analysis - A tool for analyzing product data."
+        description="Smart Product Analysis - A tool for analyzing product data.",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""Examples:
+  python src/main.py            Check system status and analysis roadmap
+  python src/main.py --init     Initialize sample products.csv dataset
+  python src/main.py --plain    Run in screen reader accessible plain-text mode
+  python src/main.py --no-color Suppress ANSI color outputs
+"""
     )
     parser.add_argument(
         "--version", action="version", version=f"Smart Product Analysis {version}"

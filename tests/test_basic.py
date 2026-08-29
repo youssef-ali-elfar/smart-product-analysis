@@ -34,6 +34,24 @@ class TestBasic(unittest.TestCase):
             main()
         self.assertEqual(cm.exception.code, 0)
 
+    @patch('sys.argv', ['src/main.py', '--help'])
+    def test_main_help_epilog(self):
+        """Test that main() prints formatted help with usage examples and exits."""
+        captured_output = io.StringIO()
+        sys.stdout = captured_output
+        try:
+            with self.assertRaises(SystemExit) as cm:
+                main()
+            self.assertEqual(cm.exception.code, 0)
+            output = captured_output.getvalue()
+            self.assertIn("Examples:", output)
+            self.assertIn("python src/main.py            Check system status and analysis roadmap", output)
+            self.assertIn("--init", output)
+            self.assertIn("--plain", output)
+            self.assertIn("--no-color", output)
+        finally:
+            sys.stdout = sys.__stdout__
+
     @patch('sys.argv', ['src/main.py', '--init'])
     @patch('os.makedirs')
     @patch('builtins.open')
