@@ -121,7 +121,7 @@ def main():
                 while True:
                     try:
                         response = input(f"{EMOJI_WARN}{BOLD}{YELLOW}Warning:{RESET} {BOLD}{csv_path}{RESET} already exists and contains data. Overwrite? [y/N/help]: ").strip().lower()
-                        if response in ("?", "help"):
+                        if response in ("?", "h", "help"):
                             print(f"\n{EMOJI_TIP}{CYAN}{BOLD}Help - Overwriting Data:{RESET}")
                             print(f"  An existing products dataset already resides in {BOLD}{csv_path}{RESET}.")
                             print("  - If you overwrite it, the file will be replaced with clean sample mock data (5 products).")
@@ -133,7 +133,7 @@ def main():
                             print(f"\n{BOLD}Initialization aborted.{RESET}\n")
                             return
                         else:
-                            print(f"\n{EMOJI_WARN}{BOLD}{YELLOW}Unrecognized option:{RESET} {BOLD}'{response}'{RESET}. Please enter y, yes, n, no, help, or press Enter to decline.\n")
+                            print(f"\n{EMOJI_WARN}{BOLD}{YELLOW}Unrecognized option:{RESET} {BOLD}'{response}'{RESET}. Please enter y, yes, n, no, h, help, or press Enter to decline.\n")
                             continue
                     except (KeyboardInterrupt, EOFError):
                         print(f"\n\n👋 Initialization interrupted. Exiting gracefully...\n")
@@ -449,7 +449,7 @@ def main():
                 while True:
                     try:
                         response = input(f"\n{EMOJI_SPARKLES}{BOLD}{CYAN}Would you like to initialize the workspace with sample data now? [y/N/help]:{RESET} ").strip().lower()
-                        if response in ("?", "help"):
+                        if response in ("?", "h", "help"):
                             print(f"\n{EMOJI_TIP}{CYAN}{BOLD}Help - Workspace Onboarding:{RESET}")
                             print("  Your workspace currently lacks sample product files in the data directory,")
                             print("  preventing data analysis stages (like Cleaning, EDA, etc.) from running.")
@@ -480,7 +480,7 @@ def main():
                             print(f"\n{BOLD}Onboarding declined.{RESET} To start later, you can manually create the {BOLD}data/{RESET} directory or run {BOLD}python src/main.py --init{RESET}!\n")
                             break
                         else:
-                            print(f"\n{EMOJI_WARN}{BOLD}{YELLOW}Unrecognized option:{RESET} {BOLD}'{response}'{RESET}. Please enter y, yes, n, no, help, or press Enter to decline.\n")
+                            print(f"\n{EMOJI_WARN}{BOLD}{YELLOW}Unrecognized option:{RESET} {BOLD}'{response}'{RESET}. Please enter y, yes, n, no, h, help, or press Enter to decline.\n")
                             continue
                     except (KeyboardInterrupt, EOFError):
                         print(f"\n\n👋 Onboarding interrupted. Exiting gracefully...\n")

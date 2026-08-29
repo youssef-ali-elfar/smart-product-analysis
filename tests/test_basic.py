@@ -143,18 +143,18 @@ class TestBasic(unittest.TestCase):
     @patch('os.path.getsize')
     @patch('sys.stdin')
     def test_init_overwrite_help(self, mock_stdin, mock_getsize, mock_isfile, mock_open, mock_makedirs):
-        """Test that typing 'help' in the --init overwrite prompt displays details and re-prompts."""
+        """Test that typing 'help' or 'h' in the --init overwrite prompt displays details and re-prompts."""
         mock_isfile.return_value = True
         mock_getsize.return_value = 100
         mock_stdin.isatty.return_value = True
 
         captured_output = io.StringIO()
         sys.stdout = captured_output
-        # Mock side_effect to input 'help' (which should re-prompt) then 'n' (to abort)
-        with patch('builtins.input', side_effect=['help', 'n']) as mock_input:
+        # Mock side_effect to input 'help', then 'h' (which should re-prompt both times) then 'n' (to abort)
+        with patch('builtins.input', side_effect=['help', 'h', 'n']) as mock_input:
             main()
             output = captured_output.getvalue()
-            self.assertEqual(mock_input.call_count, 2)
+            self.assertEqual(mock_input.call_count, 3)
             self.assertIn("Help - Overwriting Data:", output)
             self.assertIn("clean sample mock data", output)
             self.assertIn("Initialization aborted.", output)
@@ -167,18 +167,18 @@ class TestBasic(unittest.TestCase):
     @patch('builtins.open')
     @patch('sys.stdin')
     def test_interactive_onboarding_help(self, mock_stdin, mock_open, mock_makedirs, mock_isdir, mock_get_lib_version):
-        """Test that typing '?' in the onboarding prompt displays details and re-prompts."""
+        """Test that typing '?' or 'h' in the onboarding prompt displays details and re-prompts."""
         mock_get_lib_version.return_value = "1.2.3"  # All libs found
         mock_isdir.return_value = False  # Data dir missing
         mock_stdin.isatty.return_value = True
 
         captured_output = io.StringIO()
         sys.stdout = captured_output
-        # Mock side_effect to input '?' (which should re-prompt) then 'y' (to accept and initialize)
-        with patch('builtins.input', side_effect=['?', 'y']) as mock_input:
+        # Mock side_effect to input '?', then 'h' (which should re-prompt both times) then 'y' (to accept and initialize)
+        with patch('builtins.input', side_effect=['?', 'h', 'y']) as mock_input:
             main()
             output = captured_output.getvalue()
-            self.assertEqual(mock_input.call_count, 2)
+            self.assertEqual(mock_input.call_count, 3)
             self.assertIn("Help - Workspace Onboarding:", output)
             self.assertIn("lacks sample product files in the data directory", output)
             self.assertIn("Initialization complete!", output)
@@ -254,7 +254,7 @@ class TestBasic(unittest.TestCase):
 
         self.assertIn("dirty.csv", output)
         self.assertIn("4 missing values", output)
-        self.assertIn("Detected 4 missing values in your dataset. Proceed to Stage 2: Data Cleaning to handle them!", output)
+        self.assertIn("Detected 4 missing values in name, category, price, and stock in your dataset. Proceed to Stage 2: Data Cleaning to handle them!", output)
 
 if __name__ == '__main__':
     unittest.main()
