@@ -109,3 +109,7 @@
 ## 2026-08-08 - Empty/Whitespace Missing Values Detection
 **Learning:** In data-centric CLI tools, checking for file count and empty files is crucial, but datasets containing missing or whitespace-only values can still cause silent failures or misleading "Ready" states in downstream analysis. Displaying the count of missing values in the dataset preview and suggesting Stage 2: Data Cleaning in guidance tips increases data integrity awareness and prevents user frustration.
 **Action:** Detect and count missing/whitespace-only values in CSV file parsing and reflect this warning dynamically in the CLI's dataset status section and corresponding setup guidance tips.
+
+## 2026-08-27 - Tabular CSV Data Preview in CLI Output
+**Learning:** In CLI status dashboards, presenting raw dataset column lists (e.g., `col1, col2, col3`) only gives partial context. Providing an inline, indented, aligned tabular preview of the first few rows (capped to 3 rows and 6 columns) gives users instant visual verification of data structure and content without cluttering the screen.
+**Action:** When summarizing structured data files in CLI tools, render a compact box-aligned tabular sample (with ASCII fallback in plain mode) under the dataset status line.
