@@ -70,8 +70,17 @@ def supports_color():
 
 def main():
     version = "1.0.0"
+    epilog_text = (
+        "Examples:\n"
+        "  python src/main.py               Run dashboard status check\n"
+        "  python src/main.py --init        Initialize workspace with sample data\n"
+        "  python src/main.py --plain       Plain text mode (accessible/screen reader friendly)\n"
+        "  python src/main.py --no-color    Disable ANSI colors while keeping Unicode icons\n"
+    )
     parser = argparse.ArgumentParser(
-        description="Smart Product Analysis - A tool for analyzing product data."
+        description="Smart Product Analysis - A tool for analyzing product data.",
+        epilog=epilog_text,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument(
         "--version", action="version", version=f"Smart Product Analysis {version}"
@@ -277,7 +286,8 @@ def main():
                                     warning_suffix = f" ({EMOJI_WARN}{missing_values_count} missing values{cols_str})"
 
                             if len(headers) > 6:
-                                col_preview = ", ".join(headers[:6]) + ", ..."
+                                extra_count = len(headers) - 6
+                                col_preview = ", ".join(headers[:6]) + f", ... (+{extra_count} more)"
                             else:
                                 col_preview = ", ".join(headers)
                             dataset_preview = f"{BOLD}{target_csv}{RESET} ({row_count} {'row' if row_count == 1 else 'rows'}){warning_suffix} {SEP} {col_preview}"
