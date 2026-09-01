@@ -109,3 +109,7 @@
 ## 2026-08-08 - Empty/Whitespace Missing Values Detection
 **Learning:** In data-centric CLI tools, checking for file count and empty files is crucial, but datasets containing missing or whitespace-only values can still cause silent failures or misleading "Ready" states in downstream analysis. Displaying the count of missing values in the dataset preview and suggesting Stage 2: Data Cleaning in guidance tips increases data integrity awareness and prevents user frustration.
 **Action:** Detect and count missing/whitespace-only values in CSV file parsing and reflect this warning dynamically in the CLI's dataset status section and corresponding setup guidance tips.
+
+## 2026-08-15 - Contextual CLI Usage Examples in Help Output
+**Learning:** Abstract CLI flag descriptions in standard `--help` outputs often leave users guessing how options combine or when to use specific modes (e.g., accessibility `--plain` vs `--no-color`). Providing explicit usage examples in formatted help epilogs drastically improves command discoverability and usability.
+**Action:** Always include a formatted `epilog` with concrete usage examples in `argparse.ArgumentParser` using `argparse.RawDescriptionHelpFormatter` for CLI applications.

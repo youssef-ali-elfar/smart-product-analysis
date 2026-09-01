@@ -70,8 +70,16 @@ def supports_color():
 
 def main():
     version = "1.0.0"
+    epilog_text = """Examples:
+  python src/main.py            # Check system status and analysis roadmap
+  python src/main.py --init     # Initialize data/ directory with sample products dataset
+  python src/main.py --plain    # Accessible plain text mode (no colors, emojis, or box borders)
+  python src/main.py --no-color # Suppress color escape codes while retaining emojis"""
+
     parser = argparse.ArgumentParser(
-        description="Smart Product Analysis - A tool for analyzing product data."
+        description="Smart Product Analysis - A tool for analyzing product data.",
+        epilog=epilog_text,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument(
         "--version", action="version", version=f"Smart Product Analysis {version}"
