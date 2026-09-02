@@ -34,6 +34,22 @@ class TestBasic(unittest.TestCase):
             main()
         self.assertEqual(cm.exception.code, 0)
 
+    @patch('sys.argv', ['src/main.py', '--help'])
+    def test_main_help(self):
+        """Test that main() displays usage examples epilog when called with --help."""
+        captured_output = io.StringIO()
+        sys.stdout = captured_output
+        try:
+            with self.assertRaises(SystemExit) as cm:
+                main()
+            self.assertEqual(cm.exception.code, 0)
+            output = captured_output.getvalue()
+            self.assertIn("examples:", output)
+            self.assertIn("python src/main.py --init", output)
+            self.assertIn("python src/main.py --plain", output)
+        finally:
+            sys.stdout = sys.__stdout__
+
     @patch('sys.argv', ['src/main.py', '--init'])
     @patch('os.makedirs')
     @patch('builtins.open')

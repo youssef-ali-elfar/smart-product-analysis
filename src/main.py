@@ -70,8 +70,15 @@ def supports_color():
 
 def main():
     version = "1.0.0"
+    epilog_text = """examples:
+  python src/main.py          Check workspace status and roadmap
+  python src/main.py --init   Initialize data/ with sample products.csv
+  python src/main.py --plain  Run in plain-text accessible mode"""
+
     parser = argparse.ArgumentParser(
-        description="Smart Product Analysis - A tool for analyzing product data."
+        description="Smart Product Analysis - A tool for analyzing product data.",
+        epilog=epilog_text,
+        formatter_class=argparse.RawDescriptionHelpFormatter
     )
     parser.add_argument(
         "--version", action="version", version=f"Smart Product Analysis {version}"
