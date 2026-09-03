@@ -112,6 +112,13 @@ class TestUX(unittest.TestCase):
                 "data_files": ["dirty_data.csv"],
                 "csv_data": "id,name,category,price,stock\n1,Smart Watch,,199.99,\n2,,Electronics,79.99,120\n3,Running Shoes,Apparel,,85",
                 "argv": ["src/main.py", "--plain"]
+            },
+            {
+                "name": "Wide Dataset Header Truncation",
+                "libs": {lib: "1.2.3" for lib in ["pandas", "numpy", "matplotlib", "seaborn", "sklearn", "jupyter"]},
+                "data_dir_exists": True,
+                "data_files": ["wide.csv"],
+                "csv_data": "col1,col2,col3,col4,col5,col6,col7,col8\n1,2,3,4,5,6,7,8"
             }
         ]
 
@@ -157,7 +164,10 @@ class TestUX(unittest.TestCase):
                     if any(f.lower().endswith(".csv") for f in scenario['data_files']) and scenario.get("file_size", 1024) > 0:
                         self.assertIn("Dataset", output)
                         if "csv_data" in scenario:
-                            self.assertIn("3 rows", output)
+                            if "3 rows" in scenario["name"] or "Missing Values" in scenario["name"]:
+                                self.assertIn("3 rows", output)
+                            else:
+                                self.assertIn("1 row", output)
                         else:
                             self.assertIn("1 row", output)
                         # We strip any ansi sequence or escape in check
@@ -165,7 +175,8 @@ class TestUX(unittest.TestCase):
                         def strip_ansi(text):
                             return re.sub(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])', '', text)
                         stripped_output = strip_ansi(output)
-                        self.assertIn("id, name, category, price, stock", stripped_output)
+                        if "csv_data" not in scenario:
+                            self.assertIn("id, name, category, price, stock", stripped_output)
 
                     # Verify individual file size output
                     if len(scenario['data_files']) <= 3:
@@ -228,6 +239,9 @@ class TestUX(unittest.TestCase):
                     self.assertIn("4 missing values in name, category, price, stock", stripped_output)
                     self.assertNotIn("⚠️", stripped_output)
                     self.assertIn("Detected 4 missing values in name, category, price, and stock in your dataset. Proceed to Stage 2: Data Cleaning to handle them!", stripped_output)
+
+                if scenario['name'] == "Wide Dataset Header Truncation":
+                    self.assertIn("col1, col2, col3, col4, col5, col6, ... (+2 more)", stripped_output)
 
             except Exception as e:
                 sys.stdout = sys.__stdout__

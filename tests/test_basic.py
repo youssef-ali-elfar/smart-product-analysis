@@ -91,6 +91,32 @@ class TestBasic(unittest.TestCase):
     @patch('sys.argv', ['src/main.py'])
     @patch('src.main.get_lib_version')
     @patch('os.path.isdir')
+    @patch('os.listdir')
+    @patch('os.path.isfile')
+    @patch('os.path.getsize')
+    @patch('builtins.open')
+    def test_column_header_truncation(self, mock_open, mock_getsize, mock_isfile, mock_listdir, mock_isdir, mock_get_lib_version):
+        """Test that CSV datasets with > 6 columns display truncated preview with (+N more) count."""
+        mock_get_lib_version.return_value = "1.2.3"
+        mock_isdir.return_value = True
+        mock_listdir.return_value = ["wide_dataset.csv"]
+        mock_isfile.return_value = True
+        mock_getsize.return_value = 200
+
+        # CSV data with 9 columns (6 shown + 3 truncated)
+        csv_content = "c1,c2,c3,c4,c5,c6,c7,c8,c9\n1,2,3,4,5,6,7,8,9\n"
+        mock_open.return_value = io.StringIO(csv_content)
+
+        captured_output = io.StringIO()
+        sys.stdout = captured_output
+        main()
+        output = captured_output.getvalue()
+
+        self.assertIn("c1, c2, c3, c4, c5, c6, ... (+3 more)", output)
+
+    @patch('sys.argv', ['src/main.py'])
+    @patch('src.main.get_lib_version')
+    @patch('os.path.isdir')
     @patch('os.makedirs')
     @patch('builtins.open')
     @patch('sys.stdin')
