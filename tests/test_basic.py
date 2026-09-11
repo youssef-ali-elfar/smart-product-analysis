@@ -206,6 +206,52 @@ class TestBasic(unittest.TestCase):
             self.assertIn("Initialization aborted.", output)
             mock_open.assert_not_called()
 
+    @patch('sys.argv', ['src/main.py', '--init'])
+    @patch('os.makedirs')
+    @patch('builtins.open')
+    @patch('os.path.isfile')
+    @patch('os.path.getsize')
+    @patch('sys.stdin')
+    def test_init_overwrite_exit_aliases(self, mock_stdin, mock_getsize, mock_isfile, mock_open, mock_makedirs):
+        """Test that typing exit aliases ('q', 'quit', 'exit') cleanly declines/aborts --init overwrite prompt."""
+        mock_isfile.return_value = True
+        mock_getsize.return_value = 100
+        mock_stdin.isatty.return_value = True
+
+        for alias in ['q', 'quit', 'exit']:
+            mock_open.reset_mock()
+            captured_output = io.StringIO()
+            sys.stdout = captured_output
+            with patch('builtins.input', return_value=alias):
+                main()
+                output = captured_output.getvalue()
+                self.assertIn("Initialization aborted.", output)
+                self.assertNotIn("Unrecognized option", output)
+                mock_open.assert_not_called()
+
+    @patch('sys.argv', ['src/main.py'])
+    @patch('src.main.get_lib_version')
+    @patch('os.path.isdir')
+    @patch('os.makedirs')
+    @patch('builtins.open')
+    @patch('sys.stdin')
+    def test_onboarding_exit_aliases(self, mock_stdin, mock_open, mock_makedirs, mock_isdir, mock_get_lib_version):
+        """Test that typing exit aliases ('q', 'quit', 'exit') cleanly declines interactive onboarding prompt."""
+        mock_get_lib_version.return_value = "1.2.3"
+        mock_isdir.return_value = False
+        mock_stdin.isatty.return_value = True
+
+        for alias in ['q', 'quit', 'exit']:
+            mock_open.reset_mock()
+            captured_output = io.StringIO()
+            sys.stdout = captured_output
+            with patch('builtins.input', return_value=alias):
+                main()
+                output = captured_output.getvalue()
+                self.assertIn("Onboarding declined.", output)
+                self.assertNotIn("Unrecognized option", output)
+                mock_open.assert_not_called()
+
     @patch('sys.argv', ['src/main.py'])
     @patch('src.main.get_lib_version')
     @patch('os.path.isdir')

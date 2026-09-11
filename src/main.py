@@ -129,7 +129,7 @@ def main():
                             continue
                         elif response in ("y", "yes"):
                             break
-                        elif response in ("n", "no", ""):
+                        elif response in ("n", "no", "", "q", "quit", "exit"):
                             print(f"\n{BOLD}Initialization aborted.{RESET}\n")
                             return
                         else:
@@ -476,7 +476,7 @@ def main():
                             print(f"{BULLET} Refreshing workspace status...\n")
                             refreshed = True
                             break
-                        elif response in ("n", "no", ""):
+                        elif response in ("n", "no", "", "q", "quit", "exit"):
                             print(f"\n{BOLD}Onboarding declined.{RESET} To start later, you can manually create the {BOLD}data/{RESET} directory or run {BOLD}python src/main.py --init{RESET}!\n")
                             break
                         else:
