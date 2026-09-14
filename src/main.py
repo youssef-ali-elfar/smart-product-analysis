@@ -214,6 +214,7 @@ def main():
         type_summary = ""
         missing_values_count = 0
         missing_val_cols = []
+        has_zero_row_csv = False
         if data_dir_exists:
             files = sorted([f for f in os.listdir("data") if os.path.isfile(os.path.join("data", f))])
             data_count = len(files)
@@ -260,30 +261,37 @@ def main():
                             lines = [line.strip() for line in f_csv if line.strip()]
                         if lines:
                             headers = [col.strip() for col in lines[0].split(",") if col.strip()]
-                            row_count = len(lines) - 1
-
-                            missing_col_set = set()
-                            # Detect missing values
-                            for line in lines[1:]:
-                                fields = [f.strip() for f in line.split(",")]
-                                if len(fields) < len(headers):
-                                    missing_values_count += (len(headers) - len(fields))
-                                    for idx in range(len(fields), len(headers)):
-                                        missing_col_set.add(headers[idx])
-                                for idx, f in enumerate(fields[:len(headers)]):
-                                    if f == "":
-                                        missing_values_count += 1
-                                        missing_col_set.add(headers[idx])
-
-                            missing_val_cols = [h for h in headers if h in missing_col_set]
+                            row_count = max(0, len(lines) - 1)
 
                             warning_suffix = ""
-                            if missing_values_count > 0:
-                                cols_str = f" in {', '.join(missing_val_cols)}" if missing_val_cols else ""
+                            if row_count == 0:
+                                has_zero_row_csv = True
                                 if args.plain:
-                                    warning_suffix = f" ({missing_values_count} missing values{cols_str})"
+                                    warning_suffix = " (0 data rows)"
                                 else:
-                                    warning_suffix = f" ({EMOJI_WARN}{missing_values_count} missing values{cols_str})"
+                                    warning_suffix = f" ({EMOJI_WARN}0 data rows)"
+                            else:
+                                missing_col_set = set()
+                                # Detect missing values
+                                for line in lines[1:]:
+                                    fields = [f.strip() for f in line.split(",")]
+                                    if len(fields) < len(headers):
+                                        missing_values_count += (len(headers) - len(fields))
+                                        for idx in range(len(fields), len(headers)):
+                                            missing_col_set.add(headers[idx])
+                                    for idx, f in enumerate(fields[:len(headers)]):
+                                        if f == "":
+                                            missing_values_count += 1
+                                            missing_col_set.add(headers[idx])
+
+                                missing_val_cols = [h for h in headers if h in missing_col_set]
+
+                                if missing_values_count > 0:
+                                    cols_str = f" in {', '.join(missing_val_cols)}" if missing_val_cols else ""
+                                    if args.plain:
+                                        warning_suffix = f" ({missing_values_count} missing values{cols_str})"
+                                    else:
+                                        warning_suffix = f" ({EMOJI_WARN}{missing_values_count} missing values{cols_str})"
 
                             if len(headers) > 6:
                                 col_preview = ", ".join(headers[:6]) + ", ..."
@@ -298,7 +306,7 @@ def main():
         if not all_found:
             badge_text = f"[INC:{len(missing_libs)}]"
             badge_color = RED
-        elif not data_dir_exists or data_count == 0 or total_size == 0:
+        elif not data_dir_exists or data_count == 0 or total_size == 0 or has_zero_row_csv:
             badge_text = "[PEND]"
             badge_color = YELLOW
         else:
@@ -367,6 +375,8 @@ def main():
             status_msg = f"{EMOJI_WARN}{BOLD}{YELLOW}Pending{RESET} - Data directory missing or empty"
         elif total_size == 0:
             status_msg = f"{EMOJI_WARN}{BOLD}{YELLOW}Pending{RESET} - Data files appear empty"
+        elif has_zero_row_csv:
+            status_msg = f"{EMOJI_WARN}{BOLD}{YELLOW}Pending{RESET} - Data file contains 0 data rows"
         else:
             status_msg = f"{EMOJI_OK}{BOLD}{GREEN}Ready{RESET}"
         print(f"{BULLET} {'Status':<15}: {status_msg}")
@@ -391,10 +401,14 @@ def main():
             is_current = False
             this_stage_done = False
             if i == 1:
-                if data_count > 0 and total_size > 0:
+                if data_count > 0 and total_size > 0 and not has_zero_row_csv:
                     status_tag = f"{BOLD}{GREEN}[DONE]{RESET}"
                     stage_color = GREEN
                     this_stage_done = True
+                elif data_count > 0 and has_zero_row_csv and all_found:
+                    status_tag = f"{BOLD}{CYAN}[NEXT]{RESET}"
+                    stage_color = CYAN
+                    is_current = True
                 elif data_count > 0:
                     status_tag = f"{BOLD}{YELLOW}[PEND]{RESET}"
                     stage_color = RESET
@@ -406,7 +420,7 @@ def main():
                     status_tag = f"{BOLD}{YELLOW}[PEND]{RESET}"
                     stage_color = RESET
             elif i == 2:
-                if data_count > 0 and total_size > 0 and all_found:
+                if data_count > 0 and total_size > 0 and not has_zero_row_csv and all_found:
                     status_tag = f"{BOLD}{CYAN}[NEXT]{RESET}"
                     stage_color = CYAN
                     is_current = True
@@ -439,6 +453,8 @@ def main():
                 tip_text += f" (Tip: Use a {BOLD}Virtual Env{RESET} for better management!)"
         elif total_size == 0:
             tip_text = f"Data files found in {BOLD}data/{RESET} appear to be empty (0 bytes). Please ensure your datasets contain valid product data."
+        elif has_zero_row_csv:
+            tip_text = f"Data file in {BOLD}data/{RESET} contains 0 data rows. Please populate your dataset or run {BOLD}python src/main.py --init{RESET} to generate sample data."
         elif missing_values_count > 0:
             cols_joined = natural_join([f"{BOLD}{c}{RESET}" for c in missing_val_cols]) if missing_val_cols else ""
             in_cols_str = f" in {cols_joined}" if cols_joined else ""
