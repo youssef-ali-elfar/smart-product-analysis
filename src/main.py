@@ -189,12 +189,12 @@ def main():
 
         # Consolidated Checks
         libs = {
-            "Pandas": {"pkg": "pandas", "purpose": "Data manipulation"},
-            "NumPy": {"pkg": "numpy", "purpose": "Numerical computing"},
-            "Matplotlib": {"pkg": "matplotlib", "purpose": "Static visualizations"},
-            "Seaborn": {"pkg": "seaborn", "purpose": "Statistical data visualization"},
-            "Scikit-Learn": {"pkg": "sklearn", "purpose": "Machine learning algorithms"},
-            "Jupyter": {"pkg": "jupyter", "purpose": "Interactive notebooks"}
+            "Pandas": {"pkg": "pandas", "pip": "pandas", "purpose": "Data manipulation"},
+            "NumPy": {"pkg": "numpy", "pip": "numpy", "purpose": "Numerical computing"},
+            "Matplotlib": {"pkg": "matplotlib", "pip": "matplotlib", "purpose": "Static visualizations"},
+            "Seaborn": {"pkg": "seaborn", "pip": "seaborn", "purpose": "Statistical data visualization"},
+            "Scikit-Learn": {"pkg": "sklearn", "pip": "scikit-learn", "purpose": "Machine learning algorithms"},
+            "Jupyter": {"pkg": "jupyter", "pip": "jupyter", "purpose": "Interactive notebooks"}
         }
 
         lib_results = {}
@@ -370,7 +370,12 @@ def main():
 
         if not all_found:
             lib_suffix = "library" if len(missing_libs) == 1 else "libraries"
-            status_msg = f"{EMOJI_ERR}{BOLD}{RED}Incomplete{RESET} ({len(missing_libs)} {lib_suffix} missing) - Please run: {BOLD}pip install -r requirements.txt{RESET}"
+            if len(missing_libs) <= 2:
+                pip_pkgs = " ".join([libs[m]["pip"] for m in missing_libs])
+                cmd = f"pip install {pip_pkgs}"
+            else:
+                cmd = "pip install -r requirements.txt"
+            status_msg = f"{EMOJI_ERR}{BOLD}{RED}Incomplete{RESET} ({len(missing_libs)} {lib_suffix} missing) - Please run: {BOLD}{cmd}{RESET}"
         elif not data_dir_exists or data_count == 0:
             status_msg = f"{EMOJI_WARN}{BOLD}{YELLOW}Pending{RESET} - Data directory missing or empty"
         elif total_size == 0:
@@ -440,7 +445,8 @@ def main():
         if not all_found:
             if len(missing_libs) <= 2:
                 missing_list = natural_join([f"{BOLD}{m}{RESET}" for m in missing_libs])
-                tip_text = f"Missing {missing_list}? Run {BOLD}pip install -r requirements.txt{RESET} to complete your setup."
+                pip_pkgs = " ".join([libs[m]["pip"] for m in missing_libs])
+                tip_text = f"Missing {missing_list}? Run {BOLD}pip install {pip_pkgs}{RESET} to complete your setup."
             else:
                 tip_text = f"{len(missing_libs)} libraries missing? Run the {BOLD}pip install -r requirements.txt{RESET} command to set up your environment."
         elif not data_dir_exists:
