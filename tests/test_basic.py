@@ -317,5 +317,36 @@ class TestBasic(unittest.TestCase):
         self.assertIn("4 missing values", output)
         self.assertIn("Detected 4 missing values in name, category, price, and stock in your dataset. Proceed to Stage 2: Data Cleaning to handle them!", output)
 
+    @patch('sys.argv', ['src/main.py'])
+    @patch('src.main.get_lib_version')
+    @patch('os.path.isdir')
+    @patch('os.listdir')
+    @patch('os.path.isfile')
+    @patch('os.path.getsize')
+    @patch('builtins.open')
+    def test_zero_row_csv_detection(self, mock_open, mock_getsize, mock_isfile, mock_listdir, mock_isdir, mock_get_lib_version):
+        """Test that zero-row CSV datasets trigger warning badge, PEND status, active Stage 1, and actionable tip."""
+        mock_get_lib_version.return_value = "1.2.3"  # All libs found
+        mock_isdir.return_value = True
+        mock_listdir.return_value = ["header_only.csv"]
+        mock_isfile.return_value = True
+        mock_getsize.return_value = 50
+
+        # CSV containing only headers, no data rows
+        csv_content = "id,name,category,price,stock\n"
+        mock_open.return_value = io.StringIO(csv_content)
+
+        captured_output = io.StringIO()
+        sys.stdout = captured_output
+        main()
+        output = captured_output.getvalue()
+
+        self.assertIn("header_only.csv (0 rows)", output)
+        self.assertIn("0 data rows", output)
+        self.assertIn("[PEND]", output)
+        self.assertIn("Pending - Data file contains 0 data rows", output)
+        self.assertIn("[NEXT] Data Ingestion", output)
+        self.assertIn("Data file in data/ contains 0 data rows. Please populate your dataset or run python src/main.py --init to generate sample data.", output)
+
 if __name__ == '__main__':
     unittest.main()

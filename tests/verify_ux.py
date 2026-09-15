@@ -112,6 +112,13 @@ class TestUX(unittest.TestCase):
                 "data_files": ["dirty_data.csv"],
                 "csv_data": "id,name,category,price,stock\n1,Smart Watch,,199.99,\n2,,Electronics,79.99,120\n3,Running Shoes,Apparel,,85",
                 "argv": ["src/main.py", "--plain"]
+            },
+            {
+                "name": "Zero Row CSV Dataset",
+                "libs": {lib: "1.2.3" for lib in ["pandas", "numpy", "matplotlib", "seaborn", "sklearn", "jupyter"]},
+                "data_dir_exists": True,
+                "data_files": ["empty_rows.csv"],
+                "csv_data": "id,name,category,price,stock\n"
             }
         ]
 
@@ -156,7 +163,9 @@ class TestUX(unittest.TestCase):
                     # Verify our new Dataset sub-bullet if csv file is present and not empty
                     if any(f.lower().endswith(".csv") for f in scenario['data_files']) and scenario.get("file_size", 1024) > 0:
                         self.assertIn("Dataset", output)
-                        if "csv_data" in scenario:
+                        if scenario['name'] == "Zero Row CSV Dataset":
+                            self.assertIn("0 rows", output)
+                        elif "csv_data" in scenario:
                             self.assertIn("3 rows", output)
                         else:
                             self.assertIn("1 row", output)
@@ -228,6 +237,11 @@ class TestUX(unittest.TestCase):
                     self.assertIn("4 missing values in name, category, price, stock", stripped_output)
                     self.assertNotIn("⚠️", stripped_output)
                     self.assertIn("Detected 4 missing values in name, category, price, and stock in your dataset. Proceed to Stage 2: Data Cleaning to handle them!", stripped_output)
+
+                if scenario['name'] == "Zero Row CSV Dataset":
+                    self.assertIn("0 data rows", stripped_output)
+                    self.assertIn("Pending - Data file contains 0 data rows", stripped_output)
+                    self.assertIn("Data file in data/ contains 0 data rows. Please populate your dataset or run python src/main.py --init to generate sample data.", stripped_output)
 
             except Exception as e:
                 sys.stdout = sys.__stdout__
