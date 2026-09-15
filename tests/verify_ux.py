@@ -189,6 +189,18 @@ class TestUX(unittest.TestCase):
                     self.assertIn("file", output) # Check for pluralization suffix
                     self.assertIn(f"({format_size(scenario.get('file_size', 1024))})", output)
 
+                import re
+                def strip_ansi(text):
+                    return re.sub(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])', '', text)
+
+                if scenario['name'] == "One Missing Library Tip":
+                    self.assertIn("pip install pandas", output)
+                    self.assertIn("Incomplete (1 library missing) - Please run: pip install pandas", strip_ansi(output))
+
+                if scenario['name'] == "Two Missing Libraries Tip":
+                    self.assertIn("pip install pandas numpy", output)
+                    self.assertIn("Incomplete (2 libraries missing) - Please run: pip install pandas numpy", strip_ansi(output))
+
                 if scenario['name'] == "Stale Data Warning":
                     self.assertIn("(Stale?)", output)
                     self.assertIn("\033[93m", output) # YELLOW color

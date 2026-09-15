@@ -109,3 +109,7 @@
 ## 2026-08-08 - Empty/Whitespace Missing Values Detection
 **Learning:** In data-centric CLI tools, checking for file count and empty files is crucial, but datasets containing missing or whitespace-only values can still cause silent failures or misleading "Ready" states in downstream analysis. Displaying the count of missing values in the dataset preview and suggesting Stage 2: Data Cleaning in guidance tips increases data integrity awareness and prevents user frustration.
 **Action:** Detect and count missing/whitespace-only values in CSV file parsing and reflect this warning dynamically in the CLI's dataset status section and corresponding setup guidance tips.
+
+## 2026-09-15 - Targeted Package Installation Commands
+**Learning:** Recommending a generic `pip install -r requirements.txt` when only 1 or 2 dependencies are missing creates unnecessary friction for users who want to quickly resolve setup issues. Providing direct, copy-pasteable `pip install <pkg1> <pkg2>` commands using correct PyPI package names (e.g. `scikit-learn` instead of import name `sklearn`) dramatically reduces onboarding time.
+**Action:** Maintain a mapping from import module names to PyPI installation names, and recommend targeted `pip install` commands when missing dependency count is low (1-2 packages).
