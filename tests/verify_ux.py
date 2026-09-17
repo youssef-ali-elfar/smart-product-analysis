@@ -119,6 +119,13 @@ class TestUX(unittest.TestCase):
                 "data_dir_exists": True,
                 "data_files": ["empty_rows.csv"],
                 "csv_data": "id,name,category,price,stock\n"
+            },
+            {
+                "name": "Truncated CSV Column Headers",
+                "libs": {lib: "1.2.3" for lib in ["pandas", "numpy", "matplotlib", "seaborn", "sklearn", "jupyter"]},
+                "data_dir_exists": True,
+                "data_files": ["wide_dataset.csv"],
+                "csv_data": "c1,c2,c3,c4,c5,c6,c7,c8\n1,2,3,4,5,6,7,8"
             }
         ]
 
@@ -165,7 +172,7 @@ class TestUX(unittest.TestCase):
                         self.assertIn("Dataset", output)
                         if scenario['name'] == "Zero Row CSV Dataset":
                             self.assertIn("0 rows", output)
-                        elif "csv_data" in scenario:
+                        elif "csv_data" in scenario and scenario['name'] != "Truncated CSV Column Headers":
                             self.assertIn("3 rows", output)
                         else:
                             self.assertIn("1 row", output)
@@ -174,7 +181,10 @@ class TestUX(unittest.TestCase):
                         def strip_ansi(text):
                             return re.sub(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])', '', text)
                         stripped_output = strip_ansi(output)
-                        self.assertIn("id, name, category, price, stock", stripped_output)
+                        if scenario['name'] == "Truncated CSV Column Headers":
+                            self.assertIn("c1, c2, c3, c4, c5, c6, ... (+2 more)", stripped_output)
+                        else:
+                            self.assertIn("id, name, category, price, stock", stripped_output)
 
                     # Verify individual file size output
                     if len(scenario['data_files']) <= 3:
@@ -242,6 +252,9 @@ class TestUX(unittest.TestCase):
                     self.assertIn("0 data rows", stripped_output)
                     self.assertIn("Pending - Data file contains 0 data rows", stripped_output)
                     self.assertIn("Data file in data/ contains 0 data rows. Please populate your dataset or run python src/main.py --init to generate sample data.", stripped_output)
+
+                if scenario['name'] == "Truncated CSV Column Headers":
+                    self.assertIn("c1, c2, c3, c4, c5, c6, ... (+2 more)", stripped_output)
 
             except Exception as e:
                 sys.stdout = sys.__stdout__
