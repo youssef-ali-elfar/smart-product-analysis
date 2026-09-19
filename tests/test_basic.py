@@ -348,5 +348,31 @@ class TestBasic(unittest.TestCase):
         self.assertIn("[NEXT] Data Ingestion", output)
         self.assertIn("Data file in data/ contains 0 data rows. Please populate your dataset or run python src/main.py --init to generate sample data.", output)
 
+    @patch('sys.argv', ['src/main.py'])
+    @patch('src.main.get_lib_version')
+    @patch('os.path.isdir')
+    @patch('os.listdir')
+    @patch('os.path.isfile')
+    @patch('os.path.getsize')
+    @patch('builtins.open')
+    def test_csv_column_truncation_count(self, mock_open, mock_getsize, mock_isfile, mock_listdir, mock_isdir, mock_get_lib_version):
+        """Test that CSV files with >6 headers include (+N more) indicator in column preview."""
+        mock_get_lib_version.return_value = "1.2.3"
+        mock_isdir.return_value = True
+        mock_listdir.return_value = ["wide_data.csv"]
+        mock_isfile.return_value = True
+        mock_getsize.return_value = 200
+
+        # CSV with 9 headers
+        csv_content = "col1,col2,col3,col4,col5,col6,col7,col8,col9\n1,2,3,4,5,6,7,8,9\n"
+        mock_open.return_value = io.StringIO(csv_content)
+
+        captured_output = io.StringIO()
+        sys.stdout = captured_output
+        main()
+        output = captured_output.getvalue()
+
+        self.assertIn("col1, col2, col3, col4, col5, col6, ... (+3 more)", output)
+
 if __name__ == '__main__':
     unittest.main()
