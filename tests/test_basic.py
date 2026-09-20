@@ -341,7 +341,7 @@ class TestBasic(unittest.TestCase):
         main()
         output = captured_output.getvalue()
 
-        self.assertIn("header_only.csv (0 rows)", output)
+        self.assertIn("header_only.csv (0 rows, 5 cols)", output)
         self.assertIn("0 data rows", output)
         self.assertIn("[PEND]", output)
         self.assertIn("Pending - Data file contains 0 data rows", output)
