@@ -348,5 +348,31 @@ class TestBasic(unittest.TestCase):
         self.assertIn("[NEXT] Data Ingestion", output)
         self.assertIn("Data file in data/ contains 0 data rows. Please populate your dataset or run python src/main.py --init to generate sample data.", output)
 
+    @patch('sys.argv', ['src/main.py'])
+    @patch('src.main.get_lib_version')
+    @patch('os.path.isdir')
+    @patch('os.listdir')
+    @patch('os.path.isfile')
+    @patch('os.path.getsize')
+    @patch('builtins.open')
+    def test_dataset_preview_column_truncation(self, mock_open, mock_getsize, mock_isfile, mock_listdir, mock_isdir, mock_get_lib_version):
+        """Test that CSV datasets with >6 columns append '+N more' indicator to column header preview."""
+        mock_get_lib_version.return_value = "1.2.3"
+        mock_isdir.return_value = True
+        mock_listdir.return_value = ["wide_data.csv"]
+        mock_isfile.return_value = True
+        mock_getsize.return_value = 250
+
+        # CSV containing 10 columns (6 shown + 4 remaining)
+        csv_content = "c1,c2,c3,c4,c5,c6,c7,c8,c9,c10\n1,2,3,4,5,6,7,8,9,10"
+        mock_open.return_value = io.StringIO(csv_content)
+
+        captured_output = io.StringIO()
+        sys.stdout = captured_output
+        main()
+        output = captured_output.getvalue()
+
+        self.assertIn("c1, c2, c3, c4, c5, c6, ... (+4 more)", output)
+
 if __name__ == '__main__':
     unittest.main()
