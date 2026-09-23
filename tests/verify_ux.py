@@ -119,6 +119,13 @@ class TestUX(unittest.TestCase):
                 "data_dir_exists": True,
                 "data_files": ["empty_rows.csv"],
                 "csv_data": "id,name,category,price,stock\n"
+            },
+            {
+                "name": "Dataset Column Truncation",
+                "libs": {lib: "1.2.3" for lib in ["pandas", "numpy", "matplotlib", "seaborn", "sklearn", "jupyter"]},
+                "data_dir_exists": True,
+                "data_files": ["wide_data.csv"],
+                "csv_data": "c1,c2,c3,c4,c5,c6,c7,c8,c9\n1,2,3,4,5,6,7,8,9"
             }
         ]
 
@@ -163,18 +170,22 @@ class TestUX(unittest.TestCase):
                     # Verify our new Dataset sub-bullet if csv file is present and not empty
                     if any(f.lower().endswith(".csv") for f in scenario['data_files']) and scenario.get("file_size", 1024) > 0:
                         self.assertIn("Dataset", output)
-                        if scenario['name'] == "Zero Row CSV Dataset":
-                            self.assertIn("0 rows", output)
-                        elif "csv_data" in scenario:
-                            self.assertIn("3 rows", output)
-                        else:
-                            self.assertIn("1 row", output)
-                        # We strip any ansi sequence or escape in check
                         import re
                         def strip_ansi(text):
                             return re.sub(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])', '', text)
                         stripped_output = strip_ansi(output)
-                        self.assertIn("id, name, category, price, stock", stripped_output)
+
+                        if scenario['name'] == "Zero Row CSV Dataset":
+                            self.assertIn("0 rows", output)
+                            self.assertIn("id, name, category, price, stock", stripped_output)
+                        elif scenario['name'] == "Dataset Column Truncation":
+                            self.assertIn("1 row, 9 cols", stripped_output)
+                        elif "csv_data" in scenario:
+                            self.assertIn("3 rows", output)
+                            self.assertIn("id, name, category, price, stock", stripped_output)
+                        else:
+                            self.assertIn("1 row", output)
+                            self.assertIn("id, name, category, price, stock", stripped_output)
 
                     # Verify individual file size output
                     if len(scenario['data_files']) <= 3:
@@ -242,6 +253,10 @@ class TestUX(unittest.TestCase):
                     self.assertIn("0 data rows", stripped_output)
                     self.assertIn("Pending - Data file contains 0 data rows", stripped_output)
                     self.assertIn("Data file in data/ contains 0 data rows. Please populate your dataset or run python src/main.py --init to generate sample data.", stripped_output)
+
+                if scenario['name'] == "Dataset Column Truncation":
+                    self.assertIn("1 row, 9 cols", stripped_output)
+                    self.assertIn("c1, c2, c3, c4, c5, c6, ... (+3 more)", stripped_output)
 
             except Exception as e:
                 sys.stdout = sys.__stdout__
