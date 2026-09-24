@@ -189,12 +189,12 @@ def main():
 
         # Consolidated Checks
         libs = {
-            "Pandas": {"pkg": "pandas", "purpose": "Data manipulation"},
-            "NumPy": {"pkg": "numpy", "purpose": "Numerical computing"},
-            "Matplotlib": {"pkg": "matplotlib", "purpose": "Static visualizations"},
-            "Seaborn": {"pkg": "seaborn", "purpose": "Statistical data visualization"},
-            "Scikit-Learn": {"pkg": "sklearn", "purpose": "Machine learning algorithms"},
-            "Jupyter": {"pkg": "jupyter", "purpose": "Interactive notebooks"}
+            "Pandas": {"pkg": "pandas", "pip_pkg": "pandas", "purpose": "Data manipulation"},
+            "NumPy": {"pkg": "numpy", "pip_pkg": "numpy", "purpose": "Numerical computing"},
+            "Matplotlib": {"pkg": "matplotlib", "pip_pkg": "matplotlib", "purpose": "Static visualizations"},
+            "Seaborn": {"pkg": "seaborn", "pip_pkg": "seaborn", "purpose": "Statistical data visualization"},
+            "Scikit-Learn": {"pkg": "sklearn", "pip_pkg": "scikit-learn", "purpose": "Machine learning algorithms"},
+            "Jupyter": {"pkg": "jupyter", "pip_pkg": "jupyter", "purpose": "Interactive notebooks"}
         }
 
         lib_results = {}
@@ -439,8 +439,11 @@ def main():
         is_virtual = is_venv()
         if not all_found:
             if len(missing_libs) <= 2:
+                missing_pkgs = [libs[m].get("pip_pkg", libs[m]["pkg"]) for m in missing_libs]
+                pkgs_str = " ".join(missing_pkgs)
                 missing_list = natural_join([f"{BOLD}{m}{RESET}" for m in missing_libs])
-                tip_text = f"Missing {missing_list}? Run {BOLD}pip install -r requirements.txt{RESET} to complete your setup."
+                referent = "it" if len(missing_libs) == 1 else "them"
+                tip_text = f"Missing {missing_list}? Run {BOLD}pip install {pkgs_str}{RESET} to install {referent}!"
             else:
                 tip_text = f"{len(missing_libs)} libraries missing? Run the {BOLD}pip install -r requirements.txt{RESET} command to set up your environment."
         elif not data_dir_exists:
