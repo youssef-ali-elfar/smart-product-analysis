@@ -119,6 +119,13 @@ class TestUX(unittest.TestCase):
                 "data_dir_exists": True,
                 "data_files": ["empty_rows.csv"],
                 "csv_data": "id,name,category,price,stock\n"
+            },
+            {
+                "name": "Dataset with Single Missing Value",
+                "libs": {lib: "1.2.3" for lib in ["pandas", "numpy", "matplotlib", "seaborn", "sklearn", "jupyter"]},
+                "data_dir_exists": True,
+                "data_files": ["single_missing.csv"],
+                "csv_data": "id,name,category,price,stock\n1,Smart Watch,Electronics,199.99,50\n2,,Electronics,79.99,120\n3,Running Shoes,Apparel,89.95,85"
             }
         ]
 
@@ -237,6 +244,10 @@ class TestUX(unittest.TestCase):
                     self.assertIn("4 missing values in name, category, price, stock", stripped_output)
                     self.assertNotIn("⚠️", stripped_output)
                     self.assertIn("Detected 4 missing values in name, category, price, and stock in your dataset. Proceed to Stage 2: Data Cleaning to handle them!", stripped_output)
+
+                if scenario['name'] == "Dataset with Single Missing Value":
+                    self.assertIn("⚠️ 1 missing value in name", stripped_output)
+                    self.assertIn("Detected 1 missing value in name in your dataset. Proceed to Stage 2: Data Cleaning to handle it!", stripped_output)
 
                 if scenario['name'] == "Zero Row CSV Dataset":
                     self.assertIn("0 data rows", stripped_output)
