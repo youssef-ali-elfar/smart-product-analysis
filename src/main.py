@@ -288,16 +288,23 @@ def main():
 
                                 if missing_values_count > 0:
                                     cols_str = f" in {', '.join(missing_val_cols)}" if missing_val_cols else ""
+                                    val_label = "missing value" if missing_values_count == 1 else "missing values"
                                     if args.plain:
-                                        warning_suffix = f" ({missing_values_count} missing values{cols_str})"
+                                        warning_suffix = f" ({missing_values_count} {val_label}{cols_str})"
                                     else:
-                                        warning_suffix = f" ({EMOJI_WARN}{missing_values_count} missing values{cols_str})"
+                                        warning_suffix = f" ({EMOJI_WARN}{missing_values_count} {val_label}{cols_str})"
+
+                            col_count = len(headers)
+                            row_str = f"{row_count} {'row' if row_count == 1 else 'rows'}"
+                            col_str = f"{col_count} {'col' if col_count == 1 else 'cols'}"
+                            dim_str = f"{row_str}, {col_str}"
 
                             if len(headers) > 6:
-                                col_preview = ", ".join(headers[:6]) + ", ..."
+                                num_more = len(headers) - 6
+                                col_preview = ", ".join(headers[:6]) + f", ... (+{num_more} more)"
                             else:
                                 col_preview = ", ".join(headers)
-                            dataset_preview = f"{BOLD}{target_csv}{RESET} ({row_count} {'row' if row_count == 1 else 'rows'}){warning_suffix} {SEP} {col_preview}"
+                            dataset_preview = f"{BOLD}{target_csv}{RESET} ({dim_str}){warning_suffix} {SEP} {col_preview}"
                             break
                     except Exception:
                         pass
@@ -458,7 +465,9 @@ def main():
         elif missing_values_count > 0:
             cols_joined = natural_join([f"{BOLD}{c}{RESET}" for c in missing_val_cols]) if missing_val_cols else ""
             in_cols_str = f" in {cols_joined}" if cols_joined else ""
-            tip_text = f"Detected {BOLD}{missing_values_count} missing values{RESET}{in_cols_str} in your dataset. Proceed to {BOLD}Stage 2: Data Cleaning{RESET} to handle them!"
+            val_label = "missing value" if missing_values_count == 1 else "missing values"
+            pronoun = "it" if missing_values_count == 1 else "them"
+            tip_text = f"Detected {BOLD}{missing_values_count} {val_label}{RESET}{in_cols_str} in your dataset. Proceed to {BOLD}Stage 2: Data Cleaning{RESET} to handle {pronoun}!"
         elif not is_virtual:
             tip_text = f"Consider using a {BOLD}Virtual Environment{RESET} for better dependency management. Run {BOLD}python -m venv venv{RESET} to create one!"
         else:

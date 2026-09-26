@@ -164,11 +164,11 @@ class TestUX(unittest.TestCase):
                     if any(f.lower().endswith(".csv") for f in scenario['data_files']) and scenario.get("file_size", 1024) > 0:
                         self.assertIn("Dataset", output)
                         if scenario['name'] == "Zero Row CSV Dataset":
-                            self.assertIn("0 rows", output)
+                            self.assertIn("0 rows, 5 cols", output)
                         elif "csv_data" in scenario:
-                            self.assertIn("3 rows", output)
+                            self.assertIn("3 rows, 5 cols", output)
                         else:
-                            self.assertIn("1 row", output)
+                            self.assertIn("1 row, 5 cols", output)
                         # We strip any ansi sequence or escape in check
                         import re
                         def strip_ansi(text):

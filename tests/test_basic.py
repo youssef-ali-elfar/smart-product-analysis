@@ -313,9 +313,64 @@ class TestBasic(unittest.TestCase):
         main()
         output = captured_output.getvalue()
 
-        self.assertIn("dirty.csv", output)
+        self.assertIn("dirty.csv (3 rows, 5 cols)", output)
         self.assertIn("4 missing values", output)
         self.assertIn("Detected 4 missing values in name, category, price, and stock in your dataset. Proceed to Stage 2: Data Cleaning to handle them!", output)
+
+    @patch('sys.argv', ['src/main.py'])
+    @patch('src.main.get_lib_version')
+    @patch('os.path.isdir')
+    @patch('os.listdir')
+    @patch('os.path.isfile')
+    @patch('os.path.getsize')
+    @patch('builtins.open')
+    def test_singular_missing_value_detection(self, mock_open, mock_getsize, mock_isfile, mock_listdir, mock_isdir, mock_get_lib_version):
+        """Test that a single missing value uses singular grammar '1 missing value' and 'handle it!'."""
+        mock_get_lib_version.return_value = "1.2.3"
+        mock_isdir.return_value = True
+        mock_listdir.return_value = ["single_missing.csv"]
+        mock_isfile.return_value = True
+        mock_getsize.return_value = 120
+
+        # CSV data with exactly 1 missing value in 'price'
+        csv_content = "id,name,category,price,stock\n1,Smart Watch,Electronics,,50"
+        mock_open.return_value = io.StringIO(csv_content)
+
+        captured_output = io.StringIO()
+        sys.stdout = captured_output
+        main()
+        output = captured_output.getvalue()
+
+        self.assertIn("single_missing.csv (1 row, 5 cols)", output)
+        self.assertIn("1 missing value in price", output)
+        self.assertIn("Detected 1 missing value in price in your dataset. Proceed to Stage 2: Data Cleaning to handle it!", output)
+
+    @patch('sys.argv', ['src/main.py'])
+    @patch('src.main.get_lib_version')
+    @patch('os.path.isdir')
+    @patch('os.listdir')
+    @patch('os.path.isfile')
+    @patch('os.path.getsize')
+    @patch('builtins.open')
+    def test_truncated_columns_preview(self, mock_open, mock_getsize, mock_isfile, mock_listdir, mock_isdir, mock_get_lib_version):
+        """Test that CSV datasets with > 6 columns append ... (+N more) to column preview."""
+        mock_get_lib_version.return_value = "1.2.3"
+        mock_isdir.return_value = True
+        mock_listdir.return_value = ["wide_dataset.csv"]
+        mock_isfile.return_value = True
+        mock_getsize.return_value = 200
+
+        # 8 columns
+        csv_content = "c1,c2,c3,c4,c5,c6,c7,c8\n1,2,3,4,5,6,7,8"
+        mock_open.return_value = io.StringIO(csv_content)
+
+        captured_output = io.StringIO()
+        sys.stdout = captured_output
+        main()
+        output = captured_output.getvalue()
+
+        self.assertIn("wide_dataset.csv (1 row, 8 cols)", output)
+        self.assertIn("c1, c2, c3, c4, c5, c6, ... (+2 more)", output)
 
     @patch('sys.argv', ['src/main.py'])
     @patch('src.main.get_lib_version')
@@ -341,7 +396,7 @@ class TestBasic(unittest.TestCase):
         main()
         output = captured_output.getvalue()
 
-        self.assertIn("header_only.csv (0 rows)", output)
+        self.assertIn("header_only.csv (0 rows, 5 cols)", output)
         self.assertIn("0 data rows", output)
         self.assertIn("[PEND]", output)
         self.assertIn("Pending - Data file contains 0 data rows", output)
