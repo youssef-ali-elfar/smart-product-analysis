@@ -341,12 +341,40 @@ class TestBasic(unittest.TestCase):
         main()
         output = captured_output.getvalue()
 
-        self.assertIn("header_only.csv (0 rows)", output)
+        self.assertIn("header_only.csv (0 rows", output)
+        self.assertIn("5 cols", output)
         self.assertIn("0 data rows", output)
         self.assertIn("[PEND]", output)
         self.assertIn("Pending - Data file contains 0 data rows", output)
         self.assertIn("[NEXT] Data Ingestion", output)
         self.assertIn("Data file in data/ contains 0 data rows. Please populate your dataset or run python src/main.py --init to generate sample data.", output)
+
+    @patch('sys.argv', ['src/main.py'])
+    @patch('src.main.get_lib_version')
+    @patch('os.path.isdir')
+    @patch('os.listdir')
+    @patch('os.path.isfile')
+    @patch('os.path.getsize')
+    @patch('builtins.open')
+    def test_csv_column_truncation_and_count(self, mock_open, mock_getsize, mock_isfile, mock_listdir, mock_isdir, mock_get_lib_version):
+        """Test that CSV datasets with >6 columns display column counts and truncated column indicators."""
+        mock_get_lib_version.return_value = "1.2.3"
+        mock_isdir.return_value = True
+        mock_listdir.return_value = ["wide_dataset.csv"]
+        mock_isfile.return_value = True
+        mock_getsize.return_value = 200
+
+        # CSV with 8 columns and 2 rows
+        csv_content = "c1,c2,c3,c4,c5,c6,c7,c8\n1,2,3,4,5,6,7,8\n9,10,11,12,13,14,15,16\n"
+        mock_open.return_value = io.StringIO(csv_content)
+
+        captured_output = io.StringIO()
+        sys.stdout = captured_output
+        main()
+        output = captured_output.getvalue()
+
+        self.assertIn("wide_dataset.csv (2 rows, 8 cols)", output)
+        self.assertIn("c1, c2, c3, c4, c5, c6, ... (+2 more)", output)
 
 if __name__ == '__main__':
     unittest.main()
