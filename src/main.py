@@ -294,10 +294,15 @@ def main():
                                         warning_suffix = f" ({EMOJI_WARN}{missing_values_count} missing values{cols_str})"
 
                             if len(headers) > 6:
-                                col_preview = ", ".join(headers[:6]) + ", ..."
+                                num_truncated = len(headers) - 6
+                                col_preview = ", ".join(headers[:6]) + f", ... (+{num_truncated} more)"
                             else:
                                 col_preview = ", ".join(headers)
-                            dataset_preview = f"{BOLD}{target_csv}{RESET} ({row_count} {'row' if row_count == 1 else 'rows'}){warning_suffix} {SEP} {col_preview}"
+                            col_count = len(headers)
+                            col_suffix = "col" if col_count == 1 else "cols"
+                            row_suffix = "row" if row_count == 1 else "rows"
+                            dims_str = f"{row_count} {row_suffix}, {col_count} {col_suffix}"
+                            dataset_preview = f"{BOLD}{target_csv}{RESET} ({dims_str}){warning_suffix} {SEP} {col_preview}"
                             break
                     except Exception:
                         pass
