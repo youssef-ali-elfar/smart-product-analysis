@@ -348,5 +348,39 @@ class TestBasic(unittest.TestCase):
         self.assertIn("[NEXT] Data Ingestion", output)
         self.assertIn("Data file in data/ contains 0 data rows. Please populate your dataset or run python src/main.py --init to generate sample data.", output)
 
+    @patch('sys.argv', ['src/main.py'])
+    @patch('src.main.get_lib_version')
+    def test_targeted_pip_install_guidance(self, mock_get_lib_version):
+        """Test that missing 1 or 2 dependencies suggests specific pip install commands in status and tip."""
+        # 1 missing lib: Scikit-Learn (pip_pkg: scikit-learn)
+        mock_get_lib_version.side_effect = lambda pkg: None if pkg == "sklearn" else "1.2.3"
+        captured_output = io.StringIO()
+        sys.stdout = captured_output
+        main()
+        output = captured_output.getvalue()
+
+        self.assertIn("pip install scikit-learn", output)
+        self.assertIn("Missing Scikit-Learn? Run pip install scikit-learn to complete your setup.", output)
+
+        # 2 missing libs: Pandas and Scikit-Learn
+        mock_get_lib_version.side_effect = lambda pkg: None if pkg in ("pandas", "sklearn") else "1.2.3"
+        captured_output = io.StringIO()
+        sys.stdout = captured_output
+        main()
+        output = captured_output.getvalue()
+
+        self.assertIn("pip install pandas scikit-learn", output)
+        self.assertIn("Missing Pandas and Scikit-Learn? Run pip install pandas scikit-learn to complete your setup.", output)
+
+        # 3 missing libs: falls back to pip install -r requirements.txt
+        mock_get_lib_version.side_effect = lambda pkg: None if pkg in ("pandas", "numpy", "sklearn") else "1.2.3"
+        captured_output = io.StringIO()
+        sys.stdout = captured_output
+        main()
+        output = captured_output.getvalue()
+
+        self.assertIn("pip install -r requirements.txt", output)
+        self.assertIn("3 libraries missing? Run the pip install -r requirements.txt command to set up your environment.", output)
+
 if __name__ == '__main__':
     unittest.main()
