@@ -324,6 +324,34 @@ class TestBasic(unittest.TestCase):
     @patch('os.path.isfile')
     @patch('os.path.getsize')
     @patch('builtins.open')
+    def test_single_missing_value_grammar(self, mock_open, mock_getsize, mock_isfile, mock_listdir, mock_isdir, mock_get_lib_version):
+        """Test that 1 missing value in CSV dataset uses singular phrasing ('1 missing value', 'handle it!')."""
+        mock_get_lib_version.return_value = "1.2.3"  # All libs found
+        mock_isdir.return_value = True
+        mock_listdir.return_value = ["dirty_single.csv"]
+        mock_isfile.return_value = True
+        mock_getsize.return_value = 120
+
+        # CSV data with exactly 1 missing value (price in row 1)
+        csv_content = "id,name,category,price,stock\n1,Smart Watch,Electronics,,50\n2,Wireless Earbuds,Electronics,79.99,120"
+        mock_open.return_value = io.StringIO(csv_content)
+
+        captured_output = io.StringIO()
+        sys.stdout = captured_output
+        main()
+        output = captured_output.getvalue()
+
+        self.assertIn("dirty_single.csv", output)
+        self.assertIn("1 missing value", output)
+        self.assertIn("Detected 1 missing value in price in your dataset. Proceed to Stage 2: Data Cleaning to handle it!", output)
+
+    @patch('sys.argv', ['src/main.py'])
+    @patch('src.main.get_lib_version')
+    @patch('os.path.isdir')
+    @patch('os.listdir')
+    @patch('os.path.isfile')
+    @patch('os.path.getsize')
+    @patch('builtins.open')
     def test_zero_row_csv_detection(self, mock_open, mock_getsize, mock_isfile, mock_listdir, mock_isdir, mock_get_lib_version):
         """Test that zero-row CSV datasets trigger warning badge, PEND status, active Stage 1, and actionable tip."""
         mock_get_lib_version.return_value = "1.2.3"  # All libs found
