@@ -348,5 +348,33 @@ class TestBasic(unittest.TestCase):
         self.assertIn("[NEXT] Data Ingestion", output)
         self.assertIn("Data file in data/ contains 0 data rows. Please populate your dataset or run python src/main.py --init to generate sample data.", output)
 
+    @patch('sys.argv', ['src/main.py'])
+    @patch('src.main.get_lib_version')
+    @patch('os.path.isdir')
+    @patch('os.listdir')
+    @patch('os.path.isfile')
+    @patch('os.path.getsize')
+    @patch('builtins.open')
+    def test_single_missing_value_grammar(self, mock_open, mock_getsize, mock_isfile, mock_listdir, mock_isdir, mock_get_lib_version):
+        """Test that exactly 1 missing value produces singular grammar in preview warning and tip."""
+        mock_get_lib_version.return_value = "1.2.3"
+        mock_isdir.return_value = True
+        mock_listdir.return_value = ["single_missing.csv"]
+        mock_isfile.return_value = True
+        mock_getsize.return_value = 100
+
+        # CSV with exactly 1 missing value (category is missing in line 2)
+        csv_content = "id,name,category,price,stock\n1,Smart Watch,,199.99,50\n2,Wireless Earbuds,Electronics,79.99,120"
+        mock_open.return_value = io.StringIO(csv_content)
+
+        captured_output = io.StringIO()
+        sys.stdout = captured_output
+        main()
+        output = captured_output.getvalue()
+
+        self.assertIn("1 missing value in category", output)
+        self.assertNotIn("1 missing values", output)
+        self.assertIn("Detected 1 missing value in category in your dataset. Proceed to Stage 2: Data Cleaning to handle it!", output)
+
 if __name__ == '__main__':
     unittest.main()
