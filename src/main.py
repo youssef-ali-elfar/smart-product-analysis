@@ -4,6 +4,7 @@ import platform
 import os
 import math
 import time
+import csv
 from datetime import datetime
 from collections import Counter
 
@@ -250,18 +251,20 @@ def main():
 
             type_summary = natural_join(type_items)
 
-            # Extract Dataset Preview from the first non-empty CSV file
+            # Extract Dataset Preview and Sample Row from the first non-empty CSV file
             dataset_preview = ""
+            sample_row_preview = ""
             csv_files = [f for f in files if f.lower().endswith(".csv")]
             for target_csv in csv_files:
                 csv_path = os.path.join("data", target_csv)
                 if os.path.isfile(csv_path) and os.path.getsize(csv_path) > 0:
                     try:
                         with open(csv_path, "r", encoding="utf-8") as f_csv:
-                            lines = [line.strip() for line in f_csv if line.strip()]
-                        if lines:
-                            headers = [col.strip() for col in lines[0].split(",") if col.strip()]
-                            row_count = max(0, len(lines) - 1)
+                            reader = csv.reader(f_csv)
+                            rows = [row for row in reader if any(field.strip() for field in row)]
+                        if rows:
+                            headers = [col.strip() for col in rows[0]]
+                            row_count = max(0, len(rows) - 1)
 
                             warning_suffix = ""
                             if row_count == 0:
@@ -273,8 +276,8 @@ def main():
                             else:
                                 missing_col_set = set()
                                 # Detect missing values
-                                for line in lines[1:]:
-                                    fields = [f.strip() for f in line.split(",")]
+                                for row in rows[1:]:
+                                    fields = [f.strip() for f in row]
                                     if len(fields) < len(headers):
                                         missing_values_count += (len(headers) - len(fields))
                                         for idx in range(len(fields), len(headers)):
@@ -292,6 +295,14 @@ def main():
                                         warning_suffix = f" ({missing_values_count} missing values{cols_str})"
                                     else:
                                         warning_suffix = f" ({EMOJI_WARN}{missing_values_count} missing values{cols_str})"
+
+                                # Format Sample Row
+                                sample_fields = [f.strip() for f in rows[1]]
+                                if len(sample_fields) > 6:
+                                    num_truncated_fields = len(sample_fields) - 6
+                                    sample_row_preview = f" {SEP} ".join(sample_fields[:6]) + f", ... (+{num_truncated_fields} more)"
+                                else:
+                                    sample_row_preview = f" {SEP} ".join(sample_fields)
 
                             if len(headers) > 6:
                                 num_truncated = len(headers) - 6
@@ -364,6 +375,8 @@ def main():
                 print(f"  - {'Latest':<13}: {BOLD}{latest_file}{RESET} ({format_size(latest_size)})")
             if dataset_preview:
                 print(f"  - {'Dataset':<13}: {dataset_preview}")
+            if sample_row_preview:
+                print(f"  - {'Sample Row':<13}: {sample_row_preview}")
             print(f"  - {'Composition':<13}: {type_summary}")
             print(f"  - {'Freshness':<13}: {freshness}")
         elif data_dir_exists:
