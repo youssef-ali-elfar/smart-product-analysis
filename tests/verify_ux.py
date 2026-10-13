@@ -180,10 +180,16 @@ class TestUX(unittest.TestCase):
                         elif scenario['name'] == "Dataset with Truncated Column Preview":
                             self.assertIn("1 row, 8 cols", stripped_output)
                             self.assertIn("col1, col2, col3, col4, col5, col6, ... (+2 more)", stripped_output)
+                            self.assertIn("Sample Row   : 1 • 2 • 3 • 4 • 5 • 6 • ... (+2 more)", stripped_output)
                         elif "csv_data" in scenario:
                             self.assertIn("3 rows, 5 cols", stripped_output)
+                            if scenario['name'] == "Dataset with Missing Values Plain Mode":
+                                self.assertIn("Sample Row   : 1 | Smart Watch |  | 199.99 |", stripped_output)
+                            else:
+                                self.assertIn("Sample Row   : 1 • Smart Watch •  • 199.99 •", stripped_output)
                         else:
                             self.assertIn("1 row, 5 cols", stripped_output)
+                            self.assertIn("Sample Row   : 1 • Smart Watch • Electronics • 199.99 • 50", stripped_output)
 
                         if scenario['name'] != "Dataset with Truncated Column Preview":
                             self.assertIn("id, name, category, price, stock", stripped_output)
