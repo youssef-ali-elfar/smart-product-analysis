@@ -4,6 +4,7 @@ import platform
 import os
 import math
 import time
+import csv
 from datetime import datetime
 from collections import Counter
 
@@ -215,6 +216,7 @@ def main():
         missing_values_count = 0
         missing_val_cols = []
         has_zero_row_csv = False
+        sample_row_preview = ""
         if data_dir_exists:
             files = sorted([f for f in os.listdir("data") if os.path.isfile(os.path.join("data", f))])
             data_count = len(files)
@@ -303,6 +305,21 @@ def main():
                             row_suffix = "row" if row_count == 1 else "rows"
                             dims_str = f"{row_count} {row_suffix}, {col_count} {col_suffix}"
                             dataset_preview = f"{BOLD}{target_csv}{RESET} ({dims_str}){warning_suffix} {SEP} {col_preview}"
+
+                            if row_count > 0:
+                                try:
+                                    reader = csv.reader(lines[1:])
+                                    first_data_row = next(reader, None)
+                                    if first_data_row:
+                                        row_fields = [f.strip() for f in first_data_row]
+                                        if len(row_fields) > 6:
+                                            num_trunc_row = len(row_fields) - 6
+                                            sample_row_str = f" {SEP} ".join(row_fields[:6]) + f" ... (+{num_trunc_row} more)"
+                                        else:
+                                            sample_row_str = f" {SEP} ".join(row_fields)
+                                        sample_row_preview = sample_row_str
+                                except Exception:
+                                    pass
                             break
                     except Exception:
                         pass
@@ -364,6 +381,8 @@ def main():
                 print(f"  - {'Latest':<13}: {BOLD}{latest_file}{RESET} ({format_size(latest_size)})")
             if dataset_preview:
                 print(f"  - {'Dataset':<13}: {dataset_preview}")
+            if sample_row_preview:
+                print(f"  - {'Sample Row':<13}: {sample_row_preview}")
             print(f"  - {'Composition':<13}: {type_summary}")
             print(f"  - {'Freshness':<13}: {freshness}")
         elif data_dir_exists:
