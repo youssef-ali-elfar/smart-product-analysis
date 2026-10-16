@@ -311,7 +311,7 @@ def main():
                                     reader = csv.reader(lines[1:])
                                     first_data_row = next(reader, None)
                                     if first_data_row:
-                                        row_fields = [f.strip() for f in first_data_row]
+                                        row_fields = [f"{YELLOW}(empty){RESET}" if not f.strip() else f.strip() for f in first_data_row]
                                         if len(row_fields) > 6:
                                             num_trunc_row = len(row_fields) - 6
                                             sample_row_str = f" {SEP} ".join(row_fields[:6]) + f" ... (+{num_trunc_row} more)"

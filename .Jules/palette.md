@@ -109,3 +109,7 @@
 ## 2026-08-08 - Empty/Whitespace Missing Values Detection
 **Learning:** In data-centric CLI tools, checking for file count and empty files is crucial, but datasets containing missing or whitespace-only values can still cause silent failures or misleading "Ready" states in downstream analysis. Displaying the count of missing values in the dataset preview and suggesting Stage 2: Data Cleaning in guidance tips increases data integrity awareness and prevents user frustration.
 **Action:** Detect and count missing/whitespace-only values in CSV file parsing and reflect this warning dynamically in the CLI's dataset status section and corresponding setup guidance tips.
+
+## 2026-08-15 - Explicit Empty Field Indicators in Dataset Sample Rows
+**Learning:** In CLI dataset previews, rendering missing or whitespace-only CSV fields as blank spaces can cause confusion, as users cannot easily distinguish between extra separator padding and actual missing values. Explicitly rendering empty fields as `(empty)` (highlighted in YELLOW when color is supported) provides immediate clarity on missing data layout.
+**Action:** Always format empty or whitespace-only fields in tabular or row previews with explicit `(empty)` placeholders to maximize visual clarity and accessibility.
