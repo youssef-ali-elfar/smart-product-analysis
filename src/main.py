@@ -290,10 +290,11 @@ def main():
 
                                 if missing_values_count > 0:
                                     cols_str = f" in {', '.join(missing_val_cols)}" if missing_val_cols else ""
+                                    val_suffix = "value" if missing_values_count == 1 else "values"
                                     if args.plain:
-                                        warning_suffix = f" ({missing_values_count} missing values{cols_str})"
+                                        warning_suffix = f" ({missing_values_count} missing {val_suffix}{cols_str})"
                                     else:
-                                        warning_suffix = f" ({EMOJI_WARN}{missing_values_count} missing values{cols_str})"
+                                        warning_suffix = f" ({EMOJI_WARN}{missing_values_count} missing {val_suffix}{cols_str})"
 
                             if len(headers) > 6:
                                 num_truncated = len(headers) - 6
@@ -311,7 +312,7 @@ def main():
                                     reader = csv.reader(lines[1:])
                                     first_data_row = next(reader, None)
                                     if first_data_row:
-                                        row_fields = [f.strip() for f in first_data_row]
+                                        row_fields = [f.strip() if f.strip() else "(empty)" for f in first_data_row]
                                         if len(row_fields) > 6:
                                             num_trunc_row = len(row_fields) - 6
                                             sample_row_str = f" {SEP} ".join(row_fields[:6]) + f" ... (+{num_trunc_row} more)"
@@ -482,7 +483,9 @@ def main():
         elif missing_values_count > 0:
             cols_joined = natural_join([f"{BOLD}{c}{RESET}" for c in missing_val_cols]) if missing_val_cols else ""
             in_cols_str = f" in {cols_joined}" if cols_joined else ""
-            tip_text = f"Detected {BOLD}{missing_values_count} missing values{RESET}{in_cols_str} in your dataset. Proceed to {BOLD}Stage 2: Data Cleaning{RESET} to handle them!"
+            val_suffix = "value" if missing_values_count == 1 else "values"
+            pronoun = "it" if missing_values_count == 1 else "them"
+            tip_text = f"Detected {BOLD}{missing_values_count} missing {val_suffix}{RESET}{in_cols_str} in your dataset. Proceed to {BOLD}Stage 2: Data Cleaning{RESET} to handle {pronoun}!"
         elif not is_virtual:
             tip_text = f"Consider using a {BOLD}Virtual Environment{RESET} for better dependency management. Run {BOLD}python -m venv venv{RESET} to create one!"
         else:
