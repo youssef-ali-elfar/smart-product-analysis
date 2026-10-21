@@ -316,7 +316,7 @@ class TestBasic(unittest.TestCase):
         self.assertIn("dirty.csv", output)
         self.assertIn("4 missing values", output)
         self.assertIn("Sample Row", output)
-        self.assertIn("1 • Smart Watch •  • 199.99 •", output)
+        self.assertIn("1 • Smart Watch • (empty) • 199.99 • (empty)", output)
         self.assertIn("Detected 4 missing values in name, category, price, and stock in your dataset. Proceed to Stage 2: Data Cleaning to handle them!", output)
 
     @patch('sys.argv', ['src/main.py'])
