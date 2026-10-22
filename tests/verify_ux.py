@@ -252,6 +252,7 @@ class TestUX(unittest.TestCase):
                 if scenario['name'] == "Dataset with Missing Values Plain Mode":
                     self.assertIn("4 missing values in name, category, price, stock", stripped_output)
                     self.assertNotIn("⚠️", stripped_output)
+                    self.assertIn("Sample Row   : 1 | Smart Watch | (empty) | 199.99 | (empty)", stripped_output)
                     self.assertIn("Detected 4 missing values in name, category, price, and stock in your dataset. Proceed to Stage 2: Data Cleaning to handle them!", stripped_output)
 
                 if scenario['name'] == "Zero Row CSV Dataset":
