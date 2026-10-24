@@ -109,3 +109,7 @@
 ## 2026-08-08 - Empty/Whitespace Missing Values Detection
 **Learning:** In data-centric CLI tools, checking for file count and empty files is crucial, but datasets containing missing or whitespace-only values can still cause silent failures or misleading "Ready" states in downstream analysis. Displaying the count of missing values in the dataset preview and suggesting Stage 2: Data Cleaning in guidance tips increases data integrity awareness and prevents user frustration.
 **Action:** Detect and count missing/whitespace-only values in CSV file parsing and reflect this warning dynamically in the CLI's dataset status section and corresponding setup guidance tips.
+
+## 2026-08-15 - Data Quality-Driven Pipeline Stage Progression
+**Learning:** In multi-stage analysis roadmap visualizations, marking a intermediate stage (like Data Cleaning) as the active `[NEXT]` step when the dataset is already clean (0 missing values) causes unnecessary user hesitation. Dynamically marking Stage 2 as `[DONE]` and advancing active focus to Stage 3: EDA when data quality checks pass provides clear, confident guidance on the true next action.
+**Action:** Evaluate data quality metrics (e.g. missing value counts) alongside data existence checks to dynamically update intermediate roadmap stage statuses and advance the active stage pointer accordingly.
