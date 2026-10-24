@@ -449,7 +449,19 @@ def main():
                     status_tag = f"{BOLD}{YELLOW}[PEND]{RESET}"
                     stage_color = RESET
             elif i == 2:
-                if data_count > 0 and total_size > 0 and not has_zero_row_csv and all_found:
+                if data_count > 0 and total_size > 0 and not has_zero_row_csv and missing_values_count == 0 and all_found:
+                    status_tag = f"{BOLD}{GREEN}[DONE]{RESET}"
+                    stage_color = GREEN
+                    this_stage_done = True
+                elif data_count > 0 and total_size > 0 and not has_zero_row_csv and all_found:
+                    status_tag = f"{BOLD}{CYAN}[NEXT]{RESET}"
+                    stage_color = CYAN
+                    is_current = True
+                else:
+                    status_tag = f"{BOLD}{YELLOW}[PEND]{RESET}"
+                    stage_color = RESET
+            elif i == 3:
+                if data_count > 0 and total_size > 0 and not has_zero_row_csv and missing_values_count == 0 and all_found:
                     status_tag = f"{BOLD}{CYAN}[NEXT]{RESET}"
                     stage_color = CYAN
                     is_current = True
@@ -489,9 +501,9 @@ def main():
             in_cols_str = f" in {cols_joined}" if cols_joined else ""
             tip_text = f"Detected {BOLD}{missing_values_count} missing values{RESET}{in_cols_str} in your dataset. Proceed to {BOLD}Stage 2: Data Cleaning{RESET} to handle them!"
         elif not is_virtual:
-            tip_text = f"Consider using a {BOLD}Virtual Environment{RESET} for better dependency management. Run {BOLD}python -m venv venv{RESET} to create one!"
+            tip_text = f"Dataset is clean (0 missing values)! Proceed to {BOLD}Stage 3: EDA{RESET} to explore distributions. (Tip: Use a {BOLD}Virtual Env{RESET} for better management!)"
         else:
-            tip_text = f"{EMOJI_SPARKLES}{BOLD}Everything is set!{RESET} Head over to the {BOLD}Data Cleaning{RESET} stage to prepare your dataset!"
+            tip_text = f"{EMOJI_SPARKLES}{BOLD}Everything is set and data is clean!{RESET} Head over to {BOLD}Stage 3: EDA{RESET} to explore your dataset!"
 
         print(f"\n{EMOJI_TIP}{CYAN}{BOLD}Tip:{RESET} {tip_text}")
         print(f"   Use {BOLD}--help{RESET} or refer to README.md for detailed documentation.")
