@@ -350,5 +350,34 @@ class TestBasic(unittest.TestCase):
         self.assertIn("[NEXT] Data Ingestion", output)
         self.assertIn("Data file in data/ contains 0 data rows. Please populate your dataset or run python src/main.py --init to generate sample data.", output)
 
+    @patch('sys.argv', ['src/main.py'])
+    @patch('src.main.get_lib_version')
+    @patch('os.path.isdir')
+    @patch('os.listdir')
+    @patch('os.path.isfile')
+    @patch('os.path.getsize')
+    @patch('builtins.open')
+    def test_clean_dataset_advances_to_eda(self, mock_open, mock_getsize, mock_isfile, mock_listdir, mock_isdir, mock_get_lib_version):
+        """Test that a clean CSV dataset with 0 missing values marks Stage 2 as DONE and advances Stage 3 (EDA) to NEXT."""
+        mock_get_lib_version.return_value = "1.2.3"  # All libs found
+        mock_isdir.return_value = True
+        mock_listdir.return_value = ["clean.csv"]
+        mock_isfile.return_value = True
+        mock_getsize.return_value = 100
+
+        # Clean CSV content with 0 missing values
+        csv_content = "id,name,category,price,stock\n1,Smart Watch,Electronics,199.99,50\n"
+        mock_open.return_value = io.StringIO(csv_content)
+
+        captured_output = io.StringIO()
+        sys.stdout = captured_output
+        main()
+        output = captured_output.getvalue()
+
+        self.assertIn("[DONE] Data Ingestion", output)
+        self.assertIn("[DONE] Data Cleaning", output)
+        self.assertIn("[NEXT] EDA", output)
+        self.assertIn("Dataset is clean with 0 missing values! Proceed to Stage 3: EDA to explore data distributions.", output)
+
 if __name__ == '__main__':
     unittest.main()
