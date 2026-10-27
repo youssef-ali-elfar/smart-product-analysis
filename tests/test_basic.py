@@ -34,9 +34,53 @@ class TestBasic(unittest.TestCase):
             main()
         self.assertEqual(cm.exception.code, 0)
 
+    @patch('sys.argv', ['src/main.py', '-n'])
+    def test_short_flags(self):
+        """Test that short CLI flags -n, -p, and -v work as expected."""
+        captured_output = io.StringIO()
+        sys.stdout = captured_output
+        try:
+            main()
+            output = captured_output.getvalue()
+            # -n disables colors
+            self.assertNotIn("\033[", output)
+        finally:
+            sys.stdout = sys.__stdout__
+
+        # Test -v version short flag
+        with patch('sys.argv', ['src/main.py', '-v']):
+            with self.assertRaises(SystemExit) as cm:
+                main()
+            self.assertEqual(cm.exception.code, 0)
+
+    @patch('sys.argv', ['src/main.py'])
+    @patch('src.main.get_lib_version')
+    @patch('os.path.isdir')
+    @patch('os.listdir')
+    @patch('os.path.isfile')
+    @patch('os.path.getsize')
+    @patch('builtins.open')
+    def test_ignore_hidden_dotfiles(self, mock_open, mock_getsize, mock_isfile, mock_listdir, mock_isdir, mock_get_lib_version):
+        """Test that hidden files (like .DS_Store or .gitkeep) are ignored when listing data files."""
+        mock_get_lib_version.return_value = "1.2.3"
+        mock_isdir.return_value = True
+        mock_listdir.return_value = [".DS_Store", ".gitkeep", "products.csv"]
+        mock_isfile.return_value = True
+        mock_getsize.return_value = 100
+        mock_open.return_value = io.StringIO("id,name,category,price,stock\n1,Smart Watch,Electronics,199.99,50")
+
+        captured_output = io.StringIO()
+        sys.stdout = captured_output
+        main()
+        output = captured_output.getvalue()
+
+        self.assertNotIn(".DS_Store", output)
+        self.assertNotIn(".gitkeep", output)
+        self.assertIn("Found (1 file,", output)
+        self.assertIn("products.csv", output)
+
     @patch('sys.argv', ['src/main.py', '--help'])
     def test_main_help(self):
-        """Test that main() displays formatted help epilog with examples and exits correctly."""
         captured_output = io.StringIO()
         sys.stdout = captured_output
         try:

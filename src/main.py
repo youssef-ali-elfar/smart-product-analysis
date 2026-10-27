@@ -84,13 +84,13 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter
     )
     parser.add_argument(
-        "--version", action="version", version=f"Smart Product Analysis {version}"
+        "-v", "--version", action="version", version=f"Smart Product Analysis {version}"
     )
     parser.add_argument(
-        "--no-color", action="store_true", help="Disable ANSI color output"
+        "-n", "--no-color", action="store_true", help="Disable ANSI color output"
     )
     parser.add_argument(
-        "--plain", action="store_true", help="Plain text mode (no colors, no emojis, no box drawing)"
+        "-p", "--plain", action="store_true", help="Plain text mode (no colors, no emojis, no box drawing)"
     )
     parser.add_argument(
         "-i", "--init", action="store_true", help="Initialize data/ directory and populate it with a sample products.csv file"
@@ -218,7 +218,7 @@ def main():
         has_zero_row_csv = False
         sample_row_preview = ""
         if data_dir_exists:
-            files = sorted([f for f in os.listdir("data") if os.path.isfile(os.path.join("data", f))])
+            files = sorted([f for f in os.listdir("data") if os.path.isfile(os.path.join("data", f)) and not f.startswith(".")])
             data_count = len(files)
             file_types = []
             latest_file = ""

@@ -41,7 +41,7 @@ class TestUX(unittest.TestCase):
                 "name": "Multiple Files Pluralization",
                 "libs": {lib: "1.2.3" for lib in ["pandas", "numpy", "matplotlib", "seaborn", "sklearn", "jupyter"]},
                 "data_dir_exists": True,
-                "data_files": ["data1.csv", "data2.csv", "info.json"],
+                "data_files": [".DS_Store", "data1.csv", "data2.csv", "info.json"],
                 "file_times": [current_time - 10, current_time - 7200, current_time - 7200]
             },
             {
