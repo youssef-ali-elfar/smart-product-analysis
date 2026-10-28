@@ -254,6 +254,14 @@ class TestUX(unittest.TestCase):
                     self.assertNotIn("⚠️", stripped_output)
                     self.assertIn("Detected 4 missing values in name, category, price, and stock in your dataset. Proceed to Stage 2: Data Cleaning to handle them!", stripped_output)
 
+                if scenario['name'] == "One Missing Library Tip":
+                    self.assertIn("Incomplete (1 library missing) - Please run: pip install pandas", stripped_output)
+                    self.assertIn("Missing Pandas? Run pip install pandas to complete your setup.", stripped_output)
+
+                if scenario['name'] == "Two Missing Libraries Tip":
+                    self.assertIn("Incomplete (2 libraries missing) - Please run: pip install pandas numpy", stripped_output)
+                    self.assertIn("Missing Pandas and NumPy? Run pip install pandas numpy to complete your setup.", stripped_output)
+
                 if scenario['name'] == "Zero Row CSV Dataset":
                     self.assertIn("0 data rows", stripped_output)
                     self.assertIn("Pending - Data file contains 0 data rows", stripped_output)

@@ -105,6 +105,30 @@ class TestBasic(unittest.TestCase):
 
     @patch('sys.argv', ['src/main.py'])
     @patch('src.main.get_lib_version')
+    def test_targeted_pip_install_recommendation(self, mock_get_lib_version):
+        """Test targeted pip install recommendations when 1 or 2 dependencies are missing."""
+        # Scenario 1: Exactly 1 missing dependency (Scikit-Learn -> scikit-learn)
+        mock_get_lib_version.side_effect = lambda pkg: None if pkg == "sklearn" else "1.2.3"
+        captured_output = io.StringIO()
+        sys.stdout = captured_output
+        main()
+        output = captured_output.getvalue()
+
+        self.assertIn("pip install scikit-learn", output)
+        self.assertIn("Missing Scikit-Learn? Run pip install scikit-learn to complete your setup.", output)
+
+        # Scenario 2: Exactly 2 missing dependencies (Pandas & NumPy)
+        mock_get_lib_version.side_effect = lambda pkg: None if pkg in ["pandas", "numpy"] else "1.2.3"
+        captured_output = io.StringIO()
+        sys.stdout = captured_output
+        main()
+        output = captured_output.getvalue()
+
+        self.assertIn("pip install pandas numpy", output)
+        self.assertIn("Missing Pandas and NumPy? Run pip install pandas numpy to complete your setup.", output)
+
+    @patch('sys.argv', ['src/main.py'])
+    @patch('src.main.get_lib_version')
     @patch('os.path.isdir')
     @patch('os.makedirs')
     @patch('builtins.open')
