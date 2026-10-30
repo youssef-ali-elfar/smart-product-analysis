@@ -350,5 +350,29 @@ class TestBasic(unittest.TestCase):
         self.assertIn("[NEXT] Data Ingestion", output)
         self.assertIn("Data file in data/ contains 0 data rows. Please populate your dataset or run python src/main.py --init to generate sample data.", output)
 
+    @patch('sys.argv', ['src/main.py'])
+    @patch('src.main.get_lib_version')
+    @patch('os.path.isdir')
+    @patch('os.listdir')
+    @patch('os.path.isfile')
+    def test_hidden_files_ignored(self, mock_isfile, mock_listdir, mock_isdir, mock_get_lib_version):
+        """Test that hidden metadata files (e.g. .gitkeep, .DS_Store) in data/ are ignored."""
+        mock_get_lib_version.return_value = "1.2.3"  # All libs found
+        mock_isdir.return_value = True
+        mock_listdir.return_value = [".gitkeep", ".DS_Store"]
+        mock_isfile.return_value = True
+
+        captured_output = io.StringIO()
+        sys.stdout = captured_output
+        main()
+        output = captured_output.getvalue()
+
+        # Should recognize data directory as empty rather than treating .gitkeep as data file
+        self.assertIn("Data Source    : ⚠️ Empty (0 files)", output)
+        self.assertNotIn(".gitkeep", output)
+        self.assertNotIn(".DS_Store", output)
+        self.assertNotIn("GITKEEP", output)
+        self.assertIn("Data folder is ready but empty", output)
+
 if __name__ == '__main__':
     unittest.main()

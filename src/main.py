@@ -218,7 +218,10 @@ def main():
         has_zero_row_csv = False
         sample_row_preview = ""
         if data_dir_exists:
-            files = sorted([f for f in os.listdir("data") if os.path.isfile(os.path.join("data", f))])
+            files = sorted([
+                f for f in os.listdir("data")
+                if not f.startswith(".") and os.path.isfile(os.path.join("data", f))
+            ])
             data_count = len(files)
             file_types = []
             latest_file = ""
