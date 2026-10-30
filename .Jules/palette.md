@@ -109,3 +109,7 @@
 ## 2026-08-08 - Empty/Whitespace Missing Values Detection
 **Learning:** In data-centric CLI tools, checking for file count and empty files is crucial, but datasets containing missing or whitespace-only values can still cause silent failures or misleading "Ready" states in downstream analysis. Displaying the count of missing values in the dataset preview and suggesting Stage 2: Data Cleaning in guidance tips increases data integrity awareness and prevents user frustration.
 **Action:** Detect and count missing/whitespace-only values in CSV file parsing and reflect this warning dynamically in the CLI's dataset status section and corresponding setup guidance tips.
+
+## 2026-08-15 - Filtering Hidden Metadata Files in Data Source Scanning
+**Learning:** In CLI status dashboards that inspect directory contents, treating hidden metadata or OS configuration files starting with `.` (such as `.gitkeep`, `.DS_Store`) as data files produces misleading file counts, nonsensical file type compositions (e.g., '1 GITKEEP file'), and false empty-file warnings, while inadvertently blocking empty-workspace onboarding prompts.
+**Action:** Always filter out hidden files (`not f.startswith(".")`) when scanning data directories to ensure clean, accurate workspace diagnostics and preserve automatic onboarding behaviors.
