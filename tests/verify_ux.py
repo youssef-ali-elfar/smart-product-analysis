@@ -252,12 +252,21 @@ class TestUX(unittest.TestCase):
                 if scenario['name'] == "Dataset with Missing Values Plain Mode":
                     self.assertIn("4 missing values in name, category, price, stock", stripped_output)
                     self.assertNotIn("⚠️", stripped_output)
+                    self.assertIn("Analysis Roadmap (1/6 completed | 16%):", stripped_output)
                     self.assertIn("Detected 4 missing values in name, category, price, and stock in your dataset. Proceed to Stage 2: Data Cleaning to handle them!", stripped_output)
 
                 if scenario['name'] == "Zero Row CSV Dataset":
                     self.assertIn("0 data rows", stripped_output)
+                    self.assertIn("Analysis Roadmap (0/6 completed • 0%):", stripped_output)
                     self.assertIn("Pending - Data file contains 0 data rows", stripped_output)
                     self.assertIn("Data file in data/ contains 0 data rows. Please populate your dataset or run python src/main.py --init to generate sample data.", stripped_output)
+
+                if scenario['name'] == "All Libraries and Data Found":
+                    import re
+                    def strip_ansi(text):
+                        return re.sub(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])', '', text)
+                    stripped = strip_ansi(output)
+                    self.assertIn("Analysis Roadmap (2/6 completed • 33%):", stripped)
 
             except Exception as e:
                 sys.stdout = sys.__stdout__
