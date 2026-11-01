@@ -350,5 +350,46 @@ class TestBasic(unittest.TestCase):
         self.assertIn("[NEXT] Data Ingestion", output)
         self.assertIn("Data file in data/ contains 0 data rows. Please populate your dataset or run python src/main.py --init to generate sample data.", output)
 
+    @patch('src.main.get_lib_version')
+    @patch('os.path.isdir')
+    @patch('os.listdir')
+    @patch('os.path.isfile')
+    @patch('os.path.getsize')
+    @patch('builtins.open')
+    def test_roadmap_aggregate_progress_indicator(self, mock_open, mock_getsize, mock_isfile, mock_listdir, mock_isdir, mock_get_lib_version):
+        """Test that Analysis Roadmap header renders aggregate progress indicator (completed/total • pct%)."""
+        mock_get_lib_version.return_value = "1.2.3"
+        mock_isdir.return_value = True
+        mock_listdir.return_value = ["products.csv"]
+        mock_isfile.return_value = True
+        mock_getsize.return_value = 100
+        mock_open.return_value = io.StringIO("id,name,category,price,stock\n1,Smart Watch,Electronics,199.99,50")
+
+        # Standard mode: clean data + all libs -> 2/6 completed • 33%
+        captured_output = io.StringIO()
+        sys.stdout = captured_output
+        with patch('sys.argv', ['src/main.py']):
+            main()
+        output = captured_output.getvalue()
+        self.assertIn("Analysis Roadmap", output)
+        self.assertIn("(2/6 completed • 33%):", output)
+
+        # Plain mode: uses ASCII pipe '|' instead of bullet '•'
+        captured_output = io.StringIO()
+        sys.stdout = captured_output
+        with patch('sys.argv', ['src/main.py', '--plain']):
+            main()
+        output_plain = captured_output.getvalue()
+        self.assertIn("Analysis Roadmap (2/6 completed | 33%):", output_plain)
+
+        # Zero data / empty workspace: 0/6 completed • 0%
+        mock_listdir.return_value = []
+        captured_output = io.StringIO()
+        sys.stdout = captured_output
+        with patch('sys.argv', ['src/main.py']):
+            main()
+        output_empty = captured_output.getvalue()
+        self.assertIn("(0/6 completed • 0%):", output_empty)
+
 if __name__ == '__main__':
     unittest.main()
