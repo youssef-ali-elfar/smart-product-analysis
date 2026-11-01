@@ -164,6 +164,8 @@ class TestUX(unittest.TestCase):
                 sys.stdout = sys.__stdout__
                 print(output)
 
+                self.assertIn("completed", output)
+
                 if scenario['data_dir_exists'] and scenario['data_files']:
                     self.assertIn("Composition", output)
                     self.assertIn("Freshness", output)
@@ -234,6 +236,7 @@ class TestUX(unittest.TestCase):
                     # ASCII bullets and separators are present
                     self.assertIn("- Session Start", output)
                     self.assertIn(" | ", output)
+                    self.assertIn("Analysis Roadmap (2/6 completed | 33%):", output)
                     # ASCII border instead of unicode box drawings
                     self.assertIn("+----------------------------------------+", output)
                     self.assertIn("| ", output)
@@ -246,15 +249,18 @@ class TestUX(unittest.TestCase):
                     self.assertIn("✅", output)
 
                 if scenario['name'] == "Dataset with Missing Values":
+                    self.assertIn("(1/6 completed • 17%):", stripped_output)
                     self.assertIn("⚠️ 4 missing values in name, category, price, stock", stripped_output)
                     self.assertIn("Detected 4 missing values in name, category, price, and stock in your dataset. Proceed to Stage 2: Data Cleaning to handle them!", stripped_output)
 
                 if scenario['name'] == "Dataset with Missing Values Plain Mode":
+                    self.assertIn("(1/6 completed | 17%):", stripped_output)
                     self.assertIn("4 missing values in name, category, price, stock", stripped_output)
                     self.assertNotIn("⚠️", stripped_output)
                     self.assertIn("Detected 4 missing values in name, category, price, and stock in your dataset. Proceed to Stage 2: Data Cleaning to handle them!", stripped_output)
 
                 if scenario['name'] == "Zero Row CSV Dataset":
+                    self.assertIn("(0/6 completed • 0%):", stripped_output)
                     self.assertIn("0 data rows", stripped_output)
                     self.assertIn("Pending - Data file contains 0 data rows", stripped_output)
                     self.assertIn("Data file in data/ contains 0 data rows. Please populate your dataset or run python src/main.py --init to generate sample data.", stripped_output)
