@@ -350,5 +350,36 @@ class TestBasic(unittest.TestCase):
         self.assertIn("[NEXT] Data Ingestion", output)
         self.assertIn("Data file in data/ contains 0 data rows. Please populate your dataset or run python src/main.py --init to generate sample data.", output)
 
+    @patch('src.main.get_lib_version')
+    @patch('os.path.isdir')
+    @patch('os.listdir')
+    @patch('os.path.isfile')
+    @patch('os.path.getsize')
+    @patch('builtins.open')
+    def test_roadmap_aggregate_progress(self, mock_open, mock_getsize, mock_isfile, mock_listdir, mock_isdir, mock_get_lib_version):
+        """Test that Analysis Roadmap displays correct aggregate progress in normal and plain modes."""
+        mock_get_lib_version.return_value = "1.2.3"
+        mock_isdir.return_value = True
+        mock_listdir.return_value = ["clean.csv"]
+        mock_isfile.return_value = True
+        mock_getsize.return_value = 100
+        mock_open.return_value = io.StringIO("id,val\n1,a\n2,b\n")
+
+        # Normal mode: 2 of 6 stages completed (Data Ingestion + Data Cleaning) -> (2/6 completed • 33%)
+        with patch('sys.argv', ['src/main.py']):
+            captured = io.StringIO()
+            sys.stdout = captured
+            main()
+            sys.stdout = sys.__stdout__
+            self.assertIn("(2/6 completed • 33%)", captured.getvalue())
+
+        # Plain mode: uses ASCII separator '|'
+        with patch('sys.argv', ['src/main.py', '--plain']):
+            captured = io.StringIO()
+            sys.stdout = captured
+            main()
+            sys.stdout = sys.__stdout__
+            self.assertIn("(2/6 completed | 33%)", captured.getvalue())
+
 if __name__ == '__main__':
     unittest.main()

@@ -234,6 +234,7 @@ class TestUX(unittest.TestCase):
                     # ASCII bullets and separators are present
                     self.assertIn("- Session Start", output)
                     self.assertIn(" | ", output)
+                    self.assertIn("Analysis Roadmap: (2/6 completed | 33%)", output)
                     # ASCII border instead of unicode box drawings
                     self.assertIn("+----------------------------------------+", output)
                     self.assertIn("| ", output)
