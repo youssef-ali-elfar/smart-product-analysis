@@ -412,7 +412,6 @@ def main():
 
         print(f"\n{EMOJI_ROCKET}Welcome! This tool is designed to help you extract insights from product data.")
 
-        print(f"\n{GREEN}{BOLD}Analysis Roadmap:{RESET}")
         stages = [
             {"emoji": "📥", "label": "Data Ingestion", "desc": "Collect raw data from various sources."},
             {"emoji": "🧹", "label": "Data Cleaning", "desc": "Preprocess and handle missing values."},
@@ -421,6 +420,18 @@ def main():
             {"emoji": "🤖", "label": "Modeling", "desc": "Train and evaluate machine learning models."},
             {"emoji": "📈", "label": "Reporting & Insights", "desc": "Extract and communicate final results."},
         ]
+
+        # Calculate completed stages for aggregate progress indicator
+        completed_count = 0
+        if data_count > 0 and total_size > 0 and not has_zero_row_csv:
+            completed_count += 1
+            if all_found and missing_values_count == 0:
+                completed_count += 1
+
+        total_stages = len(stages)
+        completion_pct = int((completed_count / total_stages) * 100)
+        progress_str = f"({completed_count}/{total_stages} completed {SEP} {completion_pct}%)"
+        print(f"\n{GREEN}{BOLD}Analysis Roadmap{RESET} {BOLD}{progress_str}:{RESET}")
 
         prev_stage_done = False
         for i, stage in enumerate(stages, 1):

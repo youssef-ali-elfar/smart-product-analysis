@@ -109,3 +109,7 @@
 ## 2026-08-08 - Empty/Whitespace Missing Values Detection
 **Learning:** In data-centric CLI tools, checking for file count and empty files is crucial, but datasets containing missing or whitespace-only values can still cause silent failures or misleading "Ready" states in downstream analysis. Displaying the count of missing values in the dataset preview and suggesting Stage 2: Data Cleaning in guidance tips increases data integrity awareness and prevents user frustration.
 **Action:** Detect and count missing/whitespace-only values in CSV file parsing and reflect this warning dynamically in the CLI's dataset status section and corresponding setup guidance tips.
+
+## 2026-11-03 - Aggregate Pipeline Progress Visibility
+**Learning:** While individual stage status tags (like [DONE], [NEXT], [PEND]) guide users through sequential workflows, scanning multiple items to gauge overall progress introduces unnecessary cognitive overhead. Providing a concise aggregate completion metric (e.g., `(2/6 completed • 33%)`) directly in the section header delivers instant, high-level feedback on overall pipeline status.
+**Action:** Accompany multi-step progressive CLI roadmaps with an aggregate summary counter and completion percentage in the section header, adapting delimiters for accessible plain-text modes.
