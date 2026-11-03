@@ -22,6 +22,8 @@ class TestBasic(unittest.TestCase):
             self.assertIn("1.", output)
             # Check for new dynamic status indicators
             self.assertIn("[PEND]", output)
+            self.assertIn("Analysis Roadmap", output)
+            self.assertIn("completed", output)
         except Exception as e:
             self.fail(f"main() raised {type(e).__name__} unexpectedly!")
         finally:
