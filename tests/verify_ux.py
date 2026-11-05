@@ -217,6 +217,13 @@ class TestUX(unittest.TestCase):
                 if scenario['name'] == "NO_COLOR Support":
                     self.assertNotIn("\033[", output)
 
+                if scenario['name'] == "All Libraries and Data Found":
+                    self.assertIn("Analysis Roadmap", output)
+                    self.assertIn("2/6 completed \033[0m•\033[0m\033[1m 33%", output)
+
+                if scenario['name'] == "Missing Libraries and Missing Data":
+                    self.assertIn("0/6 completed", output)
+
                 if scenario['name'] == "Explicit CLI --plain Mode":
                     # No ANSI escape codes
                     self.assertNotIn("\033[", output)
@@ -234,6 +241,7 @@ class TestUX(unittest.TestCase):
                     # ASCII bullets and separators are present
                     self.assertIn("- Session Start", output)
                     self.assertIn(" | ", output)
+                    self.assertIn("Analysis Roadmap (2/6 completed | 33%):", output)
                     # ASCII border instead of unicode box drawings
                     self.assertIn("+----------------------------------------+", output)
                     self.assertIn("| ", output)
@@ -248,16 +256,19 @@ class TestUX(unittest.TestCase):
                 if scenario['name'] == "Dataset with Missing Values":
                     self.assertIn("⚠️ 4 missing values in name, category, price, stock", stripped_output)
                     self.assertIn("Detected 4 missing values in name, category, price, and stock in your dataset. Proceed to Stage 2: Data Cleaning to handle them!", stripped_output)
+                    self.assertIn("1/6 completed • 17%", stripped_output)
 
                 if scenario['name'] == "Dataset with Missing Values Plain Mode":
                     self.assertIn("4 missing values in name, category, price, stock", stripped_output)
                     self.assertNotIn("⚠️", stripped_output)
                     self.assertIn("Detected 4 missing values in name, category, price, and stock in your dataset. Proceed to Stage 2: Data Cleaning to handle them!", stripped_output)
+                    self.assertIn("1/6 completed | 17%", stripped_output)
 
                 if scenario['name'] == "Zero Row CSV Dataset":
                     self.assertIn("0 data rows", stripped_output)
                     self.assertIn("Pending - Data file contains 0 data rows", stripped_output)
                     self.assertIn("Data file in data/ contains 0 data rows. Please populate your dataset or run python src/main.py --init to generate sample data.", stripped_output)
+                    self.assertIn("0/6 completed • 0%", stripped_output)
 
             except Exception as e:
                 sys.stdout = sys.__stdout__
