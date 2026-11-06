@@ -412,7 +412,6 @@ def main():
 
         print(f"\n{EMOJI_ROCKET}Welcome! This tool is designed to help you extract insights from product data.")
 
-        print(f"\n{GREEN}{BOLD}Analysis Roadmap:{RESET}")
         stages = [
             {"emoji": "📥", "label": "Data Ingestion", "desc": "Collect raw data from various sources."},
             {"emoji": "🧹", "label": "Data Cleaning", "desc": "Preprocess and handle missing values."},
@@ -422,6 +421,14 @@ def main():
             {"emoji": "📈", "label": "Reporting & Insights", "desc": "Extract and communicate final results."},
         ]
 
+        stage1_done = data_count > 0 and total_size > 0 and not has_zero_row_csv
+        stage2_done = stage1_done and all_found and missing_values_count == 0
+        completed_count = sum([stage1_done, stage2_done])
+        total_stages = len(stages)
+        progress_pct = round((completed_count / total_stages) * 100)
+        progress_str = f"({completed_count}/{total_stages} completed {SEP} {progress_pct}%)"
+        print(f"\n{GREEN}{BOLD}Analysis Roadmap {progress_str}:{RESET}")
+
         prev_stage_done = False
         for i, stage in enumerate(stages, 1):
             if i > 1:
@@ -430,7 +437,7 @@ def main():
             is_current = False
             this_stage_done = False
             if i == 1:
-                if data_count > 0 and total_size > 0 and not has_zero_row_csv:
+                if stage1_done:
                     status_tag = f"{BOLD}{GREEN}[DONE]{RESET}"
                     stage_color = GREEN
                     this_stage_done = True
@@ -449,20 +456,19 @@ def main():
                     status_tag = f"{BOLD}{YELLOW}[PEND]{RESET}"
                     stage_color = RESET
             elif i == 2:
-                if data_count > 0 and total_size > 0 and not has_zero_row_csv and all_found:
-                    if missing_values_count == 0:
-                        status_tag = f"{BOLD}{GREEN}[DONE]{RESET}"
-                        stage_color = GREEN
-                        this_stage_done = True
-                    else:
-                        status_tag = f"{BOLD}{CYAN}[NEXT]{RESET}"
-                        stage_color = CYAN
-                        is_current = True
+                if stage2_done:
+                    status_tag = f"{BOLD}{GREEN}[DONE]{RESET}"
+                    stage_color = GREEN
+                    this_stage_done = True
+                elif stage1_done and all_found:
+                    status_tag = f"{BOLD}{CYAN}[NEXT]{RESET}"
+                    stage_color = CYAN
+                    is_current = True
                 else:
                     status_tag = f"{BOLD}{YELLOW}[PEND]{RESET}"
                     stage_color = RESET
             elif i == 3:
-                if data_count > 0 and total_size > 0 and not has_zero_row_csv and all_found and missing_values_count == 0:
+                if stage2_done:
                     status_tag = f"{BOLD}{CYAN}[NEXT]{RESET}"
                     stage_color = CYAN
                     is_current = True
