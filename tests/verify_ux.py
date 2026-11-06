@@ -164,6 +164,8 @@ class TestUX(unittest.TestCase):
                 sys.stdout = sys.__stdout__
                 print(output)
 
+                self.assertIn("Analysis Roadmap (", output)
+
                 if scenario['data_dir_exists'] and scenario['data_files']:
                     self.assertIn("Composition", output)
                     self.assertIn("Freshness", output)

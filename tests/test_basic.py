@@ -350,5 +350,52 @@ class TestBasic(unittest.TestCase):
         self.assertIn("[NEXT] Data Ingestion", output)
         self.assertIn("Data file in data/ contains 0 data rows. Please populate your dataset or run python src/main.py --init to generate sample data.", output)
 
+    @patch('sys.argv', ['src/main.py'])
+    @patch('src.main.get_lib_version')
+    @patch('os.path.isdir')
+    @patch('os.listdir')
+    @patch('os.path.isfile')
+    @patch('os.path.getsize')
+    @patch('builtins.open')
+    def test_analysis_roadmap_progress_indicator(self, mock_open, mock_getsize, mock_isfile, mock_listdir, mock_isdir, mock_get_lib_version):
+        """Test that the Analysis Roadmap header displays an accurate aggregate progress indicator."""
+        # Case 1: 0 stages completed (empty/missing data)
+        mock_get_lib_version.return_value = "1.2.3"
+        mock_isdir.return_value = False
+        captured_output = io.StringIO()
+        sys.stdout = captured_output
+        main()
+        output = captured_output.getvalue()
+        self.assertIn("Analysis Roadmap (0/6 completed • 0%):", output)
+
+        # Case 2: 1 stage completed (data ingested, but dependencies missing)
+        mock_get_lib_version.return_value = None  # Missing libs -> stage 2 pending
+        mock_isdir.return_value = True
+        mock_listdir.return_value = ["products.csv"]
+        mock_isfile.return_value = True
+        mock_getsize.return_value = 100
+        mock_open.return_value = io.StringIO("id,name,category,price,stock\n1,Watch,Electronics,99,10\n")
+        captured_output = io.StringIO()
+        sys.stdout = captured_output
+        main()
+        output = captured_output.getvalue()
+        self.assertIn("Analysis Roadmap (1/6 completed • 17%):", output)
+
+        # Case 3: 2 stages completed (data ingested, all libs found, clean data)
+        mock_get_lib_version.return_value = "1.2.3"
+        captured_output = io.StringIO()
+        sys.stdout = captured_output
+        main()
+        output = captured_output.getvalue()
+        self.assertIn("Analysis Roadmap (2/6 completed • 33%):", output)
+
+        # Case 4: Plain mode uses ASCII pipe separator '|'
+        captured_output = io.StringIO()
+        sys.stdout = captured_output
+        with patch('sys.argv', ['src/main.py', '--plain']):
+            main()
+        output = captured_output.getvalue()
+        self.assertIn("Analysis Roadmap (2/6 completed | 33%):", output)
+
 if __name__ == '__main__':
     unittest.main()
